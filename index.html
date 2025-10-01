@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Simulator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- JSON Input Section -->
+        <div id="json-input-section" class="section">
+            <div class="card">
+                <div class="card__body">
+                    <h1>Test Simulator</h1>
+                    <p class="text-secondary">Paste your test JSON data below to load a test</p>
+                    
+                    <div class="form-group">
+                        <label for="json-input" class="form-label">Test JSON Data</label>
+                        <textarea id="json-input" class="form-control" rows="10" placeholder='Paste your test JSON here...
+
+Example format:
+{
+  "title": "Sample Test",
+  "questions": [
+    {
+      "id": 1,
+      "type": "mcq",
+      "question": "Question text",
+      "options": ["A", "B", "C", "D"],
+      "correct": 1
+    }
+  ]
+}'></textarea>
+                    </div>
+                    
+                    <div id="error-message" class="error-message hidden"></div>
+                    
+                    <div class="button-group">
+                        <button id="load-test-btn" class="btn btn--primary">Load Test</button>
+                        <button id="load-sample-btn" class="btn btn--outline">Load Sample Test</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Section -->
+        <div id="test-section" class="section hidden">
+            <div class="test-header">
+                <h2 id="test-title">Test Title</h2>
+                <div class="progress-indicator">
+                    <span id="question-counter">Question 1 of 10</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card__body">
+                    <div id="question-container">
+                        <!-- Question content will be inserted here -->
+                    </div>
+                    
+                    <div class="navigation-buttons">
+                        <button id="prev-btn" class="btn btn--outline" disabled>Previous</button>
+                        <button id="next-btn" class="btn btn--primary">Next</button>
+                        <button id="submit-btn" class="btn btn--primary hidden">Submit Test</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results-section" class="section hidden">
+            <div class="card">
+                <div class="card__body">
+                    <h2>Test Results</h2>
+                    <div id="score-summary" class="score-summary">
+                        <!-- Score will be inserted here -->
+                    </div>
+                    
+                    <h3>Review</h3>
+                    <div id="results-review">
+                        <!-- Detailed results will be inserted here -->
+                    </div>
+                    
+                    <div class="button-group">
+                        <button id="restart-btn" class="btn btn--primary">Load New Test</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prompt Instructions Modal -->
+    <div id="prompt-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>AI Test Generation Prompt</h3>
+                <button id="close-modal" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Use this prompt to generate test JSON data with an AI:</p>
+                <div class="prompt-box">
+                    <code>Generate a test with [NUMBER] questions in JSON format. Include a mix of MCQ (multiple choice), multi-select, and matching questions about [TOPIC]. Use this exact structure:
+
+{
+  "title": "Test Title Here",
+  "questions": [
+    {
+      "id": 1,
+      "type": "mcq",
+      "question": "Question text here",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "correct": 0
+    },
+    {
+      "id": 2,
+      "type": "multi-select",
+      "question": "Question text here (select all that apply)",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "correct": [0, 2]
+    },
+    {
+      "id": 3,
+      "type": "matching",
+      "question": "Match the following",
+      "leftItems": ["Item 1", "Item 2", "Item 3"],
+      "rightItems": ["Match A", "Match B", "Match C"],
+      "correct": [0, 1, 2]
+    }
+  ]
+}
+
+For MCQ: correct is the index (0-based) of the correct option
+For multi-select: correct is an array of indices of correct options
+For matching: correct is an array where each index corresponds to the rightItems index for each leftItem</code>
+                </div>
+                <p><strong>Example:</strong> "Generate a test with 5 questions in JSON format. Include a mix of MCQ, multi-select, and matching questions about web development."</p>
+            </div>
+        </div>
+    </div>
+
+    <button id="show-prompt-btn" class="floating-help-btn" title="Show AI Generation Prompt">?</button>
+
+    <script src="app.js"></script>
+</body>
+</html>
