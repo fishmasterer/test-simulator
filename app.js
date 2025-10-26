@@ -1132,5 +1132,11 @@ let testSimulator;
 
 // Initialize the test simulator when the page loads
 document.addEventListener('DOMContentLoaded', () => {
-    testSimulator = new TestSimulator();
+    try {
+        testSimulator = new TestSimulator();
+        console.log('Test Simulator initialized successfully');
+    } catch (error) {
+        console.error('Failed to initialize Test Simulator:', error);
+        alert('Failed to load the app. Please check the console for errors.');
+    }
 });
