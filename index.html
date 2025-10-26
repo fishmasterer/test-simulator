@@ -3,10 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Simulator</title>
+    <title>Test Simulator - Enhanced</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Theme Toggle Button -->
+    <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark mode">🌙</button>
+
     <div class="container">
         <!-- JSON Input Section -->
         <div id="json-input-section" class="section">
@@ -14,10 +17,39 @@
                 <div class="card__body">
                     <h1>Test Simulator</h1>
                     <p class="text-secondary">Paste your test JSON data below to load a test</p>
-                    
+
+                    <!-- Timer Settings -->
+                    <div class="timer-settings-container">
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="timer-toggle">
+                                <span>Enable timer</span>
+                            </label>
+                        </div>
+                        <div id="timer-settings" class="hidden">
+                            <div class="form-group">
+                                <label for="timer-duration" class="form-label">Duration (minutes)</label>
+                                <input
+                                    type="number"
+                                    id="timer-duration"
+                                    class="form-control"
+                                    value="30"
+                                    min="1"
+                                    max="180"
+                                    aria-label="Test duration in minutes"
+                                >
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="form-group">
                         <label for="json-input" class="form-label">Test JSON Data</label>
-                        <textarea id="json-input" class="form-control" rows="10" placeholder='Paste your test JSON here...
+                        <textarea
+                            id="json-input"
+                            class="form-control"
+                            rows="10"
+                            aria-label="Test JSON data input"
+                            placeholder='Paste your test JSON here...
 
 Example format:
 {
@@ -33,9 +65,9 @@ Example format:
   ]
 }'></textarea>
                     </div>
-                    
-                    <div id="error-message" class="error-message hidden"></div>
-                    
+
+                    <div id="error-message" class="error-message hidden" aria-live="assertive"></div>
+
                     <div class="button-group">
                         <button id="load-test-btn" class="btn btn--primary">Load Test</button>
                         <button id="load-sample-btn" class="btn btn--outline">Load Sample Test</button>
@@ -47,24 +79,68 @@ Example format:
         <!-- Test Section -->
         <div id="test-section" class="section hidden">
             <div class="test-header">
-                <h2 id="test-title">Test Title</h2>
-                <div class="progress-indicator">
-                    <span id="question-counter">Question 1 of 10</span>
+                <div class="test-header-left">
+                    <h2 id="test-title">Test Title</h2>
+                    <div class="progress-indicator">
+                        <span id="question-counter">Question 1 of 10</span>
+                    </div>
+                </div>
+                <div class="timer-container hidden" aria-live="polite">
+                    <span class="timer-label">Time Remaining:</span>
+                    <span id="timer-display" class="timer-display">30:00</span>
                 </div>
             </div>
 
-            <div class="card">
-                <div class="card__body">
-                    <div id="question-container">
-                        <!-- Question content will be inserted here -->
+            <div class="test-content-grid">
+                <!-- Question Overview Panel -->
+                <aside class="question-overview-panel" aria-label="Question navigation">
+                    <div id="question-overview"></div>
+                </aside>
+
+                <!-- Main Question Area -->
+                <main class="question-main">
+                    <div class="card">
+                        <div class="card__body">
+                            <div id="question-container" role="main" aria-live="polite">
+                                <!-- Question content will be inserted here -->
+                            </div>
+
+                            <div class="navigation-buttons">
+                                <button
+                                    id="prev-btn"
+                                    class="btn btn--outline"
+                                    disabled
+                                    aria-label="Previous question"
+                                >
+                                    Previous
+                                </button>
+                                <div class="nav-buttons-right">
+                                    <button
+                                        id="next-btn"
+                                        class="btn btn--primary"
+                                        aria-label="Next question"
+                                    >
+                                        Next
+                                    </button>
+                                    <button
+                                        id="submit-btn"
+                                        class="btn btn--primary hidden"
+                                        aria-label="Submit test"
+                                    >
+                                        Submit Test
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="keyboard-hints">
+                                <p class="hint-text">
+                                    <strong>Keyboard shortcuts:</strong>
+                                    ← Previous | → Next | Ctrl+Enter Submit
+                                </p>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <div class="navigation-buttons">
-                        <button id="prev-btn" class="btn btn--outline" disabled>Previous</button>
-                        <button id="next-btn" class="btn btn--primary">Next</button>
-                        <button id="submit-btn" class="btn btn--primary hidden">Submit Test</button>
-                    </div>
-                </div>
+                </main>
             </div>
         </div>
 
@@ -76,12 +152,21 @@ Example format:
                     <div id="score-summary" class="score-summary">
                         <!-- Score will be inserted here -->
                     </div>
-                    
+
+                    <div class="export-buttons">
+                        <button id="export-pdf-btn" class="btn btn--secondary" aria-label="Export results as PDF">
+                            📄 Export as PDF
+                        </button>
+                        <button id="export-csv-btn" class="btn btn--secondary" aria-label="Export results as CSV">
+                            📊 Export as CSV
+                        </button>
+                    </div>
+
                     <h3>Review</h3>
-                    <div id="results-review">
+                    <div id="results-review" role="region" aria-label="Answer review">
                         <!-- Detailed results will be inserted here -->
                     </div>
-                    
+
                     <div class="button-group">
                         <button id="restart-btn" class="btn btn--primary">Load New Test</button>
                     </div>
@@ -90,12 +175,28 @@ Example format:
         </div>
     </div>
 
-    <!-- Prompt Instructions Modal -->
-    <div id="prompt-modal" class="modal hidden">
+    <!-- Confirmation Modal -->
+    <div id="confirm-modal" class="modal hidden" role="dialog" aria-labelledby="confirm-modal-title" aria-modal="true">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>AI Test Generation Prompt</h3>
-                <button id="close-modal" class="close-btn">&times;</button>
+                <h3 id="confirm-modal-title">Confirm Submission</h3>
+            </div>
+            <div class="modal-body">
+                <p class="confirm-message">Are you sure you want to submit your test?</p>
+                <div class="button-group">
+                    <button id="confirm-submit-btn" class="btn btn--primary">Yes, Submit</button>
+                    <button id="cancel-submit-btn" class="btn btn--outline">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prompt Instructions Modal -->
+    <div id="prompt-modal" class="modal hidden" role="dialog" aria-labelledby="prompt-modal-title" aria-modal="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="prompt-modal-title">AI Test Generation Prompt</h3>
+                <button id="close-modal" class="close-btn" aria-label="Close modal">&times;</button>
             </div>
             <div class="modal-body">
                 <p>Use this prompt to generate test JSON data with an AI:</p>
@@ -139,7 +240,13 @@ For matching: correct is an array where each index corresponds to the rightItems
         </div>
     </div>
 
-    <button id="show-prompt-btn" class="floating-help-btn" title="Show AI Generation Prompt">?</button>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden" role="status" aria-live="polite">
+        <div class="loading-spinner"></div>
+        <p class="loading-message">Loading...</p>
+    </div>
+
+    <button id="show-prompt-btn" class="floating-help-btn" aria-label="Show AI generation prompt">?</button>
 
     <script src="app.js"></script>
 </body>
