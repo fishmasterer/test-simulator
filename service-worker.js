@@ -5,10 +5,12 @@
 
 const CACHE_NAME = 'test-simulator-v1';
 const urlsToCache = [
-  '/index.html',
-  '/app.js',
-  '/style.css',
-  '/manifest.json'
+  './index.html',
+  './app.js',
+  './style.css',
+  './manifest.json',
+  './icon-192.svg',
+  './icon-512.svg'
 ];
 
 /**
@@ -60,8 +62,8 @@ self.addEventListener('fetch', (event) => {
             // Cache new resources dynamically
             return caches.open(CACHE_NAME)
               .then((cache) => {
-                // Only cache GET requests
-                if (event.request.method === 'GET') {
+                // Only cache GET requests from same origin
+                if (event.request.method === 'GET' && event.request.url.startsWith(self.location.origin)) {
                   cache.put(event.request, fetchResponse.clone());
                 }
                 return fetchResponse;
@@ -70,7 +72,7 @@ self.addEventListener('fetch', (event) => {
       })
       .catch(() => {
         // Return offline page if available
-        return caches.match('/index.html');
+        return caches.match('./index.html');
       })
   );
 });

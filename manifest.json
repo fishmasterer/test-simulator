@@ -2,20 +2,21 @@
   "name": "Test Simulator - Enhanced",
   "short_name": "Test Simulator",
   "description": "A comprehensive test-taking application with timer, progress saving, and accessibility features",
-  "start_url": "/index.html",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#FCFCF9",
   "theme_color": "#21808D",
   "orientation": "any",
   "icons": [
     {
-      "src": "icon-192.svg",
+      "src": "./icon-192.svg",
       "sizes": "192x192",
       "type": "image/svg+xml",
       "purpose": "any maskable"
     },
     {
-      "src": "icon-512.svg",
+      "src": "./icon-512.svg",
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any maskable"
@@ -28,7 +29,7 @@
       "name": "Load Sample Test",
       "short_name": "Sample",
       "description": "Load the sample test quickly",
-      "url": "/index.html?sample=true",
+      "url": "./index.html?sample=true",
       "icons": []
     }
   ]
