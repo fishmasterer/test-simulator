@@ -321,51 +321,42 @@ class TestSimulator {
      * Load and validate test from JSON input
      */
     loadTest() {
-        this.showLoading('Loading test...');
-
-        // Use setTimeout to allow UI to update
-        setTimeout(() => {
-            try {
-                const jsonText = this.jsonInput.value.trim();
-                if (!jsonText) {
-                    this.showError('Please enter JSON data for the test.');
-                    this.hideLoading();
-                    return;
-                }
-
-                const testData = JSON.parse(jsonText);
-
-                // Validate test structure
-                if (!this.validateTestData(testData)) {
-                    this.hideLoading();
-                    return;
-                }
-
-                // Clear any saved progress for a new test
-                this.clearProgress();
-
-                this.currentTest = testData;
-                this.currentQuestionIndex = 0;
-                this.userAnswers = {};
-                this.testStartTime = Date.now();
-
-                // Set up timer if enabled
-                if (this.timerToggle?.checked) {
-                    const duration = parseInt(this.timerDurationInput?.value || 30);
-                    this.testDuration = duration * 60; // Convert to seconds
-                    this.timeRemaining = this.testDuration;
-                }
-
-                this.hideError();
-                this.hideLoading();
-                this.startTest();
-
-            } catch (error) {
-                this.showError('Invalid JSON format. Please check your input and try again.');
-                console.error('JSON Parse Error:', error);
-                this.hideLoading();
+        try {
+            const jsonText = this.jsonInput.value.trim();
+            if (!jsonText) {
+                this.showError('Please enter JSON data for the test.');
+                return;
             }
-        }, 100);
+
+            const testData = JSON.parse(jsonText);
+
+            // Validate test structure
+            if (!this.validateTestData(testData)) {
+                return;
+            }
+
+            // Clear any saved progress for a new test
+            this.clearProgress();
+
+            this.currentTest = testData;
+            this.currentQuestionIndex = 0;
+            this.userAnswers = {};
+            this.testStartTime = Date.now();
+
+            // Set up timer if enabled
+            if (this.timerToggle?.checked) {
+                const duration = parseInt(this.timerDurationInput?.value || 30);
+                this.testDuration = duration * 60; // Convert to seconds
+                this.timeRemaining = this.testDuration;
+            }
+
+            this.hideError();
+            this.startTest();
+
+        } catch (error) {
+            this.showError('Invalid JSON format. Please check your input and try again.');
+            console.error('JSON Parse Error:', error);
+        }
     }
 
     /**
@@ -460,7 +451,7 @@ class TestSimulator {
         setTimeout(() => {
             const firstInput = this.questionContainer.querySelector('input, select');
             if (firstInput) firstInput.focus();
-        }, 100);
+        }, 50);
     }
 
     /**
@@ -477,7 +468,11 @@ class TestSimulator {
         this.timerInterval = setInterval(() => {
             this.timeRemaining--;
             this.updateTimerDisplay();
-            this.saveProgress(); // Save progress every second
+
+            // Save progress every 5 seconds instead of every second for better performance
+            if (this.timeRemaining % 5 === 0) {
+                this.saveProgress();
+            }
 
             if (this.timeRemaining <= 0) {
                 this.stopTimer();
@@ -600,7 +595,7 @@ class TestSimulator {
         setTimeout(() => {
             const firstInput = this.questionContainer.querySelector('input, select');
             if (firstInput) firstInput.focus();
-        }, 100);
+        }, 50);
     }
 
     /**
@@ -811,7 +806,7 @@ class TestSimulator {
         this.confirmModal?.classList.remove('hidden');
 
         // Focus on confirm button
-        setTimeout(() => this.confirmSubmitBtn?.focus(), 100);
+        setTimeout(() => this.confirmSubmitBtn?.focus(), 10);
     }
 
     /**
@@ -834,14 +829,9 @@ class TestSimulator {
      */
     submitTest() {
         this.stopTimer();
-        this.showLoading('Calculating results...');
-
-        setTimeout(() => {
-            this.calculateResults();
-            this.displayResults();
-            this.clearProgress(); // Clear saved progress after submission
-            this.hideLoading();
-        }, 500);
+        this.calculateResults();
+        this.displayResults();
+        this.clearProgress(); // Clear saved progress after submission
     }
 
     /**
@@ -1126,7 +1116,7 @@ class TestSimulator {
      */
     showPromptModal() {
         this.promptModal.classList.remove('hidden');
-        setTimeout(() => this.closeModalBtn.focus(), 100);
+        setTimeout(() => this.closeModalBtn.focus(), 10);
     }
 
     /**
