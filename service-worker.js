@@ -3,14 +3,14 @@
  * Provides offline functionality and caching
  */
 
-const CACHE_NAME = 'test-simulator-v1';
+const CACHE_NAME = 'test-simulator-v2';
 const urlsToCache = [
-  './index.html',
-  './app.js',
-  './style.css',
-  './manifest.json',
-  './icon-192.svg',
-  './icon-512.svg'
+  'index.html',
+  'app.js',
+  'style.css',
+  'manifest.json',
+  'icon-192.svg',
+  'icon-512.svg'
 ];
 
 /**
@@ -72,7 +72,7 @@ self.addEventListener('fetch', (event) => {
       })
       .catch(() => {
         // Return offline page if available
-        return caches.match('./index.html');
+        return caches.match('index.html');
       })
   );
 });
