@@ -297,6 +297,77 @@
   --color-info-rgb: var(--color-slate-500-rgb);
 }
 
+/* Claude Theme Colors */
+[data-theme="claude-light"] {
+  /* Claude Brand Colors */
+  --color-claude-orange: rgba(204, 93, 52, 1);
+  --color-claude-orange-light: rgba(217, 119, 81, 1);
+  --color-claude-orange-dark: rgba(181, 72, 33, 1);
+  --color-claude-beige: rgba(245, 240, 235, 1);
+  --color-claude-cream: rgba(255, 251, 247, 1);
+  --color-claude-brown: rgba(115, 85, 70, 1);
+  --color-claude-brown-light: rgba(145, 115, 100, 1);
+
+  /* RGB versions */
+  --color-claude-orange-rgb: 204, 93, 52;
+  --color-claude-brown-rgb: 115, 85, 70;
+
+  /* Semantic tokens */
+  --color-background: var(--color-claude-beige);
+  --color-surface: var(--color-claude-cream);
+  --color-text: rgba(42, 37, 33, 1);
+  --color-text-secondary: var(--color-claude-brown);
+  --color-primary: var(--color-claude-orange);
+  --color-primary-hover: var(--color-claude-orange-dark);
+  --color-primary-active: rgba(160, 58, 25, 1);
+  --color-secondary: rgba(var(--color-claude-brown-rgb), 0.12);
+  --color-secondary-hover: rgba(var(--color-claude-brown-rgb), 0.2);
+  --color-secondary-active: rgba(var(--color-claude-brown-rgb), 0.25);
+  --color-border: rgba(var(--color-claude-brown-rgb), 0.2);
+  --color-btn-primary-text: var(--color-white);
+  --color-card-border: rgba(var(--color-claude-brown-rgb), 0.15);
+  --color-card-border-inner: rgba(var(--color-claude-brown-rgb), 0.12);
+  --color-focus-ring: rgba(var(--color-claude-orange-rgb), 0.4);
+  --color-success-rgb: 34, 197, 94;
+  --color-error-rgb: 220, 38, 38;
+  --color-warning-rgb: 234, 179, 8;
+}
+
+[data-theme="claude-dark"] {
+  /* Claude Dark Theme */
+  --color-claude-bg-dark: rgba(28, 25, 23, 1);
+  --color-claude-surface-dark: rgba(41, 37, 33, 1);
+  --color-claude-orange: rgba(234, 123, 82, 1);
+  --color-claude-orange-light: rgba(251, 146, 108, 1);
+  --color-claude-text: rgba(250, 245, 240, 1);
+
+  /* RGB versions */
+  --color-claude-orange-rgb: 234, 123, 82;
+  --color-claude-brown-rgb: 145, 115, 100;
+
+  /* Semantic tokens */
+  --color-background: var(--color-claude-bg-dark);
+  --color-surface: var(--color-claude-surface-dark);
+  --color-text: var(--color-claude-text);
+  --color-text-secondary: rgba(var(--color-claude-brown-rgb), 1);
+  --color-primary: var(--color-claude-orange);
+  --color-primary-hover: var(--color-claude-orange-light);
+  --color-primary-active: rgba(251, 169, 138, 1);
+  --color-secondary: rgba(var(--color-claude-brown-rgb), 0.15);
+  --color-secondary-hover: rgba(var(--color-claude-brown-rgb), 0.25);
+  --color-secondary-active: rgba(var(--color-claude-brown-rgb), 0.3);
+  --color-border: rgba(var(--color-claude-brown-rgb), 0.3);
+  --color-btn-primary-text: var(--color-white);
+  --color-card-border: rgba(var(--color-claude-brown-rgb), 0.2);
+  --color-card-border-inner: rgba(var(--color-claude-brown-rgb), 0.15);
+  --color-focus-ring: rgba(var(--color-claude-orange-rgb), 0.4);
+  --color-success-rgb: 34, 197, 94;
+  --color-error-rgb: 248, 113, 113;
+  --color-warning-rgb: 250, 204, 21;
+  --shadow-inset-sm: inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+}
+
 /* Base styles */
 html {
   font-size: var(--font-size-base);
@@ -1402,6 +1473,110 @@ select.form-control {
 
 .btn:active:not(:disabled) {
   transform: translateY(0);
+}
+
+/* PWA Install Prompt */
+.install-prompt {
+  position: fixed;
+  bottom: var(--space-20);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1500;
+  max-width: 500px;
+  width: 90%;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateX(-50%) translateY(100px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+}
+
+.install-prompt-content {
+  background-color: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-20);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--color-border);
+}
+
+.install-prompt-content h3 {
+  margin: 0 0 var(--space-12) 0;
+  color: var(--color-text);
+}
+
+.install-prompt-content p {
+  margin: 0 0 var(--space-16) 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+/* Theme Switcher Menu */
+.theme-menu {
+  position: fixed;
+  top: 75px;
+  right: var(--space-20);
+  background-color: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-12);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--color-border);
+  z-index: 997;
+  min-width: 200px;
+}
+
+.theme-menu.hidden {
+  display: none;
+}
+
+.theme-menu-header {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  margin-bottom: var(--space-12);
+  padding-bottom: var(--space-8);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.theme-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  padding: var(--space-8) var(--space-12);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  transition: background-color var(--duration-fast) var(--ease-standard);
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  color: var(--color-text);
+}
+
+.theme-option:hover {
+  background-color: var(--color-secondary);
+}
+
+.theme-option.active {
+  background-color: rgba(var(--color-primary-rgb, var(--color-teal-500-rgb)), 0.1);
+  color: var(--color-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+.theme-icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-base);
 }
 
 /* Print Styles for PDF Export */

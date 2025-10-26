@@ -69,8 +69,9 @@ class TestSimulator {
         this.confirmSubmitBtn = document.getElementById('confirm-submit-btn');
         this.cancelSubmitBtn = document.getElementById('cancel-submit-btn');
 
-        // Theme toggle
+        // Theme elements
         this.themeToggle = document.getElementById('theme-toggle');
+        this.themeMenu = document.getElementById('theme-menu');
 
         // Loading overlay
         this.loadingOverlay = document.getElementById('loading-overlay');
@@ -90,9 +91,18 @@ class TestSimulator {
         this.closeModalBtn.addEventListener('click', () => this.hidePromptModal());
         this.confirmSubmitBtn.addEventListener('click', () => this.confirmSubmit());
         this.cancelSubmitBtn.addEventListener('click', () => this.hideConfirmModal());
-        this.themeToggle.addEventListener('click', () => this.toggleTheme());
+        this.themeToggle.addEventListener('click', () => this.toggleThemeMenu());
         this.exportPdfBtn?.addEventListener('click', () => this.exportAsPDF());
         this.exportCsvBtn?.addEventListener('click', () => this.exportAsCSV());
+
+        // Theme menu options
+        const themeOptions = document.querySelectorAll('.theme-option');
+        themeOptions.forEach(option => {
+            option.addEventListener('click', (e) => {
+                const theme = e.currentTarget.dataset.theme;
+                this.setTheme(theme);
+            });
+        });
 
         // Timer toggle
         this.timerToggle?.addEventListener('change', (e) => {
@@ -114,6 +124,13 @@ class TestSimulator {
 
         // Keyboard navigation
         document.addEventListener('keydown', (e) => this.handleKeyboardNav(e));
+
+        // Close theme menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (this.themeMenu && !this.themeMenu.contains(e.target) && e.target !== this.themeToggle) {
+                this.themeMenu.classList.add('hidden');
+            }
+        });
     }
 
     /**
@@ -122,35 +139,76 @@ class TestSimulator {
     initializeTheme() {
         const savedTheme = localStorage.getItem(this.themeKey);
         if (savedTheme) {
-            document.documentElement.setAttribute('data-color-scheme', savedTheme);
-            this.updateThemeIcon(savedTheme);
+            this.setTheme(savedTheme, false);
         } else {
             const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
             const theme = prefersDark ? 'dark' : 'light';
-            document.documentElement.setAttribute('data-color-scheme', theme);
-            this.updateThemeIcon(theme);
+            this.setTheme(theme, false);
         }
     }
 
     /**
-     * Toggle between light and dark theme
+     * Toggle theme menu visibility
      */
-    toggleTheme() {
-        const currentTheme = document.documentElement.getAttribute('data-color-scheme');
-        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-color-scheme', newTheme);
-        localStorage.setItem(this.themeKey, newTheme);
-        this.updateThemeIcon(newTheme);
+    toggleThemeMenu() {
+        if (this.themeMenu) {
+            this.themeMenu.classList.toggle('hidden');
+        }
     }
 
     /**
-     * Update theme toggle button icon
-     * @param {string} theme - Current theme ('light' or 'dark')
+     * Set the application theme
+     * @param {string} theme - Theme name ('light', 'dark', 'claude-light', 'claude-dark')
+     * @param {boolean} saveToStorage - Whether to save to localStorage (default: true)
      */
-    updateThemeIcon(theme) {
-        if (this.themeToggle) {
-            this.themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
-            this.themeToggle.setAttribute('aria-label', `Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`);
+    setTheme(theme, saveToStorage = true) {
+        // Update data-theme attribute
+        if (theme.startsWith('claude')) {
+            document.documentElement.setAttribute('data-theme', theme);
+            document.documentElement.removeAttribute('data-color-scheme');
+        } else {
+            document.documentElement.setAttribute('data-color-scheme', theme);
+            document.documentElement.removeAttribute('data-theme');
+        }
+
+        // Save to localStorage
+        if (saveToStorage) {
+            localStorage.setItem(this.themeKey, theme);
+        }
+
+        // Update active state in menu
+        const themeOptions = document.querySelectorAll('.theme-option');
+        themeOptions.forEach(option => {
+            if (option.dataset.theme === theme) {
+                option.classList.add('active');
+            } else {
+                option.classList.remove('active');
+            }
+        });
+
+        // Hide menu after selection
+        if (this.themeMenu) {
+            this.themeMenu.classList.add('hidden');
+        }
+
+        // Update meta theme-color for mobile browsers
+        this.updateMetaThemeColor(theme);
+    }
+
+    /**
+     * Update the meta theme-color for mobile browsers
+     * @param {string} theme - Current theme
+     */
+    updateMetaThemeColor(theme) {
+        const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+        if (metaThemeColor) {
+            const colors = {
+                'light': '#21808D',
+                'dark': '#1F2121',
+                'claude-light': '#CC5D34',
+                'claude-dark': '#1C1917'
+            };
+            metaThemeColor.setAttribute('content', colors[theme] || '#21808D');
         }
     }
 
