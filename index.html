@@ -105,8 +105,39 @@ Example format:
                     <div class="button-group">
                         <button id="load-test-btn" class="btn btn--primary">Load Test</button>
                         <button id="load-sample-btn" class="btn btn--outline">Load Sample Test</button>
+                        <button id="open-library-btn" class="btn btn--secondary">📚 My Saved Tests</button>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Test Library Section -->
+        <div id="test-library-section" class="section hidden">
+            <div class="library-header">
+                <h1>My Test Library</h1>
+                <button id="close-library-btn" class="btn btn--outline">← Back</button>
+            </div>
+
+            <div class="library-controls">
+                <input
+                    type="text"
+                    id="library-search"
+                    class="form-control library-search"
+                    placeholder="🔍 Search tests..."
+                    aria-label="Search tests"
+                >
+                <div class="library-filters">
+                    <select id="library-course-filter" class="form-control" aria-label="Filter by course">
+                        <option value="">All Courses</option>
+                    </select>
+                    <select id="library-topic-filter" class="form-control" aria-label="Filter by topic">
+                        <option value="">All Topics</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="test-library-grid" class="test-library-grid">
+                <!-- Test cards will be inserted here -->
             </div>
         </div>
 
@@ -188,6 +219,9 @@ Example format:
                     </div>
 
                     <div class="export-buttons">
+                        <button id="save-test-btn" class="btn btn--primary" aria-label="Save test to library">
+                            💾 Save Test
+                        </button>
                         <button id="export-pdf-btn" class="btn btn--secondary" aria-label="Export results as PDF">
                             📄 Export as PDF
                         </button>
@@ -220,6 +254,54 @@ Example format:
                 <div class="button-group">
                     <button id="confirm-submit-btn" class="btn btn--primary">Yes, Submit</button>
                     <button id="cancel-submit-btn" class="btn btn--outline">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Save Test Modal -->
+    <div id="save-test-modal" class="modal hidden" role="dialog" aria-labelledby="save-test-modal-title" aria-modal="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="save-test-modal-title">Save Test to Library</h3>
+            </div>
+            <div class="modal-body">
+                <p>Save this test to your library for easy access later.</p>
+                <div class="form-group">
+                    <label for="save-test-title" class="form-label">Test Title *</label>
+                    <input
+                        type="text"
+                        id="save-test-title"
+                        class="form-control"
+                        placeholder="e.g., Midterm Practice"
+                        required
+                        aria-label="Test title"
+                    >
+                </div>
+                <div class="form-group">
+                    <label for="save-test-course" class="form-label">Course *</label>
+                    <input
+                        type="text"
+                        id="save-test-course"
+                        class="form-control"
+                        placeholder="e.g., CS101, MATH201"
+                        required
+                        aria-label="Course name"
+                    >
+                </div>
+                <div class="form-group">
+                    <label for="save-test-topic" class="form-label">Topic (optional)</label>
+                    <input
+                        type="text"
+                        id="save-test-topic"
+                        class="form-control"
+                        placeholder="e.g., Algorithms, Calculus"
+                        aria-label="Topic"
+                    >
+                </div>
+                <div class="button-group">
+                    <button id="save-test-form-btn" class="btn btn--primary">💾 Save</button>
+                    <button id="cancel-save-btn" class="btn btn--outline">Cancel</button>
                 </div>
             </div>
         </div>

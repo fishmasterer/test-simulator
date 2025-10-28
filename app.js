@@ -18,6 +18,7 @@ class TestSimulator {
         this.testDuration = null; // in seconds
         this.storageKey = 'testSimulatorProgress';
         this.themeKey = 'testSimulatorTheme';
+        this.testBankKey = 'testSimulatorBank';
 
         this.initializeElements();
         this.bindEvents();
@@ -39,6 +40,7 @@ class TestSimulator {
         this.jsonInput = document.getElementById('json-input');
         this.loadTestBtn = document.getElementById('load-test-btn');
         this.loadSampleBtn = document.getElementById('load-sample-btn');
+        this.openLibraryBtn = document.getElementById('open-library-btn');
         this.errorMessage = document.getElementById('error-message');
         this.timerToggle = document.getElementById('timer-toggle');
         this.timerDurationInput = document.getElementById('timer-duration');
@@ -60,6 +62,7 @@ class TestSimulator {
         this.restartBtn = document.getElementById('restart-btn');
         this.exportPdfBtn = document.getElementById('export-pdf-btn');
         this.exportCsvBtn = document.getElementById('export-csv-btn');
+        this.saveTestBtn = document.getElementById('save-test-btn');
 
         // Modal elements
         this.promptModal = document.getElementById('prompt-modal');
@@ -68,6 +71,15 @@ class TestSimulator {
         this.confirmModal = document.getElementById('confirm-modal');
         this.confirmSubmitBtn = document.getElementById('confirm-submit-btn');
         this.cancelSubmitBtn = document.getElementById('cancel-submit-btn');
+        this.saveTestModal = document.getElementById('save-test-modal');
+        this.saveTestFormBtn = document.getElementById('save-test-form-btn');
+        this.cancelSaveBtn = document.getElementById('cancel-save-btn');
+        this.testLibrarySection = document.getElementById('test-library-section');
+        this.testLibraryGrid = document.getElementById('test-library-grid');
+        this.closeLibraryBtn = document.getElementById('close-library-btn');
+        this.librarySearchInput = document.getElementById('library-search');
+        this.libraryCourseFilter = document.getElementById('library-course-filter');
+        this.libraryTopicFilter = document.getElementById('library-topic-filter');
 
         // Theme elements
         this.themeToggle = document.getElementById('theme-toggle');
@@ -83,6 +95,7 @@ class TestSimulator {
     bindEvents() {
         this.loadTestBtn.addEventListener('click', () => this.loadTest());
         this.loadSampleBtn.addEventListener('click', () => this.loadSampleTest());
+        this.openLibraryBtn?.addEventListener('click', () => this.openTestLibrary());
         this.prevBtn.addEventListener('click', () => this.previousQuestion());
         this.nextBtn.addEventListener('click', () => this.nextQuestion());
         this.submitBtn.addEventListener('click', () => this.showConfirmModal());
@@ -94,6 +107,15 @@ class TestSimulator {
         this.themeToggle.addEventListener('click', () => this.toggleThemeMenu());
         this.exportPdfBtn?.addEventListener('click', () => this.exportAsPDF());
         this.exportCsvBtn?.addEventListener('click', () => this.exportAsCSV());
+        this.saveTestBtn?.addEventListener('click', () => this.showSaveTestModal());
+        this.saveTestFormBtn?.addEventListener('click', () => this.saveCurrentTest());
+        this.cancelSaveBtn?.addEventListener('click', () => this.hideSaveTestModal());
+        this.closeLibraryBtn?.addEventListener('click', () => this.closeTestLibrary());
+
+        // Library search and filters
+        this.librarySearchInput?.addEventListener('input', () => this.filterTestLibrary());
+        this.libraryCourseFilter?.addEventListener('change', () => this.filterTestLibrary());
+        this.libraryTopicFilter?.addEventListener('change', () => this.filterTestLibrary());
 
         // Theme menu options
         const themeOptions = document.querySelectorAll('.theme-option');
@@ -1182,6 +1204,349 @@ class TestSimulator {
      */
     hidePromptModal() {
         this.promptModal.classList.add('hidden');
+    }
+
+    /**
+     * ========================================
+     * TEST BANK MANAGEMENT
+     * ========================================
+     */
+
+    /**
+     * Get all saved tests from localStorage
+     * @returns {Array} Array of saved test objects
+     */
+    getSavedTests() {
+        try {
+            const saved = localStorage.getItem(this.testBankKey);
+            return saved ? JSON.parse(saved) : [];
+        } catch (error) {
+            console.error('Failed to load test bank:', error);
+            return [];
+        }
+    }
+
+    /**
+     * Save tests array to localStorage
+     * @param {Array} tests - Array of test objects
+     */
+    saveTestsToBank(tests) {
+        try {
+            localStorage.setItem(this.testBankKey, JSON.stringify(tests));
+        } catch (error) {
+            console.error('Failed to save to test bank:', error);
+            alert('Failed to save test. Storage might be full.');
+        }
+    }
+
+    /**
+     * Show save test modal
+     */
+    showSaveTestModal() {
+        if (!this.saveTestModal) return;
+
+        // Pre-fill with test title
+        const titleInput = document.getElementById('save-test-title');
+        if (titleInput && this.currentTest) {
+            titleInput.value = this.currentTest.title || '';
+        }
+
+        this.saveTestModal.classList.remove('hidden');
+        setTimeout(() => titleInput?.focus(), 10);
+    }
+
+    /**
+     * Hide save test modal
+     */
+    hideSaveTestModal() {
+        if (this.saveTestModal) {
+            this.saveTestModal.classList.add('hidden');
+        }
+    }
+
+    /**
+     * Save the current test to the test bank
+     */
+    saveCurrentTest() {
+        const titleInput = document.getElementById('save-test-title');
+        const courseInput = document.getElementById('save-test-course');
+        const topicInput = document.getElementById('save-test-topic');
+
+        const title = titleInput?.value.trim();
+        const course = courseInput?.value.trim();
+        const topic = topicInput?.value.trim();
+
+        // Validation
+        if (!title) {
+            alert('Please enter a test title');
+            titleInput?.focus();
+            return;
+        }
+
+        if (!course) {
+            alert('Please enter a course name');
+            courseInput?.focus();
+            return;
+        }
+
+        // Create test bank entry
+        const testEntry = {
+            id: Date.now().toString(),
+            title: title,
+            course: course,
+            topic: topic || 'General',
+            dateSaved: Date.now(),
+            lastAttempt: Date.now(),
+            testData: this.currentTest,
+            attempts: [
+                {
+                    date: Date.now(),
+                    score: this.score,
+                    timeSpent: this.testDuration ? (this.testDuration - this.timeRemaining) : 0
+                }
+            ]
+        };
+
+        // Add to test bank
+        const tests = this.getSavedTests();
+        tests.unshift(testEntry); // Add to beginning
+        this.saveTestsToBank(tests);
+
+        // Clear form
+        if (titleInput) titleInput.value = '';
+        if (courseInput) courseInput.value = '';
+        if (topicInput) topicInput.value = '';
+
+        // Hide modal and show success
+        this.hideSaveTestModal();
+        alert(`Test "${title}" saved successfully!`);
+
+        console.log(`Test saved: ${title} (${course} - ${topic})`);
+    }
+
+    /**
+     * Open test library section
+     */
+    openTestLibrary() {
+        if (!this.testLibrarySection) return;
+
+        this.jsonInputSection.classList.add('hidden');
+        this.testLibrarySection.classList.remove('hidden');
+
+        // Load and display tests
+        this.displayTestLibrary();
+    }
+
+    /**
+     * Close test library and return to main screen
+     */
+    closeTestLibrary() {
+        if (!this.testLibrarySection) return;
+
+        this.testLibrarySection.classList.add('hidden');
+        this.jsonInputSection.classList.remove('hidden');
+    }
+
+    /**
+     * Display all tests in the library
+     */
+    displayTestLibrary() {
+        const tests = this.getSavedTests();
+
+        // Update filter dropdowns
+        this.updateLibraryFilters(tests);
+
+        // Display tests
+        this.renderTestCards(tests);
+    }
+
+    /**
+     * Update course and topic filter dropdowns
+     * @param {Array} tests - Array of test objects
+     */
+    updateLibraryFilters(tests) {
+        if (!tests || tests.length === 0) return;
+
+        // Get unique courses and topics
+        const courses = [...new Set(tests.map(t => t.course))].sort();
+        const topics = [...new Set(tests.map(t => t.topic))].sort();
+
+        // Update course filter
+        if (this.libraryCourseFilter) {
+            const currentCourse = this.libraryCourseFilter.value;
+            this.libraryCourseFilter.innerHTML = '<option value="">All Courses</option>' +
+                courses.map(course => `<option value="${this.escapeHtml(course)}">${this.escapeHtml(course)}</option>`).join('');
+            this.libraryCourseFilter.value = currentCourse;
+        }
+
+        // Update topic filter
+        if (this.libraryTopicFilter) {
+            const currentTopic = this.libraryTopicFilter.value;
+            this.libraryTopicFilter.innerHTML = '<option value="">All Topics</option>' +
+                topics.map(topic => `<option value="${this.escapeHtml(topic)}">${this.escapeHtml(topic)}</option>`).join('');
+            this.libraryTopicFilter.value = currentTopic;
+        }
+    }
+
+    /**
+     * Filter and display tests based on search and filters
+     */
+    filterTestLibrary() {
+        const tests = this.getSavedTests();
+        const searchTerm = this.librarySearchInput?.value.toLowerCase() || '';
+        const courseFilter = this.libraryCourseFilter?.value || '';
+        const topicFilter = this.libraryTopicFilter?.value || '';
+
+        const filtered = tests.filter(test => {
+            const matchesSearch = !searchTerm ||
+                test.title.toLowerCase().includes(searchTerm) ||
+                test.course.toLowerCase().includes(searchTerm) ||
+                test.topic.toLowerCase().includes(searchTerm);
+
+            const matchesCourse = !courseFilter || test.course === courseFilter;
+            const matchesTopic = !topicFilter || test.topic === topicFilter;
+
+            return matchesSearch && matchesCourse && matchesTopic;
+        });
+
+        this.renderTestCards(filtered);
+    }
+
+    /**
+     * Render test cards in the library
+     * @param {Array} tests - Filtered array of tests to display
+     */
+    renderTestCards(tests) {
+        if (!this.testLibraryGrid) return;
+
+        if (tests.length === 0) {
+            this.testLibraryGrid.innerHTML = `
+                <div class="library-empty">
+                    <h3>No saved tests found</h3>
+                    <p>Complete a test and click "Save Test" to add it to your library.</p>
+                </div>
+            `;
+            return;
+        }
+
+        this.testLibraryGrid.innerHTML = tests.map(test => {
+            const lastScore = test.attempts[test.attempts.length - 1]?.score;
+            const scoreText = lastScore ? `${lastScore.percentage}% (${lastScore.correct}/${lastScore.total})` : 'Not attempted';
+            const dateText = new Date(test.lastAttempt).toLocaleDateString();
+            const attempts = test.attempts.length;
+
+            return `
+                <div class="test-card" data-test-id="${test.id}">
+                    <div class="test-card-header">
+                        <h3 class="test-card-title">${this.escapeHtml(test.title)}</h3>
+                        <button class="test-card-delete" onclick="testSimulator.deleteTest('${test.id}')" aria-label="Delete test">
+                            ×
+                        </button>
+                    </div>
+                    <div class="test-card-meta">
+                        <span class="test-card-course">📚 ${this.escapeHtml(test.course)}</span>
+                        <span class="test-card-topic">🏷️ ${this.escapeHtml(test.topic)}</span>
+                    </div>
+                    <div class="test-card-stats">
+                        <div class="test-stat">
+                            <span class="test-stat-label">Last Score:</span>
+                            <span class="test-stat-value">${scoreText}</span>
+                        </div>
+                        <div class="test-stat">
+                            <span class="test-stat-label">Attempts:</span>
+                            <span class="test-stat-value">${attempts}</span>
+                        </div>
+                        <div class="test-stat">
+                            <span class="test-stat-label">Last Taken:</span>
+                            <span class="test-stat-value">${dateText}</span>
+                        </div>
+                    </div>
+                    <div class="test-card-actions">
+                        <button class="btn btn--primary btn--sm" onclick="testSimulator.loadSavedTest('${test.id}')">
+                            Start Test
+                        </button>
+                        <button class="btn btn--outline btn--sm" onclick="testSimulator.viewTestHistory('${test.id}')">
+                            View History
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    /**
+     * Load a saved test from the library
+     * @param {string} testId - ID of the test to load
+     */
+    loadSavedTest(testId) {
+        const tests = this.getSavedTests();
+        const test = tests.find(t => t.id === testId);
+
+        if (!test) {
+            alert('Test not found');
+            return;
+        }
+
+        // Load the test
+        this.currentTest = test.testData;
+        this.currentQuestionIndex = 0;
+        this.userAnswers = {};
+        this.testStartTime = Date.now();
+        this.testDuration = null;
+        this.timeRemaining = null;
+
+        // Close library and start test
+        this.closeTestLibrary();
+        this.startTest();
+    }
+
+    /**
+     * Delete a test from the library
+     * @param {string} testId - ID of the test to delete
+     */
+    deleteTest(testId) {
+        if (!confirm('Are you sure you want to delete this test?')) {
+            return;
+        }
+
+        const tests = this.getSavedTests();
+        const filtered = tests.filter(t => t.id !== testId);
+        this.saveTestsToBank(filtered);
+
+        // Refresh display
+        this.filterTestLibrary();
+    }
+
+    /**
+     * View test history modal
+     * @param {string} testId - ID of the test
+     */
+    viewTestHistory(testId) {
+        const tests = this.getSavedTests();
+        const test = tests.find(t => t.id === testId);
+
+        if (!test) {
+            alert('Test not found');
+            return;
+        }
+
+        // Create history display
+        const historyHTML = test.attempts.map((attempt, index) => {
+            const date = new Date(attempt.date).toLocaleString();
+            const timeSpent = attempt.timeSpent ? Math.floor(attempt.timeSpent / 60) : 0;
+
+            return `
+                <div class="history-item">
+                    <div class="history-attempt">Attempt ${index + 1}</div>
+                    <div class="history-date">${date}</div>
+                    <div class="history-score">Score: ${attempt.score.percentage}% (${attempt.score.correct}/${attempt.score.total})</div>
+                    ${timeSpent > 0 ? `<div class="history-time">Time: ${timeSpent} minutes</div>` : ''}
+                </div>
+            `;
+        }).join('');
+
+        alert(`Test History: ${test.title}\n\nAttempts: ${test.attempts.length}\n\nView detailed history in the modal (coming soon)`);
+        // TODO: Could add a proper history modal if needed
     }
 }
 
