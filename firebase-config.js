@@ -13,14 +13,14 @@
  * See FIREBASE_SETUP.md for detailed instructions
  */
 
+// Your web app's Firebase configuration
 const firebaseConfig = {
-    // Replace these with your actual Firebase project values
-    apiKey: "YOUR_API_KEY_HERE",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyCtcmzI0NP5VmCIiaXfIprFE7ez_KlC0BE",
+  authDomain: "test-simulator-5456a.firebaseapp.com",
+  projectId: "test-simulator-5456a",
+  storageBucket: "test-simulator-5456a.firebasestorage.app",
+  messagingSenderId: "1007096675527",
+  appId: "1:1007096675527:web:ea061e1f9dafc6281212e2"
 };
 
 // Example of what it should look like (with fake values):
