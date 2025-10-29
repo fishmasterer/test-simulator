@@ -1,7 +1,12 @@
-# Netlify Configuration
+# Netlify Configuration for Static Site
 [build]
-  # No build command needed - vanilla JS app
+  # No build command needed - vanilla JS app, deploy as-is
+  command = ""
   publish = "."
+
+# Tell Netlify this is a static site (no build image needed)
+[build.environment]
+  NODE_VERSION = "18"
 
 # Redirect rules for PWA
 [[redirects]]
