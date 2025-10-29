@@ -3,10 +3,11 @@
  * Provides offline functionality and caching
  */
 
-const CACHE_NAME = 'test-simulator-v3';
+const CACHE_NAME = 'test-simulator-v4';
 const urlsToCache = [
   'index.html',
   'app.js',
+  'pomodoro.js',
   'style.css',
   'manifest.json',
   'icon-192.svg',

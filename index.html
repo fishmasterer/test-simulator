@@ -150,6 +150,7 @@ Example format:
 
                     <div class="button-group" style="margin-top: var(--space-12);">
                         <button id="open-library-btn" class="btn btn--secondary">📚 My Saved Tests</button>
+                        <button id="open-pomodoro-btn" class="btn btn--secondary">🍅 Focus Timer</button>
                         <button id="access-shared-test-btn" class="btn btn--secondary">🔗 Access Shared Test</button>
                         <button id="browse-community-btn" class="btn btn--secondary">🌐 Browse Community</button>
                     </div>
@@ -184,6 +185,227 @@ Example format:
 
             <div id="test-library-grid" class="test-library-grid">
                 <!-- Test cards will be inserted here -->
+            </div>
+        </div>
+
+        <!-- Pomodoro Timer Section -->
+        <div id="pomodoro-section" class="section hidden">
+            <div class="library-header">
+                <h1>🍅 Focus Timer</h1>
+                <button id="close-pomodoro-btn" class="btn btn--outline">← Back</button>
+            </div>
+
+            <div class="pomodoro-container">
+                <!-- Timer Display -->
+                <div class="pomodoro-timer-card">
+                    <div class="pomodoro-mode-indicator">
+                        <span id="pomodoro-mode-text">Work Session</span>
+                        <span id="pomodoro-session-count">Session 1 of 4</span>
+                    </div>
+
+                    <!-- Circular Timer -->
+                    <div class="pomodoro-timer-circle">
+                        <svg class="pomodoro-progress-ring" width="280" height="280">
+                            <circle
+                                class="pomodoro-progress-ring-bg"
+                                stroke="var(--color-border)"
+                                stroke-width="12"
+                                fill="transparent"
+                                r="130"
+                                cx="140"
+                                cy="140"
+                            />
+                            <circle
+                                id="pomodoro-progress-ring-fill"
+                                class="pomodoro-progress-ring-fill"
+                                stroke="var(--color-primary)"
+                                stroke-width="12"
+                                fill="transparent"
+                                r="130"
+                                cx="140"
+                                cy="140"
+                                stroke-dasharray="816.814 816.814"
+                                stroke-dashoffset="0"
+                                transform="rotate(-90 140 140)"
+                            />
+                        </svg>
+                        <div class="pomodoro-timer-text">
+                            <div id="pomodoro-time-display" class="pomodoro-time-display">25:00</div>
+                            <div id="pomodoro-current-task" class="pomodoro-current-task">No task selected</div>
+                        </div>
+                    </div>
+
+                    <!-- Timer Controls -->
+                    <div class="pomodoro-controls">
+                        <button id="pomodoro-start-btn" class="btn btn--primary btn--large">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z"/>
+                            </svg>
+                            Start
+                        </button>
+                        <button id="pomodoro-pause-btn" class="btn btn--outline btn--large hidden">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+                            </svg>
+                            Pause
+                        </button>
+                        <button id="pomodoro-reset-btn" class="btn btn--outline">Reset</button>
+                        <button id="pomodoro-skip-btn" class="btn btn--outline">Skip</button>
+                    </div>
+                </div>
+
+                <!-- Sidebar with Tasks and Settings -->
+                <div class="pomodoro-sidebar">
+                    <!-- Quick Tasks -->
+                    <div class="pomodoro-panel">
+                        <h3>Today's Tasks</h3>
+                        <div id="pomodoro-task-list" class="pomodoro-task-list">
+                            <!-- Tasks will be inserted here -->
+                        </div>
+                        <button id="pomodoro-add-task-btn" class="btn btn--outline btn--sm" style="width: 100%;">+ Add Task</button>
+                    </div>
+
+                    <!-- Quick Stats -->
+                    <div class="pomodoro-panel">
+                        <h3>Today's Progress</h3>
+                        <div class="pomodoro-stats">
+                            <div class="pomodoro-stat-item">
+                                <span class="pomodoro-stat-value" id="pomodoro-today-sessions">0</span>
+                                <span class="pomodoro-stat-label">Sessions</span>
+                            </div>
+                            <div class="pomodoro-stat-item">
+                                <span class="pomodoro-stat-value" id="pomodoro-today-time">0m</span>
+                                <span class="pomodoro-stat-label">Focus Time</span>
+                            </div>
+                        </div>
+                        <button id="pomodoro-view-analytics-btn" class="btn btn--outline btn--sm" style="width: 100%; margin-top: var(--space-12);">
+                            View Analytics
+                        </button>
+                    </div>
+
+                    <!-- Settings -->
+                    <div class="pomodoro-panel">
+                        <h3>Settings</h3>
+                        <div class="form-group">
+                            <label class="form-label">Work Duration (min)</label>
+                            <input type="number" id="pomodoro-work-duration" class="form-control" value="25" min="1" max="60">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Break Duration (min)</label>
+                            <input type="number" id="pomodoro-break-duration" class="form-control" value="5" min="1" max="30">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Long Break (min)</label>
+                            <input type="number" id="pomodoro-long-break-duration" class="form-control" value="15" min="1" max="60">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-checkbox">
+                                <input type="checkbox" id="pomodoro-auto-start-breaks" checked>
+                                <span>Auto-start breaks</span>
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-checkbox">
+                                <input type="checkbox" id="pomodoro-auto-start-pomodoros">
+                                <span>Auto-start work sessions</span>
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-checkbox">
+                                <input type="checkbox" id="pomodoro-notifications" checked>
+                                <span>Enable notifications</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pomodoro Add Task Modal -->
+        <div id="pomodoro-task-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Add Study Task</h3>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label">Task Name</label>
+                        <input type="text" id="pomodoro-task-name" class="form-control" placeholder="e.g., Study for CS101 Midterm">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Estimated Pomodoros</label>
+                        <input type="number" id="pomodoro-task-estimate" class="form-control" value="4" min="1" max="20">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Course (optional)</label>
+                        <input type="text" id="pomodoro-task-course" class="form-control" placeholder="e.g., CS101">
+                    </div>
+                    <div class="button-group">
+                        <button id="pomodoro-save-task-btn" class="btn btn--primary">Add Task</button>
+                        <button id="pomodoro-cancel-task-btn" class="btn btn--outline">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pomodoro Analytics Modal -->
+        <div id="pomodoro-analytics-modal" class="modal hidden">
+            <div class="modal-content modal-content--large">
+                <div class="modal-header">
+                    <h3>Focus Analytics</h3>
+                    <button id="close-analytics-modal-btn" class="close-btn">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="analytics-summary">
+                        <div class="analytics-card">
+                            <h4>This Week</h4>
+                            <div class="analytics-stat">
+                                <span class="analytics-stat-value" id="analytics-week-sessions">0</span>
+                                <span class="analytics-stat-label">Sessions</span>
+                            </div>
+                            <div class="analytics-stat">
+                                <span class="analytics-stat-value" id="analytics-week-time">0h 0m</span>
+                                <span class="analytics-stat-label">Focus Time</span>
+                            </div>
+                        </div>
+                        <div class="analytics-card">
+                            <h4>This Month</h4>
+                            <div class="analytics-stat">
+                                <span class="analytics-stat-value" id="analytics-month-sessions">0</span>
+                                <span class="analytics-stat-label">Sessions</span>
+                            </div>
+                            <div class="analytics-stat">
+                                <span class="analytics-stat-value" id="analytics-month-time">0h 0m</span>
+                                <span class="analytics-stat-label">Focus Time</span>
+                            </div>
+                        </div>
+                        <div class="analytics-card">
+                            <h4>All Time</h4>
+                            <div class="analytics-stat">
+                                <span class="analytics-stat-value" id="analytics-total-sessions">0</span>
+                                <span class="analytics-stat-label">Sessions</span>
+                            </div>
+                            <div class="analytics-stat">
+                                <span class="analytics-stat-value" id="analytics-total-time">0h 0m</span>
+                                <span class="analytics-stat-label">Focus Time</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="analytics-section">
+                        <h4>Recent Sessions</h4>
+                        <div id="analytics-recent-sessions" class="analytics-session-list">
+                            <!-- Recent sessions will be inserted here -->
+                        </div>
+                    </div>
+
+                    <div class="analytics-section">
+                        <h4>Task Breakdown</h4>
+                        <div id="analytics-task-breakdown" class="analytics-task-list">
+                            <!-- Task breakdown will be inserted here -->
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -519,6 +741,10 @@ For matching: correct is an array where each index corresponds to the rightItems
     <script src="firebase-service.js"></script>
 
     <script src="app.js"></script>
+
+    <!-- Pomodoro Timer Module -->
+    <script src="pomodoro.js"></script>
+
     <script>
         // Register Service Worker for PWA
         if ('serviceWorker' in navigator) {
