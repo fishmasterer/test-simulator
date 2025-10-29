@@ -3,18 +3,18 @@
  * Provides offline functionality and caching
  */
 
-const CACHE_NAME = 'test-simulator-v5';
+const CACHE_NAME = 'test-simulator-v7';
 const urlsToCache = [
   'index.html',
   'app.js',
   'pomodoro.js',
   'style.css',
   'manifest.json',
-  'icon-16.png',
-  'icon-32.png',
-  'icon-180.png',
-  'icon-192.png',
-  'icon-512.png',
+  'favicon-16x16.png',
+  'favicon-32x32.png',
+  'apple-touch-icon.png',
+  'android-chrome-192x192.png',
+  'android-chrome-512x512.png',
   'firebase-config.js',
   'firebase-service.js'
 ];
