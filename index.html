@@ -4,11 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Test Simulator - Enhanced</title>
+    <meta name="description" content="A comprehensive test-taking application with timer, progress saving, and accessibility features">
+
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#21808D">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Test Simulator">
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Icons -->
+    <link rel="icon" type="image/svg+xml" href="icon-192.svg">
+    <link rel="apple-touch-icon" href="icon-192.svg">
+
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <!-- Theme Toggle Button -->
-    <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark mode">🌙</button>
+    <button id="theme-toggle" class="theme-toggle-btn" aria-label="Open theme menu">🎨</button>
+
+    <!-- Theme Menu -->
+    <div id="theme-menu" class="theme-menu hidden" role="menu" aria-label="Theme selection">
+        <div class="theme-menu-header">Choose Theme</div>
+        <button class="theme-option" data-theme="light" role="menuitem">
+            <span class="theme-icon">☀️</span>
+            <span>Perplexity Light</span>
+        </button>
+        <button class="theme-option" data-theme="dark" role="menuitem">
+            <span class="theme-icon">🌙</span>
+            <span>Perplexity Dark</span>
+        </button>
+        <button class="theme-option" data-theme="claude-light" role="menuitem">
+            <span class="theme-icon">🧡</span>
+            <span>Claude Light</span>
+        </button>
+        <button class="theme-option" data-theme="claude-dark" role="menuitem">
+            <span class="theme-icon">🟠</span>
+            <span>Claude Dark</span>
+        </button>
+    </div>
 
     <div class="container">
         <!-- JSON Input Section -->
@@ -71,8 +105,39 @@ Example format:
                     <div class="button-group">
                         <button id="load-test-btn" class="btn btn--primary">Load Test</button>
                         <button id="load-sample-btn" class="btn btn--outline">Load Sample Test</button>
+                        <button id="open-library-btn" class="btn btn--secondary">📚 My Saved Tests</button>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Test Library Section -->
+        <div id="test-library-section" class="section hidden">
+            <div class="library-header">
+                <h1>My Test Library</h1>
+                <button id="close-library-btn" class="btn btn--outline">← Back</button>
+            </div>
+
+            <div class="library-controls">
+                <input
+                    type="text"
+                    id="library-search"
+                    class="form-control library-search"
+                    placeholder="🔍 Search tests..."
+                    aria-label="Search tests"
+                >
+                <div class="library-filters">
+                    <select id="library-course-filter" class="form-control" aria-label="Filter by course">
+                        <option value="">All Courses</option>
+                    </select>
+                    <select id="library-topic-filter" class="form-control" aria-label="Filter by topic">
+                        <option value="">All Topics</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="test-library-grid" class="test-library-grid">
+                <!-- Test cards will be inserted here -->
             </div>
         </div>
 
@@ -154,6 +219,9 @@ Example format:
                     </div>
 
                     <div class="export-buttons">
+                        <button id="save-test-btn" class="btn btn--primary" aria-label="Save test to library">
+                            💾 Save Test
+                        </button>
                         <button id="export-pdf-btn" class="btn btn--secondary" aria-label="Export results as PDF">
                             📄 Export as PDF
                         </button>
@@ -186,6 +254,54 @@ Example format:
                 <div class="button-group">
                     <button id="confirm-submit-btn" class="btn btn--primary">Yes, Submit</button>
                     <button id="cancel-submit-btn" class="btn btn--outline">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Save Test Modal -->
+    <div id="save-test-modal" class="modal hidden" role="dialog" aria-labelledby="save-test-modal-title" aria-modal="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="save-test-modal-title">Save Test to Library</h3>
+            </div>
+            <div class="modal-body">
+                <p>Save this test to your library for easy access later.</p>
+                <div class="form-group">
+                    <label for="save-test-title" class="form-label">Test Title *</label>
+                    <input
+                        type="text"
+                        id="save-test-title"
+                        class="form-control"
+                        placeholder="e.g., Midterm Practice"
+                        required
+                        aria-label="Test title"
+                    >
+                </div>
+                <div class="form-group">
+                    <label for="save-test-course" class="form-label">Course *</label>
+                    <input
+                        type="text"
+                        id="save-test-course"
+                        class="form-control"
+                        placeholder="e.g., CS101, MATH201"
+                        required
+                        aria-label="Course name"
+                    >
+                </div>
+                <div class="form-group">
+                    <label for="save-test-topic" class="form-label">Topic (optional)</label>
+                    <input
+                        type="text"
+                        id="save-test-topic"
+                        class="form-control"
+                        placeholder="e.g., Algorithms, Calculus"
+                        aria-label="Topic"
+                    >
+                </div>
+                <div class="button-group">
+                    <button id="save-test-form-btn" class="btn btn--primary">💾 Save</button>
+                    <button id="cancel-save-btn" class="btn btn--outline">Cancel</button>
                 </div>
             </div>
         </div>
@@ -248,6 +364,72 @@ For matching: correct is an array where each index corresponds to the rightItems
 
     <button id="show-prompt-btn" class="floating-help-btn" aria-label="Show AI generation prompt">?</button>
 
+    <!-- PWA Install Prompt -->
+    <div id="install-prompt" class="install-prompt hidden">
+        <div class="install-prompt-content">
+            <h3>Install Test Simulator</h3>
+            <p>Install this app on your device for offline access and a native app experience!</p>
+            <div class="button-group">
+                <button id="install-btn" class="btn btn--primary">Install</button>
+                <button id="dismiss-install-btn" class="btn btn--outline">Not Now</button>
+            </div>
+        </div>
+    </div>
+
     <script src="app.js"></script>
+    <script>
+        // Register Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then((registration) => {
+                        console.log('ServiceWorker registered:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.log('ServiceWorker registration failed:', error);
+                    });
+            });
+        }
+
+        // Handle PWA install prompt
+        let deferredPrompt;
+        const installPrompt = document.getElementById('install-prompt');
+        const installBtn = document.getElementById('install-btn');
+        const dismissInstallBtn = document.getElementById('dismiss-install-btn');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevent the default install prompt
+            e.preventDefault();
+            deferredPrompt = e;
+
+            // Show custom install prompt (after 3 seconds)
+            setTimeout(() => {
+                if (localStorage.getItem('installPromptDismissed') !== 'true') {
+                    installPrompt?.classList.remove('hidden');
+                }
+            }, 3000);
+        });
+
+        installBtn?.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log(`User ${outcome} the install prompt`);
+                deferredPrompt = null;
+                installPrompt?.classList.add('hidden');
+            }
+        });
+
+        dismissInstallBtn?.addEventListener('click', () => {
+            installPrompt?.classList.add('hidden');
+            localStorage.setItem('installPromptDismissed', 'true');
+        });
+
+        // Handle successful installation
+        window.addEventListener('appinstalled', () => {
+            console.log('PWA installed successfully');
+            installPrompt?.classList.add('hidden');
+        });
+    </script>
 </body>
 </html>
