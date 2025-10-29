@@ -3,14 +3,16 @@
  * Provides offline functionality and caching
  */
 
-const CACHE_NAME = 'test-simulator-v2';
+const CACHE_NAME = 'test-simulator-v3';
 const urlsToCache = [
   'index.html',
   'app.js',
   'style.css',
   'manifest.json',
   'icon-192.svg',
-  'icon-512.svg'
+  'icon-512.svg',
+  'firebase-config.js',
+  'firebase-service.js'
 ];
 
 /**

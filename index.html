@@ -44,6 +44,47 @@
         </button>
     </div>
 
+    <!-- Auth Header -->
+    <div id="auth-header" class="auth-header">
+        <div class="auth-container">
+            <!-- Not signed in state -->
+            <div id="auth-signed-out" class="auth-state">
+                <div class="auth-message">
+                    <span class="auth-icon">☁️</span>
+                    <span>Sign in to sync your tests across devices</span>
+                </div>
+                <button id="sign-in-btn" class="btn btn--primary btn--sm">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                    </svg>
+                    Sign in with Google
+                </button>
+            </div>
+
+            <!-- Signed in state -->
+            <div id="auth-signed-in" class="auth-state hidden">
+                <div class="auth-user-info">
+                    <img id="auth-user-photo" class="auth-user-photo" src="" alt="User photo">
+                    <div class="auth-user-details">
+                        <span id="auth-user-name" class="auth-user-name"></span>
+                        <div class="auth-sync-status">
+                            <span id="sync-indicator" class="sync-indicator" title="Synced">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                                Synced
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <button id="sign-out-btn" class="btn btn--outline btn--sm">Sign out</button>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <!-- JSON Input Section -->
         <div id="json-input-section" class="section">
@@ -105,7 +146,12 @@ Example format:
                     <div class="button-group">
                         <button id="load-test-btn" class="btn btn--primary">Load Test</button>
                         <button id="load-sample-btn" class="btn btn--outline">Load Sample Test</button>
+                    </div>
+
+                    <div class="button-group" style="margin-top: var(--space-12);">
                         <button id="open-library-btn" class="btn btn--secondary">📚 My Saved Tests</button>
+                        <button id="access-shared-test-btn" class="btn btn--secondary">🔗 Access Shared Test</button>
+                        <button id="browse-community-btn" class="btn btn--secondary">🌐 Browse Community</button>
                     </div>
                 </div>
             </div>
@@ -222,6 +268,9 @@ Example format:
                         <button id="save-test-btn" class="btn btn--primary" aria-label="Save test to library">
                             💾 Save Test
                         </button>
+                        <button id="share-current-test-btn" class="btn btn--secondary" aria-label="Share test with classmates">
+                            🔗 Share Test
+                        </button>
                         <button id="export-pdf-btn" class="btn btn--secondary" aria-label="Export results as PDF">
                             📄 Export as PDF
                         </button>
@@ -307,6 +356,88 @@ Example format:
         </div>
     </div>
 
+    <!-- Share Test Modal -->
+    <div id="share-test-modal" class="modal hidden" role="dialog" aria-labelledby="share-test-modal-title" aria-modal="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="share-test-modal-title">Share Test with Classmates</h3>
+            </div>
+            <div class="modal-body">
+                <p>Share this test with your classmates. They can use the code to access it.</p>
+                <div id="share-code-display" class="share-code-display hidden">
+                    <div class="share-code-label">Share Code:</div>
+                    <div id="share-code-value" class="share-code-value"></div>
+                    <button id="copy-share-code-btn" class="btn btn--outline btn--sm">📋 Copy Code</button>
+                </div>
+                <div class="button-group">
+                    <button id="generate-share-code-btn" class="btn btn--primary">Generate Share Code</button>
+                    <button id="publish-to-community-btn" class="btn btn--secondary">Publish to Community</button>
+                    <button id="close-share-modal-btn" class="btn btn--outline">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Access Shared Test Modal -->
+    <div id="access-shared-modal" class="modal hidden" role="dialog" aria-labelledby="access-shared-modal-title" aria-modal="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="access-shared-modal-title">Access Shared Test</h3>
+            </div>
+            <div class="modal-body">
+                <p>Enter the share code you received from a classmate to access their test.</p>
+                <div class="form-group">
+                    <label for="shared-test-code" class="form-label">Share Code</label>
+                    <input
+                        type="text"
+                        id="shared-test-code"
+                        class="form-control"
+                        placeholder="e.g., ABC123"
+                        style="text-transform: uppercase;"
+                        maxlength="6"
+                        aria-label="Share code"
+                    >
+                </div>
+                <div class="button-group">
+                    <button id="load-shared-test-btn" class="btn btn--primary">Load Test</button>
+                    <button id="close-access-shared-modal-btn" class="btn btn--outline">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Community Browser Modal -->
+    <div id="community-browser-modal" class="modal hidden" role="dialog" aria-labelledby="community-browser-modal-title" aria-modal="true">
+        <div class="modal-content modal-content--large">
+            <div class="modal-header">
+                <h3 id="community-browser-modal-title">Community Test Library</h3>
+                <button id="close-community-modal-btn" class="close-btn" aria-label="Close modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="library-controls">
+                    <input
+                        type="text"
+                        id="community-search"
+                        class="form-control library-search"
+                        placeholder="🔍 Search community tests..."
+                        aria-label="Search community tests"
+                    >
+                    <div class="library-filters">
+                        <select id="community-course-filter" class="form-control" aria-label="Filter by course">
+                            <option value="">All Courses</option>
+                        </select>
+                        <select id="community-topic-filter" class="form-control" aria-label="Filter by topic">
+                            <option value="">All Topics</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="community-grid" class="test-library-grid">
+                    <!-- Community tests dynamically inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Prompt Instructions Modal -->
     <div id="prompt-modal" class="modal hidden" role="dialog" aria-labelledby="prompt-modal-title" aria-modal="true">
         <div class="modal-content">
@@ -375,6 +506,17 @@ For matching: correct is an array where each index corresponds to the rightItems
             </div>
         </div>
     </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <!-- Firebase Configuration -->
+    <script src="firebase-config.js"></script>
+
+    <!-- Firebase Service Layer -->
+    <script src="firebase-service.js"></script>
 
     <script src="app.js"></script>
     <script>

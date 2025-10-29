@@ -153,6 +153,89 @@ class TestSimulator {
                 this.themeMenu.classList.add('hidden');
             }
         });
+
+        // Initialize Firebase integration
+        this.initializeFirebase();
+    }
+
+    /**
+     * Initialize Firebase integration and sync
+     */
+    async initializeFirebase() {
+        if (!window.firebaseService) {
+            console.log('Firebase service not available');
+            return;
+        }
+
+        // Listen for authentication state changes
+        if (firebaseService.auth) {
+            firebaseService.auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    console.log('User signed in, checking for migration...');
+                    await this.migrateLocalStorageToFirebase();
+                }
+            });
+        }
+
+        // Register sync callback to update UI when tests change
+        firebaseService.onSync(async (tests) => {
+            console.log('Tests synced from Firebase');
+            // Refresh library if it's open
+            if (this.testLibrarySection && !this.testLibrarySection.classList.contains('hidden')) {
+                await this.displayTestLibrary();
+            }
+        });
+    }
+
+    /**
+     * Migrate existing localStorage tests to Firebase on first sign-in
+     */
+    async migrateLocalStorageToFirebase() {
+        const migrationKey = 'testBankMigrated';
+        const userId = firebaseService.getUserId();
+
+        // Check if already migrated for this user
+        const migratedUsers = JSON.parse(localStorage.getItem(migrationKey) || '[]');
+        if (migratedUsers.includes(userId)) {
+            console.log('Already migrated for this user');
+            return;
+        }
+
+        try {
+            // Get local tests
+            const localTests = localStorage.getItem(this.testBankKey);
+            if (!localTests) {
+                console.log('No local tests to migrate');
+                migratedUsers.push(userId);
+                localStorage.setItem(migrationKey, JSON.stringify(migratedUsers));
+                return;
+            }
+
+            const tests = JSON.parse(localTests);
+            if (tests.length === 0) {
+                console.log('No tests to migrate');
+                migratedUsers.push(userId);
+                localStorage.setItem(migrationKey, JSON.stringify(migratedUsers));
+                return;
+            }
+
+            // Ask user if they want to migrate
+            const migrate = confirm(`Found ${tests.length} saved test(s) on this device. Would you like to sync them to your Google account?`);
+
+            if (migrate) {
+                const count = await firebaseService.migrateFromLocalStorage(tests);
+                console.log(`Migrated ${count} tests to Firebase`);
+                alert(`Successfully synced ${count} test(s) to your account!`);
+            }
+
+            // Mark as migrated for this user
+            migratedUsers.push(userId);
+            localStorage.setItem(migrationKey, JSON.stringify(migratedUsers));
+
+        } catch (error) {
+            console.error('Migration failed:', error);
+            alert('Failed to sync local tests. They will remain on this device.');
+        }
     }
 
     /**
@@ -1213,29 +1296,56 @@ class TestSimulator {
      */
 
     /**
-     * Get all saved tests from localStorage
-     * @returns {Array} Array of saved test objects
+     * Get all saved tests from Firebase or localStorage
+     * @returns {Promise<Array>} Array of saved test objects
      */
-    getSavedTests() {
+    async getSavedTests() {
         try {
+            // Try Firebase first if user is signed in
+            if (window.firebaseService?.isSignedIn()) {
+                const cloudTests = await firebaseService.getTests();
+                // Also cache in localStorage
+                localStorage.setItem(this.testBankKey, JSON.stringify(cloudTests));
+                return cloudTests;
+            }
+
+            // Fall back to localStorage
             const saved = localStorage.getItem(this.testBankKey);
             return saved ? JSON.parse(saved) : [];
         } catch (error) {
             console.error('Failed to load test bank:', error);
-            return [];
+            // If Firebase fails, try localStorage
+            try {
+                const saved = localStorage.getItem(this.testBankKey);
+                return saved ? JSON.parse(saved) : [];
+            } catch (e) {
+                return [];
+            }
         }
     }
 
     /**
-     * Save tests array to localStorage
+     * Save tests array to Firebase and localStorage
      * @param {Array} tests - Array of test objects
      */
-    saveTestsToBank(tests) {
+    async saveTestsToBank(tests) {
         try {
+            // Always save to localStorage first (offline backup)
             localStorage.setItem(this.testBankKey, JSON.stringify(tests));
+
+            // Also save to Firebase if user is signed in
+            if (window.firebaseService?.isSignedIn()) {
+                // Save the most recent test (first in array) to Firebase
+                if (tests.length > 0) {
+                    await firebaseService.saveTest(tests[0]);
+                }
+            }
         } catch (error) {
             console.error('Failed to save to test bank:', error);
-            alert('Failed to save test. Storage might be full.');
+            // If Firebase fails, at least localStorage succeeded
+            if (!localStorage.getItem(this.testBankKey)) {
+                alert('Failed to save test. Storage might be full.');
+            }
         }
     }
 
@@ -1267,7 +1377,7 @@ class TestSimulator {
     /**
      * Save the current test to the test bank
      */
-    saveCurrentTest() {
+    async saveCurrentTest() {
         const titleInput = document.getElementById('save-test-title');
         const courseInput = document.getElementById('save-test-course');
         const topicInput = document.getElementById('save-test-topic');
@@ -1308,9 +1418,9 @@ class TestSimulator {
         };
 
         // Add to test bank
-        const tests = this.getSavedTests();
+        const tests = await this.getSavedTests();
         tests.unshift(testEntry); // Add to beginning
-        this.saveTestsToBank(tests);
+        await this.saveTestsToBank(tests);
 
         // Clear form
         if (titleInput) titleInput.value = '';
@@ -1327,14 +1437,14 @@ class TestSimulator {
     /**
      * Open test library section
      */
-    openTestLibrary() {
+    async openTestLibrary() {
         if (!this.testLibrarySection) return;
 
         this.jsonInputSection.classList.add('hidden');
         this.testLibrarySection.classList.remove('hidden');
 
         // Load and display tests
-        this.displayTestLibrary();
+        await this.displayTestLibrary();
     }
 
     /**
@@ -1350,8 +1460,8 @@ class TestSimulator {
     /**
      * Display all tests in the library
      */
-    displayTestLibrary() {
-        const tests = this.getSavedTests();
+    async displayTestLibrary() {
+        const tests = await this.getSavedTests();
 
         // Update filter dropdowns
         this.updateLibraryFilters(tests);
@@ -1391,8 +1501,8 @@ class TestSimulator {
     /**
      * Filter and display tests based on search and filters
      */
-    filterTestLibrary() {
-        const tests = this.getSavedTests();
+    async filterTestLibrary() {
+        const tests = await this.getSavedTests();
         const searchTerm = this.librarySearchInput?.value.toLowerCase() || '';
         const courseFilter = this.libraryCourseFilter?.value || '';
         const topicFilter = this.libraryTopicFilter?.value || '';
@@ -1478,8 +1588,8 @@ class TestSimulator {
      * Load a saved test from the library
      * @param {string} testId - ID of the test to load
      */
-    loadSavedTest(testId) {
-        const tests = this.getSavedTests();
+    async loadSavedTest(testId) {
+        const tests = await this.getSavedTests();
         const test = tests.find(t => t.id === testId);
 
         if (!test) {
@@ -1504,25 +1614,34 @@ class TestSimulator {
      * Delete a test from the library
      * @param {string} testId - ID of the test to delete
      */
-    deleteTest(testId) {
+    async deleteTest(testId) {
         if (!confirm('Are you sure you want to delete this test?')) {
             return;
         }
 
-        const tests = this.getSavedTests();
+        const tests = await this.getSavedTests();
         const filtered = tests.filter(t => t.id !== testId);
-        this.saveTestsToBank(filtered);
+        await this.saveTestsToBank(filtered);
+
+        // Also delete from Firebase if signed in
+        if (window.firebaseService?.isSignedIn()) {
+            try {
+                await firebaseService.deleteTest(testId);
+            } catch (error) {
+                console.error('Failed to delete from Firebase:', error);
+            }
+        }
 
         // Refresh display
-        this.filterTestLibrary();
+        await this.filterTestLibrary();
     }
 
     /**
      * View test history modal
      * @param {string} testId - ID of the test
      */
-    viewTestHistory(testId) {
-        const tests = this.getSavedTests();
+    async viewTestHistory(testId) {
+        const tests = await this.getSavedTests();
         const test = tests.find(t => t.id === testId);
 
         if (!test) {
