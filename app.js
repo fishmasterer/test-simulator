@@ -1602,8 +1602,16 @@ class TestSimulator {
         this.currentQuestionIndex = 0;
         this.userAnswers = {};
         this.testStartTime = Date.now();
-        this.testDuration = null;
-        this.timeRemaining = null;
+
+        // Set up timer if enabled (same as loadTest)
+        if (this.timerToggle?.checked) {
+            const duration = parseInt(this.timerDurationInput?.value || 30);
+            this.testDuration = duration * 60; // Convert to seconds
+            this.timeRemaining = this.testDuration;
+        } else {
+            this.testDuration = null;
+            this.timeRemaining = null;
+        }
 
         // Close library and start test
         this.closeTestLibrary();
