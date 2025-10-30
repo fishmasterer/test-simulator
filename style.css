@@ -2227,6 +2227,20 @@ select.form-control {
 
 .pomodoro-task-info {
   flex: 1;
+  display: flex;
+  gap: var(--space-8);
+  align-items: center;
+}
+
+.pomodoro-task-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.pomodoro-task-item.completed {
+  opacity: 0.6;
 }
 
 .pomodoro-task-name {
@@ -2234,6 +2248,11 @@ select.form-control {
   font-weight: var(--font-weight-medium);
   color: var(--color-text);
   margin-bottom: var(--space-4);
+}
+
+.task-completed-text {
+  text-decoration: line-through;
+  color: var(--color-text-secondary);
 }
 
 .pomodoro-task-meta {
@@ -2457,18 +2476,6 @@ select.form-control {
     height: 220px;
   }
 
-  .pomodoro-timer-circle svg {
-    width: 220px;
-    height: 220px;
-  }
-
-  .pomodoro-progress-ring-fill,
-  .pomodoro-progress-ring-bg {
-    r: 100;
-    cx: 110;
-    cy: 110;
-  }
-
   .pomodoro-time-display {
     font-size: var(--font-size-2xl);
   }
@@ -2526,18 +2533,6 @@ select.form-control {
   .pomodoro-timer-circle {
     width: 200px;
     height: 200px;
-  }
-
-  .pomodoro-timer-circle svg {
-    width: 200px;
-    height: 200px;
-  }
-
-  .pomodoro-progress-ring-fill,
-  .pomodoro-progress-ring-bg {
-    r: 90;
-    cx: 100;
-    cy: 100;
   }
 
   .pomodoro-time-display {

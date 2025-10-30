@@ -179,7 +179,9 @@ class TestSimulator {
 
         // Register sync callback to update UI when tests change
         firebaseService.onSync(async (tests) => {
-            console.log('Tests synced from Firebase');
+            console.log('Tests synced from Firebase:', tests.length, 'tests');
+            // Update localStorage cache with synced tests
+            localStorage.setItem(this.testBankKey, JSON.stringify(tests));
             // Refresh library if it's open
             if (this.testLibrarySection && !this.testLibrarySection.classList.contains('hidden')) {
                 await this.displayTestLibrary();
