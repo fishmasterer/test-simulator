@@ -131,6 +131,16 @@ class PomodoroTimer {
      * Start timer
      */
     start() {
+        // Prevent multiple intervals - clear any existing one first
+        if (this.timerInterval) {
+            clearInterval(this.timerInterval);
+        }
+
+        // Don't start if already running
+        if (this.isRunning) {
+            return;
+        }
+
         this.isRunning = true;
         this.isPaused = false;
 
@@ -154,7 +164,10 @@ class PomodoroTimer {
         this.isRunning = false;
         this.isPaused = true;
 
-        clearInterval(this.timerInterval);
+        if (this.timerInterval) {
+            clearInterval(this.timerInterval);
+            this.timerInterval = null;
+        }
 
         this.startBtn?.classList.remove('hidden');
         this.pauseBtn?.classList.add('hidden');

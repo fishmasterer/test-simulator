@@ -1,12 +1,26 @@
-# Netlify Configuration for Static Site
+# Netlify Configuration for Pure Static Site (No Build Required)
 [build]
-  # No build command needed - vanilla JS app, deploy as-is
-  command = ""
+  # This is a vanilla JS app - no build step needed!
+  command = "echo 'No build required - static site'"
   publish = "."
 
-# Tell Netlify this is a static site (no build image needed)
-[build.environment]
-  NODE_VERSION = "18"
+# Skip build image entirely - just deploy files as-is
+[build.processing]
+  skip_processing = false
+
+[build.processing.css]
+  bundle = false
+  minify = false
+
+[build.processing.js]
+  bundle = false
+  minify = false
+
+[build.processing.html]
+  pretty_urls = false
+
+[build.processing.images]
+  compress = false
 
 # Redirect rules for PWA
 [[redirects]]

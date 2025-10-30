@@ -1335,9 +1335,9 @@ class TestSimulator {
 
             // Also save to Firebase if user is signed in
             if (window.firebaseService?.isSignedIn()) {
-                // Save the most recent test (first in array) to Firebase
-                if (tests.length > 0) {
-                    await firebaseService.saveTest(tests[0]);
+                // Save ALL tests to Firebase (not just the first one)
+                for (const test of tests) {
+                    await firebaseService.saveTest(test);
                 }
             }
         } catch (error) {
