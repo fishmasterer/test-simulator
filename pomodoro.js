@@ -131,14 +131,14 @@ class PomodoroTimer {
      * Start timer
      */
     start() {
-        // Prevent multiple intervals - clear any existing one first
-        if (this.timerInterval) {
-            clearInterval(this.timerInterval);
-        }
-
         // Don't start if already running
         if (this.isRunning) {
             return;
+        }
+
+        // Prevent multiple intervals - clear any existing one first
+        if (this.timerInterval) {
+            clearInterval(this.timerInterval);
         }
 
         this.isRunning = true;
@@ -195,6 +195,15 @@ class PomodoroTimer {
      */
     skip() {
         this.pause();
+
+        // If skipping a work session, count it as complete
+        if (this.currentMode === 'work') {
+            this.sessionCount++;
+            if (this.currentTaskId) {
+                this.updateTaskProgress(this.currentTaskId);
+            }
+        }
+
         this.switchMode();
     }
 
@@ -559,13 +568,21 @@ class PomodoroTimer {
 
         this.taskList.innerHTML = tasks.map(task => {
             const isActive = task.id === this.currentTaskId;
+            const isCompleted = task.completed || false;
             const progress = `${task.completedPomodoros}/${task.estimatedPomodoros}`;
 
             return `
-                <div class="pomodoro-task-item ${isActive ? 'active' : ''}" onclick="pomodoroTimer.selectTask('${task.id}')">
+                <div class="pomodoro-task-item ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}" onclick="pomodoroTimer.selectTask('${task.id}')">
                     <div class="pomodoro-task-info">
-                        <div class="pomodoro-task-name">${this.escapeHtml(task.name)}</div>
-                        <div class="pomodoro-task-meta">${task.course ? this.escapeHtml(task.course) + ' • ' : ''}${progress} pomodoros</div>
+                        <input type="checkbox"
+                            class="pomodoro-task-checkbox"
+                            ${isCompleted ? 'checked' : ''}
+                            onclick="event.stopPropagation(); pomodoroTimer.toggleTaskComplete('${task.id}')"
+                            aria-label="Mark task as complete">
+                        <div>
+                            <div class="pomodoro-task-name ${isCompleted ? 'task-completed-text' : ''}">${this.escapeHtml(task.name)}</div>
+                            <div class="pomodoro-task-meta">${task.course ? this.escapeHtml(task.course) + ' • ' : ''}${progress} pomodoros</div>
+                        </div>
                     </div>
                     <div class="pomodoro-task-actions">
                         <div class="pomodoro-task-progress">${progress}</div>
@@ -624,6 +641,7 @@ class PomodoroTimer {
             course: course,
             estimatedPomodoros: estimate,
             completedPomodoros: 0,
+            completed: false,
             createdAt: Date.now()
         };
 
@@ -703,6 +721,20 @@ class PomodoroTimer {
         }
 
         this.renderTasks();
+    }
+
+    /**
+     * Toggle task completion status
+     */
+    toggleTaskComplete(taskId) {
+        const tasks = this.getTasks();
+        const task = tasks.find(t => t.id === taskId);
+
+        if (task) {
+            task.completed = !task.completed;
+            this.saveTasks(tasks);
+            this.renderTasks();
+        }
     }
 
     /**
