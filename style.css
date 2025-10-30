@@ -2432,36 +2432,123 @@ select.form-control {
 @media (max-width: 1200px) {
   .pomodoro-container {
     grid-template-columns: 1fr;
+    padding: var(--space-16);
   }
 
   .pomodoro-sidebar {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-16);
   }
 }
 
 @media (max-width: 768px) {
+  .pomodoro-container {
+    padding: var(--space-12);
+    gap: var(--space-16);
+  }
+
+  .pomodoro-timer-card {
+    padding: var(--space-20);
+  }
+
   .pomodoro-timer-circle {
-    width: 240px;
-    height: 240px;
+    width: 220px;
+    height: 220px;
   }
 
   .pomodoro-timer-circle svg {
-    width: 240px;
-    height: 240px;
+    width: 220px;
+    height: 220px;
+  }
+
+  .pomodoro-progress-ring-fill,
+  .pomodoro-progress-ring-bg {
+    r: 100;
+    cx: 110;
+    cy: 110;
   }
 
   .pomodoro-time-display {
-    font-size: var(--font-size-3xl);
+    font-size: var(--font-size-2xl);
+  }
+
+  .pomodoro-current-task {
+    font-size: var(--font-size-xs);
+    max-width: 160px;
+  }
+
+  .pomodoro-controls {
+    flex-wrap: wrap;
+    gap: var(--space-8);
+    width: 100%;
+  }
+
+  .pomodoro-controls button {
+    flex: 1;
+    min-width: 100px;
+  }
+
+  .btn--large {
+    padding: var(--space-10) var(--space-16);
+    font-size: var(--font-size-sm);
+    min-width: 100px;
+  }
+
+  .pomodoro-sidebar {
+    grid-template-columns: 1fr;
+  }
+
+  .pomodoro-panel {
+    padding: var(--space-16);
   }
 
   .analytics-summary {
     grid-template-columns: 1fr;
   }
 
-  .btn--large {
-    padding: var(--space-12) var(--space-24);
-    font-size: var(--font-size-base);
-    min-width: 120px;
+  .pomodoro-mode-indicator {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-8);
+  }
+
+  #pomodoro-mode-text {
+    font-size: var(--font-size-lg);
+  }
+
+  #pomodoro-session-count {
+    font-size: var(--font-size-xs);
+  }
+}
+
+@media (max-width: 480px) {
+  .pomodoro-timer-circle {
+    width: 200px;
+    height: 200px;
+  }
+
+  .pomodoro-timer-circle svg {
+    width: 200px;
+    height: 200px;
+  }
+
+  .pomodoro-progress-ring-fill,
+  .pomodoro-progress-ring-bg {
+    r: 90;
+    cx: 100;
+    cy: 100;
+  }
+
+  .pomodoro-time-display {
+    font-size: var(--font-size-xl);
+  }
+
+  .pomodoro-controls {
+    flex-direction: column;
+  }
+
+  .pomodoro-controls button {
+    width: 100%;
   }
 }
