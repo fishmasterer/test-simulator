@@ -13,22 +13,22 @@
  * See FIREBASE_SETUP.md for detailed instructions
  */
 
-// Your web app's Firebase configuration
+// PLACEHOLDER CONFIG - Replace with your actual Firebase values
 const firebaseConfig = {
-  apiKey: "AIzaSyCtcmzI0NP5VmCIiaXfIprFE7ez_KlC0BE",
-  authDomain: "test-simulator-5456a.firebaseapp.com",
-  projectId: "test-simulator-5456a",
-  storageBucket: "test-simulator-5456a.firebasestorage.app",
-  messagingSenderId: "1007096675527",
-  appId: "1:1007096675527:web:ea061e1f9dafc6281212e2"
+  apiKey: "REPLACE_WITH_YOUR_API_KEY",
+  authDomain: "your-project-id.firebaseapp.com",
+  projectId: "your-project-id",
+  storageBucket: "your-project-id.firebasestorage.app",
+  messagingSenderId: "123456789012",
+  appId: "1:123456789012:web:abc123def456"
 };
 
-// Example of what it should look like (with fake values):
+// Example format (with fake data):
 // const firebaseConfig = {
-//     apiKey: "AIzaSyC1234567890abcdefghijk",
-//     authDomain: "test-simulator-abc123.firebaseapp.com",
-//     projectId: "test-simulator-abc123",
-//     storageBucket: "test-simulator-abc123.appspot.com",
-//     messagingSenderId: "123456789012",
-//     appId: "1:123456789012:web:abc123def456"
+//     apiKey: "AbCdEf123456-XyZ_example_key",
+//     authDomain: "my-app-12345.firebaseapp.com",
+//     projectId: "my-app-12345",
+//     storageBucket: "my-app-12345.firebasestorage.app",
+//     messagingSenderId: "987654321098",
+//     appId: "1:987654321098:web:example123abc"
 // };

@@ -32,15 +32,15 @@ const firebaseConfig = {
 ```
 
 3. **Replace these values** with your actual config from Firebase Console
-4. Example of what it should look like:
+4. Example of what it should look like (with your real values):
 ```javascript
 const firebaseConfig = {
-    apiKey: "AIzaSyC1234567890abcdefghijk",
-    authDomain: "test-simulator-abc123.firebaseapp.com",
-    projectId: "test-simulator-abc123",
-    storageBucket: "test-simulator-abc123.appspot.com",
+    apiKey: "AbCdEf_your_actual_api_key_here_123456",
+    authDomain: "your-project-name.firebaseapp.com",
+    projectId: "your-project-name",
+    storageBucket: "your-project-name.appspot.com",
     messagingSenderId: "123456789012",
-    appId: "1:123456789012:web:abc123def456"
+    appId: "1:123456789012:web:abc123def456789"
 };
 ```
 
