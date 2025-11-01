@@ -632,6 +632,9 @@ class FirebaseService {
 // Create global instance
 const firebaseService = new FirebaseService();
 
+// Ensure it's accessible globally via window
+window.firebaseService = firebaseService;
+
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', async () => {
     const initialized = await firebaseService.initialize();
