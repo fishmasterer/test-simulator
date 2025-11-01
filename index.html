@@ -164,6 +164,16 @@ Example format:
                 <button id="close-library-btn" class="btn btn--outline">← Back</button>
             </div>
 
+            <!-- Sync Status Banner -->
+            <div id="library-sync-status" class="sync-status-banner hidden">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <span id="library-sync-message">Tests are saved locally only. Sign in to sync across devices.</span>
+            </div>
+
             <div class="library-controls">
                 <input
                     type="text"

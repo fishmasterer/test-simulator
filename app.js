@@ -1327,27 +1327,43 @@ class TestSimulator {
     }
 
     /**
-     * Save tests array to Firebase and localStorage
+     * Save tests array to localStorage
      * @param {Array} tests - Array of test objects
      */
     async saveTestsToBank(tests) {
         try {
             // Always save to localStorage first (offline backup)
             localStorage.setItem(this.testBankKey, JSON.stringify(tests));
-
-            // Also save to Firebase if user is signed in
-            if (window.firebaseService?.isSignedIn()) {
-                // Save ALL tests to Firebase (not just the first one)
-                for (const test of tests) {
-                    await firebaseService.saveTest(test);
-                }
-            }
         } catch (error) {
-            console.error('Failed to save to test bank:', error);
-            // If Firebase fails, at least localStorage succeeded
-            if (!localStorage.getItem(this.testBankKey)) {
-                alert('Failed to save test. Storage might be full.');
-            }
+            console.error('Failed to save to localStorage:', error);
+            alert('Failed to save test. Storage might be full.');
+            throw error;
+        }
+    }
+
+    /**
+     * Save individual test to Firebase (and update localStorage)
+     * @param {Object} testEntry - Single test object to save
+     */
+    async saveTestToFirebase(testEntry) {
+        if (!window.firebaseService?.isSignedIn()) {
+            console.log('User not signed in - test saved locally only');
+            return false;
+        }
+
+        try {
+            firebaseService.updateSyncIndicator('syncing');
+            await firebaseService.saveTest(testEntry);
+            firebaseService.updateSyncIndicator('synced');
+            console.log('Test synced to Firebase:', testEntry.id);
+            return true;
+        } catch (error) {
+            console.error('Failed to save test to Firebase:', error);
+            firebaseService.updateSyncIndicator('error');
+            // Show user-friendly error message
+            const errorMsg = error.message || 'Unknown error';
+            alert(`Warning: Test saved locally but cloud sync failed.\nError: ${errorMsg}\n\nYour test is safe on this device, but won't sync to other devices until you're online.`);
+            return false;
         }
     }
 
@@ -1419,10 +1435,13 @@ class TestSimulator {
             ]
         };
 
-        // Add to test bank
+        // Add to test bank in localStorage first
         const tests = await this.getSavedTests();
         tests.unshift(testEntry); // Add to beginning
         await this.saveTestsToBank(tests);
+
+        // Save to Firebase if signed in
+        const syncedToCloud = await this.saveTestToFirebase(testEntry);
 
         // Clear form
         if (titleInput) titleInput.value = '';
@@ -1431,9 +1450,17 @@ class TestSimulator {
 
         // Hide modal and show success
         this.hideSaveTestModal();
-        alert(`Test "${title}" saved successfully!`);
 
-        console.log(`Test saved: ${title} (${course} - ${topic})`);
+        // Show appropriate success message
+        if (syncedToCloud) {
+            alert(`Test "${title}" saved successfully and synced to cloud!`);
+        } else if (!window.firebaseService?.isSignedIn()) {
+            alert(`Test "${title}" saved locally!\n\nTip: Sign in with Google to sync your tests across devices.`);
+        } else {
+            // Already showed error in saveTestToFirebase
+        }
+
+        console.log(`Test saved: ${title} (${course} - ${topic})`, syncedToCloud ? '[Synced to Firebase]' : '[Local only]');
     }
 
     /**
@@ -1468,8 +1495,32 @@ class TestSimulator {
         // Update filter dropdowns
         this.updateLibraryFilters(tests);
 
+        // Update sync status banner
+        this.updateLibrarySyncStatus();
+
         // Display tests
         this.renderTestCards(tests);
+    }
+
+    /**
+     * Update the sync status banner in the library
+     */
+    updateLibrarySyncStatus() {
+        const syncStatusBanner = document.getElementById('library-sync-status');
+        const syncMessage = document.getElementById('library-sync-message');
+
+        if (!syncStatusBanner || !syncMessage) return;
+
+        if (window.firebaseService?.isSignedIn()) {
+            // User is signed in - show synced status
+            syncStatusBanner.classList.remove('hidden');
+            syncStatusBanner.classList.add('synced');
+            syncMessage.textContent = 'Tests are syncing to your Google account across all devices.';
+        } else {
+            // User is not signed in - show local-only warning
+            syncStatusBanner.classList.remove('hidden', 'synced');
+            syncMessage.textContent = 'Tests are saved locally only. Sign in to sync across devices.';
+        }
     }
 
     /**
@@ -1629,6 +1680,7 @@ class TestSimulator {
             return;
         }
 
+        // Delete from localStorage
         const tests = await this.getSavedTests();
         const filtered = tests.filter(t => t.id !== testId);
         await this.saveTestsToBank(filtered);
@@ -1636,9 +1688,14 @@ class TestSimulator {
         // Also delete from Firebase if signed in
         if (window.firebaseService?.isSignedIn()) {
             try {
+                firebaseService.updateSyncIndicator('syncing');
                 await firebaseService.deleteTest(testId);
+                firebaseService.updateSyncIndicator('synced');
+                console.log('Test deleted from Firebase:', testId);
             } catch (error) {
                 console.error('Failed to delete from Firebase:', error);
+                firebaseService.updateSyncIndicator('error');
+                alert('Warning: Test deleted locally but cloud deletion failed. The test may still appear on other devices.');
             }
         }
 
