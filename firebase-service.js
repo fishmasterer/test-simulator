@@ -18,38 +18,66 @@ class FirebaseService {
      * @returns {Promise<boolean>} Success status
      */
     async initialize() {
+        console.log('🚀 Initializing Firebase...');
+
         try {
             // Check if Firebase config is valid
             if (!firebaseConfig || firebaseConfig.apiKey === 'YOUR_API_KEY_HERE') {
-                console.warn('Firebase not configured. Using localStorage only.');
+                console.warn('⚠️ Firebase not configured. Using localStorage only.');
+                return false;
+            }
+
+            console.log('✅ Firebase config found:', {
+                projectId: firebaseConfig.projectId,
+                authDomain: firebaseConfig.authDomain
+            });
+
+            // Check if Firebase SDK is loaded
+            if (typeof firebase === 'undefined') {
+                console.error('❌ Firebase SDK not loaded!');
                 return false;
             }
 
             // Initialize Firebase
             if (!firebase.apps.length) {
+                console.log('📱 Initializing Firebase app...');
                 firebase.initializeApp(firebaseConfig);
+                console.log('✅ Firebase app initialized');
+            } else {
+                console.log('✅ Firebase app already initialized');
             }
 
             this.auth = firebase.auth();
             this.db = firebase.firestore();
+            console.log('✅ Firebase Auth and Firestore initialized');
 
             // Enable offline persistence
+            console.log('💾 Enabling offline persistence...');
             await this.db.enablePersistence({ synchronizeTabs: true })
                 .catch((err) => {
                     if (err.code === 'failed-precondition') {
-                        console.warn('Persistence failed: Multiple tabs open');
+                        console.warn('⚠️ Persistence failed: Multiple tabs open');
                     } else if (err.code === 'unimplemented') {
-                        console.warn('Persistence not available in this browser');
+                        console.warn('⚠️ Persistence not available in this browser');
+                    } else {
+                        console.warn('⚠️ Persistence error:', err);
                     }
                 });
 
             // Listen for auth state changes
+            console.log('👂 Setting up auth state listener...');
             this.auth.onAuthStateChanged((user) => this.handleAuthStateChange(user));
 
             this.initialized = true;
+            console.log('✅ Firebase initialization complete!');
             return true;
         } catch (error) {
-            console.error('Firebase initialization failed:', error);
+            console.error('❌ Firebase initialization failed:', error);
+            console.error('Error details:', {
+                message: error.message,
+                code: error.code,
+                stack: error.stack
+            });
             return false;
         }
     }
@@ -59,16 +87,28 @@ class FirebaseService {
      * @param {Object} user - Firebase user object
      */
     handleAuthStateChange(user) {
+        console.log('🔐 Auth state changed:', user ? `Signed in as ${user.email}` : 'Not signed in');
         this.currentUser = user;
 
         if (user) {
-            console.log('User signed in:', user.email);
+            console.log('✅ User authenticated:', {
+                uid: user.uid,
+                email: user.email,
+                displayName: user.displayName,
+                photoURL: user.photoURL
+            });
             this.updateAuthUI(true, user);
             this.startRealtimeSync();
+
+            // Clear sync indicator error state
+            this.updateSyncIndicator('synced');
         } else {
-            console.log('User signed out');
+            console.log('❌ User not authenticated');
             this.updateAuthUI(false);
             this.stopRealtimeSync();
+
+            // Set offline state
+            this.updateSyncIndicator('offline');
         }
     }
 
@@ -78,19 +118,32 @@ class FirebaseService {
      * @param {Object} user - User object (optional)
      */
     updateAuthUI(signedIn, user = null) {
+        console.log('🎨 Updating auth UI:', signedIn ? 'Signed IN' : 'Signed OUT');
+
         const signedOutDiv = document.getElementById('auth-signed-out');
         const signedInDiv = document.getElementById('auth-signed-in');
         const userName = document.getElementById('auth-user-name');
         const userPhoto = document.getElementById('auth-user-photo');
 
+        if (!signedOutDiv || !signedInDiv) {
+            console.error('❌ Auth UI elements not found!');
+            return;
+        }
+
         if (signedIn && user) {
-            signedOutDiv?.classList.add('hidden');
-            signedInDiv?.classList.remove('hidden');
+            console.log('👤 Showing signed-in state for:', user.email);
+            signedOutDiv.classList.add('hidden');
+            signedInDiv.classList.remove('hidden');
             if (userName) userName.textContent = user.displayName || user.email;
-            if (userPhoto) userPhoto.src = user.photoURL || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2321808D"><circle cx="12" cy="8" r="4"/><path d="M12 14c-6 0-8 4-8 4v2h16v-2s-2-4-8-4z"/></svg>';
+            if (userPhoto) {
+                userPhoto.src = user.photoURL || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2321808D"><circle cx="12" cy="8" r="4"/><path d="M12 14c-6 0-8 4-8 4v2h16v-2s-2-4-8-4z"/></svg>';
+            }
+            console.log('✅ Auth UI updated: signed-in div visible, signed-out div hidden');
         } else {
-            signedOutDiv?.classList.remove('hidden');
-            signedInDiv?.classList.add('hidden');
+            console.log('🔓 Showing signed-out state');
+            signedOutDiv.classList.remove('hidden');
+            signedInDiv.classList.add('hidden');
+            console.log('✅ Auth UI updated: signed-out div visible, signed-in div hidden');
         }
     }
 
@@ -126,12 +179,19 @@ class FirebaseService {
      * @returns {Promise<Object>} User object
      */
     async signInWithGoogle() {
+        console.log('🔐 Starting Google sign-in...');
+
         try {
             const provider = new firebase.auth.GoogleAuthProvider();
+            console.log('📱 Opening Google sign-in popup...');
             const result = await this.auth.signInWithPopup(provider);
+            console.log('✅ Sign-in successful!', result.user.email);
             return result.user;
         } catch (error) {
-            console.error('Sign in failed:', error);
+            console.error('❌ Sign in failed:', error);
+            console.error('Error code:', error.code);
+            console.error('Error message:', error.message);
+
             if (error.code === 'auth/popup-closed-by-user') {
                 throw new Error('Sign in cancelled');
             } else if (error.code === 'auth/unauthorized-domain') {
@@ -159,7 +219,9 @@ class FirebaseService {
      * @returns {boolean}
      */
     isSignedIn() {
-        return this.currentUser !== null;
+        const signedIn = this.currentUser !== null;
+        console.log('🔍 isSignedIn() check:', signedIn, '| currentUser:', this.currentUser ? this.currentUser.email : 'null');
+        return signedIn;
     }
 
     /**
@@ -176,7 +238,10 @@ class FirebaseService {
      * @returns {Promise<string>} Test ID
      */
     async saveTest(testData) {
+        console.log('💾 saveTest() called for:', testData.id);
+
         if (!this.isSignedIn()) {
+            console.error('❌ Cannot save to Firebase: User not signed in');
             throw new Error('Must be signed in to save to cloud');
         }
 
@@ -184,17 +249,28 @@ class FirebaseService {
             this.updateSyncIndicator('syncing');
 
             const userId = this.getUserId();
+            console.log('📝 Saving to Firestore path: users/' + userId + '/tests/' + testData.id);
+
             const testRef = this.db.collection('users').doc(userId).collection('tests').doc(testData.id);
 
-            await testRef.set({
+            const dataToSave = {
                 ...testData,
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
+            };
 
+            console.log('📤 Writing data to Firestore...', Object.keys(dataToSave));
+            await testRef.set(dataToSave);
+
+            console.log('✅ Test saved to Firebase successfully!');
             this.updateSyncIndicator('synced');
             return testData.id;
         } catch (error) {
-            console.error('Failed to save test:', error);
+            console.error('❌ Failed to save test to Firebase:', error);
+            console.error('Error details:', {
+                code: error.code,
+                message: error.message,
+                stack: error.stack
+            });
             this.updateSyncIndicator('error');
             throw error;
         }

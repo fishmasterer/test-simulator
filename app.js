@@ -1346,19 +1346,32 @@ class TestSimulator {
      * @param {Object} testEntry - Single test object to save
      */
     async saveTestToFirebase(testEntry) {
-        if (!window.firebaseService?.isSignedIn()) {
-            console.log('User not signed in - test saved locally only');
+        console.log('☁️ saveTestToFirebase() called for test:', testEntry.id);
+        console.log('🔍 Checking if firebaseService exists:', !!window.firebaseService);
+
+        if (!window.firebaseService) {
+            console.error('❌ firebaseService not available!');
+            return false;
+        }
+
+        console.log('🔍 Checking if user is signed in...');
+        const signedIn = firebaseService.isSignedIn();
+        console.log('🔍 isSignedIn result:', signedIn);
+
+        if (!signedIn) {
+            console.log('⚠️ User not signed in - test saved locally only');
             return false;
         }
 
         try {
+            console.log('✅ User is signed in, attempting Firebase save...');
             firebaseService.updateSyncIndicator('syncing');
             await firebaseService.saveTest(testEntry);
             firebaseService.updateSyncIndicator('synced');
-            console.log('Test synced to Firebase:', testEntry.id);
+            console.log('✅ Test synced to Firebase successfully:', testEntry.id);
             return true;
         } catch (error) {
-            console.error('Failed to save test to Firebase:', error);
+            console.error('❌ Failed to save test to Firebase:', error);
             firebaseService.updateSyncIndicator('error');
             // Show user-friendly error message
             const errorMsg = error.message || 'Unknown error';
