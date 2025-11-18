@@ -12,12 +12,15 @@ class TestSimulator {
         this.currentTest = null;
         this.currentQuestionIndex = 0;
         this.userAnswers = {};
+        this.flaggedQuestions = new Set(); // Track flagged questions by ID
+        this.questionConfidence = {}; // Track confidence level per question
         this.testStartTime = null;
         this.timerInterval = null;
         this.timeRemaining = null;
         this.testDuration = null; // in seconds
         this.testMode = 'exam'; // 'exam' or 'practice'
         this.isReviewSession = false; // true when reviewing wrong answers
+        this.timeWarningsShown = new Set(); // Track which time warnings have been shown
         this.storageKey = 'testSimulatorProgress';
         this.themeKey = 'testSimulatorTheme';
         this.testBankKey = 'testSimulatorBank';
@@ -169,6 +172,9 @@ class TestSimulator {
         this.closeAnalyticsBtn = document.getElementById('close-analytics-btn');
         this.achievementGallery = document.getElementById('achievement-gallery');
         this.questionTypeChart = document.getElementById('question-type-chart');
+        this.performanceTrendsChart = document.getElementById('performance-trends-chart');
+        this.courseTopicBreakdown = document.getElementById('course-topic-breakdown');
+        this.currentTrendsPeriod = 7; // Default to 7 days
 
         // Initialize gamification system
         this.gamification = new GamificationSystem();
@@ -190,6 +196,9 @@ class TestSimulator {
         this.reviewWrongBtn?.addEventListener('click', () => this.reviewWrongAnswers());
         this.showPromptBtn.addEventListener('click', () => this.showPromptModal());
         this.closeModalBtn.addEventListener('click', () => this.hidePromptModal());
+        this.promptGenerateBtn?.addEventListener('click', () => this.generatePrompt());
+        this.promptCopyBtn?.addEventListener('click', () => this.copyPromptToClipboard());
+        this.promptResetBtn?.addEventListener('click', () => this.resetPromptBuilder());
         this.confirmSubmitBtn.addEventListener('click', () => this.confirmSubmit());
         this.cancelSubmitBtn.addEventListener('click', () => this.hideConfirmModal());
         this.themeToggle.addEventListener('click', () => this.toggleThemeMenu());
@@ -228,6 +237,11 @@ class TestSimulator {
         // Achievement filter buttons
         document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.addEventListener('click', (e) => this.filterAchievements(e.currentTarget.dataset.filter));
+        });
+
+        // Chart period buttons
+        document.querySelectorAll('.chart-period-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => this.changeTrendsPeriod(e.currentTarget.dataset.period));
         });
 
         // Theme menu options
@@ -453,6 +467,8 @@ class TestSimulator {
                 this.currentTest = saved.currentTest;
                 this.currentQuestionIndex = saved.currentQuestionIndex || 0;
                 this.userAnswers = saved.userAnswers || {};
+                this.flaggedQuestions = new Set(saved.flaggedQuestions || []); // Convert Array back to Set
+                this.questionConfidence = saved.questionConfidence || {};
                 this.testStartTime = saved.testStartTime || Date.now();
                 this.testDuration = saved.testDuration;
                 this.timeRemaining = saved.timeRemaining;
@@ -473,6 +489,8 @@ class TestSimulator {
             currentTest: this.currentTest,
             currentQuestionIndex: this.currentQuestionIndex,
             userAnswers: this.userAnswers,
+            flaggedQuestions: Array.from(this.flaggedQuestions), // Convert Set to Array
+            questionConfidence: this.questionConfidence,
             testStartTime: this.testStartTime,
             testDuration: this.testDuration,
             timeRemaining: this.timeRemaining,
@@ -939,6 +957,9 @@ class TestSimulator {
             this.timeRemaining--;
             this.updateTimerDisplay();
 
+            // Show time warnings at specific thresholds
+            this.checkTimeWarnings();
+
             // Save progress every 5 seconds instead of every second for better performance
             if (this.timeRemaining % 5 === 0) {
                 this.saveProgress();
@@ -947,9 +968,29 @@ class TestSimulator {
             if (this.timeRemaining <= 0) {
                 this.stopTimer();
                 this.submitTest();
-                alert('Time is up! Your test has been automatically submitted.');
+                this.showToast('⏰ Time is up! Your test has been automatically submitted.', 'error');
             }
         }, 1000);
+    }
+
+    /**
+     * Check and show time warnings at specific thresholds
+     */
+    checkTimeWarnings() {
+        const warnings = [
+            { time: 600, message: '⏰ 10 minutes remaining', level: 'info' },
+            { time: 300, message: '⚠️ 5 minutes remaining', level: 'warning' },
+            { time: 120, message: '🚨 2 minutes remaining', level: 'warning' },
+            { time: 60, message: '🔴 1 minute remaining!', level: 'error' }
+        ];
+
+        warnings.forEach(warning => {
+            if (this.timeRemaining === warning.time && !this.timeWarningsShown.has(warning.time)) {
+                this.timeWarningsShown.add(warning.time);
+                this.showToast(warning.message, warning.level);
+                console.log(`⏱️ Time warning: ${warning.message}`);
+            }
+        });
     }
 
     /**
@@ -993,11 +1034,35 @@ class TestSimulator {
 
         const totalQuestions = this.currentTest.questions.length;
         const answeredCount = Object.keys(this.userAnswers).length;
+        const flaggedCount = this.flaggedQuestions.size;
+        const progressPercentage = Math.round((answeredCount / totalQuestions) * 100);
 
-        let html = `<div class="overview-header">
-            <h4>Progress: ${answeredCount}/${totalQuestions}</h4>
-        </div>
-        <div class="overview-grid" role="list" aria-label="Question overview">`;
+        let html = `
+            <div class="overview-header">
+                <h4>Question Navigator</h4>
+                <div class="overview-stats">
+                    <div class="stat-item">
+                        <span class="stat-value">${answeredCount}/${totalQuestions}</span>
+                        <span class="stat-label">Answered</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">${progressPercentage}%</span>
+                        <span class="stat-label">Complete</span>
+                    </div>
+                    ${flaggedCount > 0 ? `
+                        <div class="stat-item">
+                            <span class="stat-value">🚩 ${flaggedCount}</span>
+                            <span class="stat-label">Flagged</span>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+            <div class="overview-legend">
+                <div class="legend-item"><span class="legend-indicator legend-answered"></span>Answered</div>
+                <div class="legend-item"><span class="legend-indicator legend-flagged"></span>Flagged</div>
+                <div class="legend-item"><span class="legend-indicator legend-current"></span>Current</div>
+            </div>
+            <div class="overview-grid" role="list" aria-label="Question overview">`;
 
         this.currentTest.questions.forEach((question, index) => {
             const isAnswered = this.userAnswers[question.id] !== undefined &&
@@ -1005,14 +1070,27 @@ class TestSimulator {
                                this.userAnswers[question.id].length > 0 :
                                this.userAnswers[question.id] !== null);
             const isCurrent = index === this.currentQuestionIndex;
+            const isFlagged = this.flaggedQuestions.has(question.id);
+            const confidence = this.questionConfidence[question.id];
+
+            let statusText = '';
+            if (isCurrent) statusText += ' (current)';
+            if (isAnswered) statusText += ' (answered)';
+            if (isFlagged) statusText += ' (flagged)';
+            if (confidence) statusText += ` (confidence: ${confidence})`;
 
             html += `<button
-                class="overview-item ${isAnswered ? 'answered' : ''} ${isCurrent ? 'current' : ''}"
+                class="overview-item
+                    ${isAnswered ? 'answered' : ''}
+                    ${isCurrent ? 'current' : ''}
+                    ${isFlagged ? 'flagged' : ''}
+                    ${confidence ? 'confidence-' + confidence : ''}"
                 onclick="testSimulator.goToQuestion(${index})"
-                aria-label="Question ${index + 1}${isAnswered ? ' (answered)' : ' (not answered)'}${isCurrent ? ' (current)' : ''}"
-                role="listitem"
-            >
-                ${index + 1}
+                aria-label="Question ${index + 1}${statusText}"
+                title="Question ${index + 1}${statusText}"
+                role="listitem">
+                <span class="overview-number">${index + 1}</span>
+                ${isFlagged ? '<span class="overview-flag">🚩</span>' : ''}
             </button>`;
         });
 
@@ -1073,11 +1151,80 @@ class TestSimulator {
                 break;
         }
 
+        // Add flag and confidence controls
+        this.addQuestionControls(question);
+
         // Focus management
         setTimeout(() => {
             const firstInput = this.questionContainer.querySelector('input, select');
             if (firstInput) firstInput.focus();
         }, 50);
+    }
+
+    /**
+     * Add flag button and confidence selector to question
+     */
+    addQuestionControls(question) {
+        const controlsHTML = `
+            <div class="question-controls">
+                <button
+                    class="btn-flag ${this.flaggedQuestions.has(question.id) ? 'flagged' : ''}"
+                    onclick="testSimulator.toggleFlag(${question.id})"
+                    title="${this.flaggedQuestions.has(question.id) ? 'Unflag question' : 'Flag for review'}"
+                    aria-label="${this.flaggedQuestions.has(question.id) ? 'Remove flag' : 'Flag this question for review'}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+                        <line x1="4" y1="22" x2="4" y2="15"></line>
+                    </svg>
+                    <span class="flag-text">${this.flaggedQuestions.has(question.id) ? 'Flagged' : 'Flag'}</span>
+                </button>
+                <div class="confidence-selector">
+                    <label class="confidence-label">Confidence:</label>
+                    <select
+                        class="confidence-select"
+                        onchange="testSimulator.setConfidence(${question.id}, this.value)"
+                        aria-label="Answer confidence level">
+                        <option value="" ${!this.questionConfidence[question.id] ? 'selected' : ''}>Not set</option>
+                        <option value="high" ${this.questionConfidence[question.id] === 'high' ? 'selected' : ''}>High</option>
+                        <option value="medium" ${this.questionConfidence[question.id] === 'medium' ? 'selected' : ''}>Medium</option>
+                        <option value="low" ${this.questionConfidence[question.id] === 'low' ? 'selected' : ''}>Low</option>
+                        <option value="guess" ${this.questionConfidence[question.id] === 'guess' ? 'selected' : ''}>Guess</option>
+                    </select>
+                </div>
+            </div>
+        `;
+
+        this.questionContainer.insertAdjacentHTML('beforeend', controlsHTML);
+    }
+
+    /**
+     * Toggle flag status for a question
+     */
+    toggleFlag(questionId) {
+        if (this.flaggedQuestions.has(questionId)) {
+            this.flaggedQuestions.delete(questionId);
+            console.log('🏳️ Question unflagged');
+        } else {
+            this.flaggedQuestions.add(questionId);
+            console.log('🚩 Question flagged for review');
+        }
+        this.displayQuestion();
+        this.updateQuestionOverview();
+        this.saveProgress();
+    }
+
+    /**
+     * Set confidence level for a question
+     */
+    setConfidence(questionId, level) {
+        if (level) {
+            this.questionConfidence[questionId] = level;
+            console.log(`💭 Confidence set to: ${level}`);
+        } else {
+            delete this.questionConfidence[questionId];
+        }
+        this.updateQuestionOverview();
+        this.saveProgress();
     }
 
     /**
@@ -1540,19 +1687,30 @@ class TestSimulator {
      * Show confirmation modal before submitting
      */
     showConfirmModal() {
+        const totalQuestions = this.currentTest.questions.length;
         const unanswered = this.currentTest.questions.filter(q => {
             const answer = this.userAnswers[q.id];
             return answer === undefined ||
                    (Array.isArray(answer) && answer.length === 0) ||
                    answer === null;
         }).length;
+        const answered = totalQuestions - unanswered;
+        const flagged = this.flaggedQuestions.size;
 
-        const message = unanswered > 0
-            ? `You have ${unanswered} unanswered question${unanswered > 1 ? 's' : ''}. Are you sure you want to submit?`
-            : 'Are you sure you want to submit your test?';
+        let message = `Progress: ${answered}/${totalQuestions} answered`;
+        if (flagged > 0) {
+            message += `, ${flagged} flagged`;
+        }
+        if (unanswered > 0) {
+            message += `\n\n⚠️ You have ${unanswered} unanswered question${unanswered > 1 ? 's' : ''}. They will be marked incorrect.`;
+        }
+        message += '\n\nAre you sure you want to submit?';
 
         const messageEl = this.confirmModal.querySelector('.confirm-message');
-        if (messageEl) messageEl.textContent = message;
+        if (messageEl) {
+            messageEl.style.whiteSpace = 'pre-line';
+            messageEl.textContent = message;
+        }
 
         this.confirmModal?.classList.remove('hidden');
 
@@ -1820,9 +1978,30 @@ class TestSimulator {
      * @returns {string} HTML string
      */
     getAnswerReview(question, userAnswer, correctAnswer) {
+        // Helper function to add explanation if available
+        const addExplanation = (html) => {
+            if (question.explanation || question._explanation) {
+                const explanation = question.explanation || question._explanation;
+                return html + `
+                    <div class="explanation-section">
+                        <div class="explanation-header">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
+                            <span class="explanation-label">Explanation</span>
+                        </div>
+                        <div class="explanation-text">${this.escapeHtml(explanation)}</div>
+                    </div>
+                `;
+            }
+            return html;
+        };
+
         switch (question.type) {
             case 'mcq':
-                return `
+                return addExplanation(`
                     <div class="answer-section">
                         <span class="answer-label">Your answer:</span>
                         <div class="answer-text user-answer">
@@ -1833,20 +2012,20 @@ class TestSimulator {
                             ${this.escapeHtml(question.options[correctAnswer])}
                         </div>
                     </div>
-                `;
+                `);
             case 'multi-select':
                 const userAnswerText = Array.isArray(userAnswer) && userAnswer.length > 0 ?
                     userAnswer.map(index => this.escapeHtml(question.options[index])).join(', ') : 'No answers selected';
                 const correctAnswerText = correctAnswer.map(index => this.escapeHtml(question.options[index])).join(', ');
 
-                return `
+                return addExplanation(`
                     <div class="answer-section">
                         <span class="answer-label">Your answers:</span>
                         <div class="answer-text user-answer">${userAnswerText}</div>
                         <span class="answer-label">Correct answers:</span>
                         <div class="answer-text correct-answer">${correctAnswerText}</div>
                     </div>
-                `;
+                `);
             case 'matching':
                 const userMatches = question.leftItems.map((leftItem, index) => {
                     const userRightIndex = Array.isArray(userAnswer) ? userAnswer[index] : null;
@@ -1861,7 +2040,7 @@ class TestSimulator {
                     return `${this.escapeHtml(leftItem)} → ${this.escapeHtml(rightItem)}`;
                 });
 
-                return `
+                return addExplanation(`
                     <div class="answer-section">
                         <span class="answer-label">Your matches:</span>
                         <div class="answer-text user-answer">
@@ -1872,24 +2051,24 @@ class TestSimulator {
                             ${correctMatches.map(match => `<div class="matching-review-item">${match}</div>`).join('')}
                         </div>
                     </div>
-                `;
+                `);
             case 'true-false':
                 const userTFAnswer = userAnswer === true || userAnswer === 1 || userAnswer === 'true' ? 'True' :
                                      userAnswer === false || userAnswer === 0 || userAnswer === 'false' ? 'False' : 'No answer';
                 const correctTFAnswer = correctAnswer === true || correctAnswer === 1 ? 'True' : 'False';
 
-                return `
+                return addExplanation(`
                     <div class="answer-section">
                         <span class="answer-label">Your answer:</span>
                         <div class="answer-text user-answer">${userTFAnswer}</div>
                         <span class="answer-label">Correct answer:</span>
                         <div class="answer-text correct-answer">${correctTFAnswer}</div>
                     </div>
-                `;
+                `);
             case 'fill-blank':
                 const acceptedAnswers = question.acceptedAnswers || [correctAnswer];
 
-                return `
+                return addExplanation(`
                     <div class="answer-section">
                         <span class="answer-label">Your answer:</span>
                         <div class="answer-text user-answer">
@@ -1901,7 +2080,7 @@ class TestSimulator {
                         </div>
                         ${question.caseSensitive === false ? '<p class="hint-text" style="margin-top: 8px;">Note: Answer was not case-sensitive</p>' : ''}
                     </div>
-                `;
+                `);
             case 'ordering':
                 const userOrder = Array.isArray(userAnswer) ?
                     userAnswer.map((itemIdx, pos) => `${pos + 1}. ${this.escapeHtml(question.items[itemIdx])}`).join('<br>') :
@@ -1910,14 +2089,14 @@ class TestSimulator {
                     `${pos + 1}. ${this.escapeHtml(question.items[itemIdx])}`
                 ).join('<br>');
 
-                return `
+                return addExplanation(`
                     <div class="answer-section">
                         <span class="answer-label">Your order:</span>
                         <div class="answer-text user-answer">${userOrder}</div>
                         <span class="answer-label">Correct order:</span>
                         <div class="answer-text correct-answer">${correctOrder}</div>
                     </div>
-                `;
+                `);
         }
     }
 
@@ -2991,6 +3170,12 @@ class TestSimulator {
 
         // Render question type chart
         this.renderQuestionTypeChart(stats.questionsPerType);
+
+        // Render performance trends
+        this.renderPerformanceTrendsChart(this.currentTrendsPeriod);
+
+        // Render course/topic breakdown
+        this.renderCourseTopicBreakdown();
     }
 
     /**
@@ -3113,6 +3298,290 @@ class TestSimulator {
             }).join('');
 
         chart.innerHTML = chartHTML;
+    }
+
+    /**
+     * Change trends chart period
+     */
+    changeTrendsPeriod(period) {
+        // Update active button
+        document.querySelectorAll('.chart-period-btn').forEach(btn => {
+            if (btn.dataset.period === period) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+
+        // Update period and re-render
+        this.currentTrendsPeriod = period;
+        this.renderPerformanceTrendsChart(period);
+    }
+
+    /**
+     * Render performance trends chart showing scores over time
+     */
+    async renderPerformanceTrendsChart(period) {
+        const chart = this.performanceTrendsChart;
+        if (!chart) return;
+
+        // Get test history
+        const tests = await this.getSavedTests();
+        if (!tests || tests.length === 0) {
+            chart.innerHTML = `
+                <div class="chart-empty-state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 3v18h18"></path>
+                        <path d="M18 12l-5-5-3 3-4-4"></path>
+                    </svg>
+                    <p>No test data yet. Complete some tests to see your performance trends!</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Calculate date range
+        const now = new Date();
+        const periodDays = period === 'all' ? 365 * 10 : parseInt(period);
+        const startDate = new Date(now.getTime() - (periodDays * 24 * 60 * 60 * 1000));
+
+        // Collect all test attempts within period
+        const dataPoints = [];
+        tests.forEach(test => {
+            if (test.attempts && Array.isArray(test.attempts)) {
+                test.attempts.forEach(attempt => {
+                    const attemptDate = new Date(attempt.date);
+                    if (attemptDate >= startDate) {
+                        dataPoints.push({
+                            date: attemptDate,
+                            score: attempt.score.percentage,
+                            title: test.title
+                        });
+                    }
+                });
+            }
+        });
+
+        // Sort by date
+        dataPoints.sort((a, b) => a.date - b.date);
+
+        if (dataPoints.length === 0) {
+            chart.innerHTML = `
+                <div class="chart-empty-state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 3v18h18"></path>
+                        <path d="M18 12l-5-5-3 3-4-4"></path>
+                    </svg>
+                    <p>No test data in this time period.</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Calculate stats
+        const avgScore = dataPoints.reduce((sum, dp) => sum + dp.score, 0) / dataPoints.length;
+        const maxScore = Math.max(...dataPoints.map(dp => dp.score));
+        const minScore = Math.min(...dataPoints.map(dp => dp.score));
+
+        // Render chart
+        const chartHeight = 250;
+        const chartWidth = chart.offsetWidth - 60; // Account for padding
+        const pointRadius = 4;
+
+        // Scale data points
+        const xScale = chartWidth / (dataPoints.length - 1 || 1);
+        const yScale = (chartHeight - 40) / 100; // 0-100 scale
+
+        // Build SVG path
+        const points = dataPoints.map((dp, i) => {
+            const x = i * xScale + 30;
+            const y = chartHeight - (dp.score * yScale) - 20;
+            return { x, y, score: dp.score, title: dp.title, date: dp.date };
+        });
+
+        const pathData = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x},${p.y}`).join(' ');
+
+        // Create area fill path
+        const areaPath = `${pathData} L ${points[points.length - 1].x},${chartHeight - 20} L 30,${chartHeight - 20} Z`;
+
+        chart.innerHTML = `
+            <div class="chart-stats">
+                <div class="chart-stat">
+                    <span class="chart-stat-label">Average</span>
+                    <span class="chart-stat-value">${Math.round(avgScore)}%</span>
+                </div>
+                <div class="chart-stat">
+                    <span class="chart-stat-label">Best</span>
+                    <span class="chart-stat-value">${Math.round(maxScore)}%</span>
+                </div>
+                <div class="chart-stat">
+                    <span class="chart-stat-label">Lowest</span>
+                    <span class="chart-stat-value">${Math.round(minScore)}%</span>
+                </div>
+                <div class="chart-stat">
+                    <span class="chart-stat-label">Tests</span>
+                    <span class="chart-stat-value">${dataPoints.length}</span>
+                </div>
+            </div>
+            <svg class="line-chart" viewBox="0 0 ${chartWidth + 60} ${chartHeight}" preserveAspectRatio="none">
+                <!-- Grid lines -->
+                ${[0, 25, 50, 75, 100].map(val => `
+                    <line x1="30" y1="${chartHeight - (val * yScale) - 20}"
+                          x2="${chartWidth + 30}" y2="${chartHeight - (val * yScale) - 20}"
+                          stroke="rgba(0,0,0,0.1)" stroke-width="1" stroke-dasharray="4"/>
+                    <text x="10" y="${chartHeight - (val * yScale) - 16}"
+                          font-size="12" fill="rgba(0,0,0,0.5)">${val}%</text>
+                `).join('')}
+
+                <!-- Area fill -->
+                <path d="${areaPath}" fill="rgba(33, 128, 141, 0.1)" />
+
+                <!-- Line -->
+                <path d="${pathData}" fill="none" stroke="var(--color-primary)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+
+                <!-- Data points -->
+                ${points.map((p, i) => `
+                    <circle cx="${p.x}" cy="${p.y}" r="${pointRadius}"
+                            fill="white" stroke="var(--color-primary)" stroke-width="2"
+                            class="chart-point" data-index="${i}"/>
+                `).join('')}
+            </svg>
+            <div id="chart-tooltip" class="chart-tooltip hidden"></div>
+        `;
+
+        // Add interactivity
+        const tooltip = chart.querySelector('#chart-tooltip');
+        chart.querySelectorAll('.chart-point').forEach((point, i) => {
+            point.addEventListener('mouseenter', () => {
+                const data = dataPoints[i];
+                const dateStr = data.date.toLocaleDateString();
+                tooltip.innerHTML = `
+                    <div class="tooltip-title">${this.escapeHtml(data.title)}</div>
+                    <div class="tooltip-score">${Math.round(data.score)}%</div>
+                    <div class="tooltip-date">${dateStr}</div>
+                `;
+                tooltip.classList.remove('hidden');
+            });
+            point.addEventListener('mouseleave', () => {
+                tooltip.classList.add('hidden');
+            });
+        });
+
+        console.log(`📊 Performance trends rendered: ${dataPoints.length} data points`);
+    }
+
+    /**
+     * Render course and topic breakdown
+     */
+    async renderCourseTopicBreakdown() {
+        const container = this.courseTopicBreakdown;
+        if (!container) return;
+
+        // Get test history
+        const tests = await this.getSavedTests();
+        if (!tests || tests.length === 0) {
+            container.innerHTML = `
+                <div class="chart-empty-state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                    </svg>
+                    <p>No course data yet. Save tests with course information to see your breakdown!</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Aggregate by course
+        const courseStats = {};
+        tests.forEach(test => {
+            const course = test.course || 'Uncategorized';
+            if (!courseStats[course]) {
+                courseStats[course] = {
+                    tests: 0,
+                    totalScore: 0,
+                    topics: {}
+                };
+            }
+
+            courseStats[course].tests++;
+
+            // Average all attempts
+            if (test.attempts && test.attempts.length > 0) {
+                const avgScore = test.attempts.reduce((sum, att) => sum + att.score.percentage, 0) / test.attempts.length;
+                courseStats[course].totalScore += avgScore;
+            }
+
+            // Track topics
+            const topic = test.topic || 'General';
+            if (!courseStats[course].topics[topic]) {
+                courseStats[course].topics[topic] = {
+                    tests: 0,
+                    totalScore: 0
+                };
+            }
+            courseStats[course].topics[topic].tests++;
+            if (test.attempts && test.attempts.length > 0) {
+                const avgScore = test.attempts.reduce((sum, att) => sum + att.score.percentage, 0) / test.attempts.length;
+                courseStats[course].topics[topic].totalScore += avgScore;
+            }
+        });
+
+        // Sort courses by number of tests
+        const sortedCourses = Object.entries(courseStats).sort((a, b) => b[1].tests - a[1].tests);
+
+        if (sortedCourses.length === 0) {
+            container.innerHTML = '<p class="chart-empty-state">No course data available.</p>';
+            return;
+        }
+
+        container.innerHTML = sortedCourses.map(([courseName, data]) => {
+            const avgScore = data.totalScore / data.tests;
+            const topics = Object.entries(data.topics);
+
+            return `
+                <div class="course-breakdown-card">
+                    <div class="course-breakdown-header">
+                        <div class="course-breakdown-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                            </svg>
+                            <span>${this.escapeHtml(courseName)}</span>
+                        </div>
+                        <div class="course-breakdown-stats">
+                            <span class="course-stat">${data.tests} test${data.tests !== 1 ? 's' : ''}</span>
+                            <span class="course-score" style="color: ${avgScore >= 70 ? 'var(--color-success)' : avgScore >= 50 ? 'var(--color-warning)' : 'var(--color-error)'}">
+                                ${Math.round(avgScore)}% avg
+                            </span>
+                        </div>
+                    </div>
+                    ${topics.length > 0 ? `
+                        <div class="topic-breakdown">
+                            ${topics.map(([topicName, topicData]) => {
+                                const topicAvg = topicData.totalScore / topicData.tests;
+                                return `
+                                    <div class="topic-breakdown-item">
+                                        <div class="topic-breakdown-name">${this.escapeHtml(topicName)}</div>
+                                        <div class="topic-breakdown-stats">
+                                            <span class="topic-tests">${topicData.tests} test${topicData.tests !== 1 ? 's' : ''}</span>
+                                            <span class="topic-score" style="color: ${topicAvg >= 70 ? 'var(--color-success)' : topicAvg >= 50 ? 'var(--color-warning)' : 'var(--color-error)'}">
+                                                ${Math.round(topicAvg)}%
+                                            </span>
+                                        </div>
+                                        <div class="topic-breakdown-bar">
+                                            <div class="topic-breakdown-fill" style="width: ${topicAvg}%; background-color: ${topicAvg >= 70 ? 'var(--color-success)' : topicAvg >= 50 ? 'var(--color-warning)' : 'var(--color-error)'}"></div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }).join('');
+
+        console.log(`📚 Course/topic breakdown rendered: ${sortedCourses.length} courses`);
     }
 
     /**
@@ -3951,6 +4420,46 @@ class TestSimulator {
         this.startTest();
 
         console.log('👁️ Previewing test:', title);
+    }
+
+    /**
+     * Show general toast notification
+     */
+    showToast(message, type = 'info') {
+        // Create toast container if it doesn't exist
+        let container = document.getElementById('toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'toast-container';
+            container.className = 'toast-container';
+            document.body.appendChild(container);
+        }
+
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+
+        const icons = {
+            info: 'ℹ️',
+            success: '✅',
+            warning: '⚠️',
+            error: '🚨'
+        };
+
+        toast.innerHTML = `
+            <div class="toast-icon">${icons[type] || icons.info}</div>
+            <div class="toast-message">${message}</div>
+        `;
+
+        container.appendChild(toast);
+
+        // Animate in
+        setTimeout(() => toast.classList.add('show'), 10);
+
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 5000);
     }
 
     /**
