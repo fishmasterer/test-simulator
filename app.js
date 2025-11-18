@@ -20,6 +20,11 @@ class TestSimulator {
         this.themeKey = 'testSimulatorTheme';
         this.testBankKey = 'testSimulatorBank';
 
+        // Test Builder properties
+        this.builderQuestions = [];
+        this.builderCurrentQuestionIndex = null;
+        this.builderEditMode = false;
+
         this.initializeElements();
         this.bindEvents();
         this.loadSampleTestData();
@@ -121,6 +126,49 @@ class TestSimulator {
 
         // Loading overlay
         this.loadingOverlay = document.getElementById('loading-overlay');
+
+        // Test Builder elements
+        this.testBuilderSection = document.getElementById('test-builder-section');
+        this.openTestBuilderBtn = document.getElementById('open-test-builder-btn');
+        this.closeTestBuilderBtn = document.getElementById('close-test-builder-btn');
+        this.builderTestTitle = document.getElementById('builder-test-title');
+        this.builderTestCourse = document.getElementById('builder-test-course');
+        this.builderTestTopic = document.getElementById('builder-test-topic');
+        this.builderQuestionCount = document.getElementById('builder-question-count');
+        this.builderQuestionList = document.getElementById('builder-question-list');
+        this.builderAddQuestionBtn = document.getElementById('builder-add-question-btn');
+        this.builderEditorEmpty = document.getElementById('builder-editor-empty');
+        this.builderEditorForm = document.getElementById('builder-editor-form');
+        this.builderQuestionType = document.getElementById('builder-question-type');
+        this.builderQuestionText = document.getElementById('builder-question-text');
+        this.builderMcqOptionsContainer = document.getElementById('builder-mcq-options-container');
+        this.builderMatchingOptionsContainer = document.getElementById('builder-matching-options-container');
+        this.builderTrueFalseContainer = document.getElementById('builder-true-false-container');
+        this.builderFillBlankContainer = document.getElementById('builder-fill-blank-container');
+        this.builderOrderingContainer = document.getElementById('builder-ordering-container');
+        this.builderOptionsList = document.getElementById('builder-options-list');
+        this.builderMatchingPairsList = document.getElementById('builder-matching-pairs-list');
+        this.builderOrderingItemsList = document.getElementById('builder-ordering-items-list');
+        this.builderFillAcceptedAnswersInput = document.getElementById('builder-fill-accepted-answers');
+        this.builderFillCaseSensitiveCheckbox = document.getElementById('builder-fill-case-sensitive');
+        this.builderAddOptionBtn = document.getElementById('builder-add-option-btn');
+        this.builderAddMatchingPairBtn = document.getElementById('builder-add-matching-pair-btn');
+        this.builderAddOrderingItemBtn = document.getElementById('builder-add-ordering-item-btn');
+        this.builderSaveQuestionBtn = document.getElementById('builder-save-question-btn');
+        this.builderCancelQuestionBtn = document.getElementById('builder-cancel-question-btn');
+        this.builderDeleteQuestionBtn = document.getElementById('builder-delete-question-btn');
+        this.testBuilderExportBtn = document.getElementById('test-builder-export-btn');
+        this.testBuilderPreviewBtn = document.getElementById('test-builder-preview-btn');
+
+        // Analytics Dashboard elements
+        this.analyticsSection = document.getElementById('analytics-section');
+        this.openAnalyticsBtn = document.getElementById('open-analytics-btn');
+        this.closeAnalyticsBtn = document.getElementById('close-analytics-btn');
+        this.achievementGallery = document.getElementById('achievement-gallery');
+        this.questionTypeChart = document.getElementById('question-type-chart');
+
+        // Initialize gamification system
+        this.gamification = new GamificationSystem();
     }
 
     /**
@@ -155,10 +203,28 @@ class TestSimulator {
         this.libraryCourseFilter?.addEventListener('change', () => this.filterTestLibrary());
         this.libraryTopicFilter?.addEventListener('change', () => this.filterTestLibrary());
 
-        // Prompt builder handlers
-        this.promptGenerateBtn?.addEventListener('click', () => this.generatePrompt());
-        this.promptCopyBtn?.addEventListener('click', () => this.copyPromptToClipboard());
-        this.promptResetBtn?.addEventListener('click', () => this.resetPromptBuilder());
+        // Test Builder events
+        this.openTestBuilderBtn?.addEventListener('click', () => this.openTestBuilder());
+        this.closeTestBuilderBtn?.addEventListener('click', () => this.closeTestBuilder());
+        this.builderAddQuestionBtn?.addEventListener('click', () => this.builderAddNewQuestion());
+        this.builderQuestionType?.addEventListener('change', () => this.builderToggleQuestionTypeFields());
+        this.builderAddOptionBtn?.addEventListener('click', () => this.builderAddOption());
+        this.builderAddMatchingPairBtn?.addEventListener('click', () => this.builderAddMatchingPair());
+        this.builderAddOrderingItemBtn?.addEventListener('click', () => this.builderAddOrderingItem());
+        this.builderSaveQuestionBtn?.addEventListener('click', () => this.builderSaveQuestion());
+        this.builderCancelQuestionBtn?.addEventListener('click', () => this.builderCancelEdit());
+        this.builderDeleteQuestionBtn?.addEventListener('click', () => this.builderDeleteQuestion());
+        this.testBuilderExportBtn?.addEventListener('click', () => this.builderExportJSON());
+        this.builderPreviewBtn?.addEventListener('click', () => this.builderPreviewTest());
+
+        // Analytics Dashboard events
+        this.openAnalyticsBtn?.addEventListener('click', () => this.openAnalyticsDashboard());
+        this.closeAnalyticsBtn?.addEventListener('click', () => this.closeAnalyticsDashboard());
+
+        // Achievement filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => this.filterAchievements(e.currentTarget.dataset.filter));
+        });
 
         // Theme menu options
         const themeOptions = document.querySelectorAll('.theme-option');
@@ -721,8 +787,8 @@ class TestSimulator {
                 return false;
             }
 
-            if (!['mcq', 'multi-select', 'matching'].includes(question.type)) {
-                this.showError(`Question ${i + 1} has invalid type. Must be 'mcq', 'multi-select', or 'matching'.`);
+            if (!['mcq', 'multi-select', 'matching', 'true-false', 'fill-blank', 'ordering'].includes(question.type)) {
+                this.showError(`Question ${i + 1} has invalid type. Must be 'mcq', 'multi-select', 'matching', 'true-false', 'fill-blank', or 'ordering'.`);
                 return false;
             }
 
@@ -760,6 +826,35 @@ class TestSimulator {
 
                 if (question.correct.some(index => index < 0 || index >= question.rightItems.length)) {
                     this.showError(`Question ${i + 1} has invalid matching indices.`);
+                    return false;
+                }
+            }
+
+            if (question.type === 'true-false') {
+                if (typeof question.correct !== 'boolean' && question.correct !== 0 && question.correct !== 1) {
+                    this.showError(`Question ${i + 1} must have a boolean correct answer (true/false or 0/1).`);
+                    return false;
+                }
+            }
+
+            if (question.type === 'fill-blank') {
+                if (!question.acceptedAnswers || !Array.isArray(question.acceptedAnswers)) {
+                    this.showError(`Question ${i + 1} must have an acceptedAnswers array.`);
+                    return false;
+                }
+                if (question.acceptedAnswers.length === 0) {
+                    this.showError(`Question ${i + 1} must have at least one accepted answer.`);
+                    return false;
+                }
+            }
+
+            if (question.type === 'ordering') {
+                if (!question.items || !Array.isArray(question.items)) {
+                    this.showError(`Question ${i + 1} must have an items array.`);
+                    return false;
+                }
+                if (!Array.isArray(question.correct) || question.correct.length !== question.items.length) {
+                    this.showError(`Question ${i + 1} correct array must match items length.`);
                     return false;
                 }
             }
@@ -927,6 +1022,15 @@ class TestSimulator {
             case 'matching':
                 this.displayMatchingQuestion(question, questionNum);
                 break;
+            case 'true-false':
+                this.displayTrueFalseQuestion(question, questionNum);
+                break;
+            case 'fill-blank':
+                this.displayFillBlankQuestion(question, questionNum);
+                break;
+            case 'ordering':
+                this.displayOrderingQuestion(question, questionNum);
+                break;
         }
 
         // Focus management
@@ -1089,6 +1193,192 @@ class TestSimulator {
     }
 
     /**
+     * Display True/False question
+     * @param {Object} question - Question data
+     * @param {number} questionNum - Question number
+     */
+    displayTrueFalseQuestion(question, questionNum) {
+        const savedAnswer = this.userAnswers[question.id];
+        const isTrue = savedAnswer === true || savedAnswer === 1 || savedAnswer === 'true';
+        const isFalse = savedAnswer === false || savedAnswer === 0 || savedAnswer === 'false';
+
+        this.questionContainer.innerHTML = `
+            <div class="question-header">
+                <div class="question-number">Question ${questionNum}</div>
+                <h3 class="question-text" id="question-${questionNum}-text">${this.escapeHtml(question.question)}</h3>
+            </div>
+            <div class="question-options true-false-options" role="radiogroup" aria-labelledby="question-${questionNum}-text">
+                <div class="option-item true-false-option">
+                    <input
+                        type="radio"
+                        id="option-true"
+                        name="true-false-answer"
+                        value="true"
+                        ${isTrue ? 'checked' : ''}
+                        aria-label="True"
+                    >
+                    <label for="option-true" class="option-label true-false-label">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 24px; height: 24px; margin-right: 8px;">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        True
+                    </label>
+                </div>
+                <div class="option-item true-false-option">
+                    <input
+                        type="radio"
+                        id="option-false"
+                        name="true-false-answer"
+                        value="false"
+                        ${isFalse ? 'checked' : ''}
+                        aria-label="False"
+                    >
+                    <label for="option-false" class="option-label true-false-label">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 24px; height: 24px; margin-right: 8px;">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                        False
+                    </label>
+                </div>
+            </div>
+        `;
+
+        // Bind change event
+        const radioInputs = this.questionContainer.querySelectorAll('input[type="radio"]');
+        radioInputs.forEach(input => {
+            input.addEventListener('change', () => {
+                this.userAnswers[question.id] = input.value === 'true';
+                this.updateQuestionOverview();
+                this.saveProgress();
+            });
+        });
+    }
+
+    /**
+     * Display Fill-in-the-Blank question
+     * @param {Object} question - Question data
+     * @param {number} questionNum - Question number
+     */
+    displayFillBlankQuestion(question, questionNum) {
+        const savedAnswer = this.userAnswers[question.id] || '';
+
+        this.questionContainer.innerHTML = `
+            <div class="question-header">
+                <div class="question-number">Question ${questionNum}</div>
+                <h3 class="question-text" id="question-${questionNum}-text">${this.escapeHtml(question.question)}</h3>
+            </div>
+            <div class="fill-blank-container">
+                <input
+                    type="text"
+                    id="fill-blank-input"
+                    class="form-control fill-blank-input"
+                    placeholder="Type your answer here..."
+                    value="${this.escapeHtml(savedAnswer)}"
+                    aria-labelledby="question-${questionNum}-text"
+                >
+                ${question.caseSensitive === false ? '<p class="hint-text">Note: Answer is not case-sensitive</p>' : ''}
+            </div>
+        `;
+
+        // Bind input event
+        const input = this.questionContainer.querySelector('#fill-blank-input');
+        input.addEventListener('input', () => {
+            this.userAnswers[question.id] = input.value.trim();
+            this.updateQuestionOverview();
+            this.saveProgress();
+        });
+    }
+
+    /**
+     * Display Ordering/Sequencing question
+     * @param {Object} question - Question data
+     * @param {number} questionNum - Question number
+     */
+    displayOrderingQuestion(question, questionNum) {
+        let savedOrder = this.userAnswers[question.id];
+
+        // If no saved order, shuffle the items for initial display
+        if (!savedOrder || savedOrder.length !== question.items.length) {
+            savedOrder = question.items.map((_, index) => index);
+            // Shuffle
+            for (let i = savedOrder.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [savedOrder[i], savedOrder[j]] = [savedOrder[j], savedOrder[i]];
+            }
+            this.userAnswers[question.id] = savedOrder;
+        }
+
+        this.questionContainer.innerHTML = `
+            <div class="question-header">
+                <div class="question-number">Question ${questionNum}</div>
+                <h3 class="question-text" id="question-${questionNum}-text">${this.escapeHtml(question.question)}</h3>
+                <p class="hint-text">Drag items to reorder them, or use the arrows to move items up and down.</p>
+            </div>
+            <div class="ordering-container" id="ordering-container">
+                ${savedOrder.map((itemIndex, position) => `
+                    <div class="ordering-item" data-position="${position}" data-item-index="${itemIndex}">
+                        <div class="ordering-handle" aria-label="Drag to reorder">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="5" y1="9" x2="19" y2="9"></line>
+                                <line x1="5" y1="15" x2="19" y2="15"></line>
+                            </svg>
+                        </div>
+                        <div class="ordering-number">${position + 1}</div>
+                        <div class="ordering-text">${this.escapeHtml(question.items[itemIndex])}</div>
+                        <div class="ordering-controls">
+                            <button class="btn-icon ordering-up" data-position="${position}" aria-label="Move up" ${position === 0 ? 'disabled' : ''}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="18 15 12 9 6 15"></polyline>
+                                </svg>
+                            </button>
+                            <button class="btn-icon ordering-down" data-position="${position}" aria-label="Move down" ${position === savedOrder.length - 1 ? 'disabled' : ''}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+
+        // Bind arrow button events
+        const upButtons = this.questionContainer.querySelectorAll('.ordering-up');
+        const downButtons = this.questionContainer.querySelectorAll('.ordering-down');
+
+        upButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const position = parseInt(btn.dataset.position);
+                if (position > 0) {
+                    const currentOrder = this.userAnswers[question.id];
+                    [currentOrder[position], currentOrder[position - 1]] =
+                    [currentOrder[position - 1], currentOrder[position]];
+                    this.userAnswers[question.id] = currentOrder;
+                    this.displayQuestion();
+                    this.updateQuestionOverview();
+                    this.saveProgress();
+                }
+            });
+        });
+
+        downButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const position = parseInt(btn.dataset.position);
+                const currentOrder = this.userAnswers[question.id];
+                if (position < currentOrder.length - 1) {
+                    [currentOrder[position], currentOrder[position + 1]] =
+                    [currentOrder[position + 1], currentOrder[position]];
+                    this.userAnswers[question.id] = currentOrder;
+                    this.displayQuestion();
+                    this.updateQuestionOverview();
+                    this.saveProgress();
+                }
+            });
+        });
+    }
+
+    /**
      * Escape HTML to prevent XSS
      * @param {string} text - Text to escape
      * @returns {string} Escaped text
@@ -1168,8 +1458,37 @@ class TestSimulator {
     submitTest() {
         this.stopTimer();
         this.calculateResults();
+
+        // Record completion for gamification
+        const timeSpent = this.testDuration ? (this.testDuration - (this.timeRemaining || 0)) : 0;
+        const questionTypes = {};
+        this.currentTest.questions.forEach(q => {
+            questionTypes[q.type] = (questionTypes[q.type] || 0) + 1;
+        });
+
+        const gamificationResult = this.gamification.recordTestCompletion({
+            score: this.score.percentage,
+            totalQuestions: this.score.total,
+            correctAnswers: this.score.correct,
+            timeSpent,
+            questionTypes
+        });
+
+        // Show achievement toasts
+        if (gamificationResult.newAchievements.length > 0) {
+            this.showAchievementToasts(gamificationResult.newAchievements);
+        }
+
+        // Show level up notification
+        if (gamificationResult.leveledUp) {
+            const stats = this.gamification.getStats();
+            this.showLevelUpToast(stats.level);
+        }
+
         this.displayResults();
         this.clearProgress(); // Clear saved progress after submission
+
+        console.log(`🎮 Gamification: +${gamificationResult.xpEarned} XP, ${gamificationResult.newAchievements.length} new achievements`);
     }
 
     /**
@@ -1278,6 +1597,30 @@ class TestSimulator {
                            userAnswer.every((answer, index) => answer === correctAnswer[index]);
                 }
                 return false;
+            case 'true-false':
+                // Handle both boolean and 0/1 formats
+                const userBool = userAnswer === true || userAnswer === 1 || userAnswer === 'true';
+                const correctBool = correctAnswer === true || correctAnswer === 1;
+                return userBool === correctBool;
+            case 'fill-blank':
+                if (!userAnswer) return false;
+                // Get accepted answers array
+                const acceptedAnswers = question.acceptedAnswers || [correctAnswer];
+                const caseSensitive = question.caseSensitive !== false; // Default to case-sensitive
+
+                return acceptedAnswers.some(accepted => {
+                    if (caseSensitive) {
+                        return userAnswer.trim() === accepted.trim();
+                    } else {
+                        return userAnswer.trim().toLowerCase() === accepted.trim().toLowerCase();
+                    }
+                });
+            case 'ordering':
+                if (Array.isArray(userAnswer) && Array.isArray(correctAnswer)) {
+                    return userAnswer.length === correctAnswer.length &&
+                           userAnswer.every((answer, index) => answer === correctAnswer[index]);
+                }
+                return false;
         }
     }
 
@@ -1342,6 +1685,51 @@ class TestSimulator {
                         </div>
                     </div>
                 `;
+            case 'true-false':
+                const userTFAnswer = userAnswer === true || userAnswer === 1 || userAnswer === 'true' ? 'True' :
+                                     userAnswer === false || userAnswer === 0 || userAnswer === 'false' ? 'False' : 'No answer';
+                const correctTFAnswer = correctAnswer === true || correctAnswer === 1 ? 'True' : 'False';
+
+                return `
+                    <div class="answer-section">
+                        <span class="answer-label">Your answer:</span>
+                        <div class="answer-text user-answer">${userTFAnswer}</div>
+                        <span class="answer-label">Correct answer:</span>
+                        <div class="answer-text correct-answer">${correctTFAnswer}</div>
+                    </div>
+                `;
+            case 'fill-blank':
+                const acceptedAnswers = question.acceptedAnswers || [correctAnswer];
+
+                return `
+                    <div class="answer-section">
+                        <span class="answer-label">Your answer:</span>
+                        <div class="answer-text user-answer">
+                            ${userAnswer ? this.escapeHtml(userAnswer) : 'No answer'}
+                        </div>
+                        <span class="answer-label">Accepted answer${acceptedAnswers.length > 1 ? 's' : ''}:</span>
+                        <div class="answer-text correct-answer">
+                            ${acceptedAnswers.map(ans => this.escapeHtml(ans)).join(', ')}
+                        </div>
+                        ${question.caseSensitive === false ? '<p class="hint-text" style="margin-top: 8px;">Note: Answer was not case-sensitive</p>' : ''}
+                    </div>
+                `;
+            case 'ordering':
+                const userOrder = Array.isArray(userAnswer) ?
+                    userAnswer.map((itemIdx, pos) => `${pos + 1}. ${this.escapeHtml(question.items[itemIdx])}`).join('<br>') :
+                    'No answer';
+                const correctOrder = correctAnswer.map((itemIdx, pos) =>
+                    `${pos + 1}. ${this.escapeHtml(question.items[itemIdx])}`
+                ).join('<br>');
+
+                return `
+                    <div class="answer-section">
+                        <span class="answer-label">Your order:</span>
+                        <div class="answer-text user-answer">${userOrder}</div>
+                        <span class="answer-label">Correct order:</span>
+                        <div class="answer-text correct-answer">${correctOrder}</div>
+                    </div>
+                `;
         }
     }
 
@@ -1380,6 +1768,18 @@ class TestSimulator {
                 correctAnswerText = question.leftItems.map((item, i) =>
                     `${item}→${question.rightItems[correctAnswer[i]]}`
                 ).join('; ');
+            } else if (question.type === 'true-false') {
+                userAnswerText = userAnswer === true || userAnswer === 1 || userAnswer === 'true' ? 'True' :
+                                 userAnswer === false || userAnswer === 0 || userAnswer === 'false' ? 'False' : 'No answer';
+                correctAnswerText = correctAnswer === true || correctAnswer === 1 ? 'True' : 'False';
+            } else if (question.type === 'fill-blank') {
+                userAnswerText = userAnswer || 'No answer';
+                const acceptedAnswers = question.acceptedAnswers || [correctAnswer];
+                correctAnswerText = acceptedAnswers.join(' / ');
+            } else if (question.type === 'ordering') {
+                userAnswerText = Array.isArray(userAnswer) ?
+                    userAnswer.map((idx, pos) => `${pos + 1}. ${question.items[idx]}`).join('; ') : 'No answer';
+                correctAnswerText = correctAnswer.map((idx, pos) => `${pos + 1}. ${question.items[idx]}`).join('; ');
             }
 
             // Escape quotes in CSV
@@ -2291,6 +2691,190 @@ class TestSimulator {
     }
 
     /**
+     * Open analytics dashboard
+     */
+    openAnalyticsDashboard() {
+        if (!this.analyticsSection) return;
+
+        this.jsonInputSection.classList.add('hidden');
+        this.analyticsSection.classList.remove('hidden');
+
+        // Populate dashboard with current data
+        this.populateAnalyticsDashboard();
+    }
+
+    /**
+     * Close analytics dashboard and return to main screen
+     */
+    closeAnalyticsDashboard() {
+        if (!this.analyticsSection) return;
+
+        this.analyticsSection.classList.add('hidden');
+        this.jsonInputSection.classList.remove('hidden');
+    }
+
+    /**
+     * Populate analytics dashboard with gamification data
+     */
+    populateAnalyticsDashboard() {
+        const stats = this.gamification.getStats();
+        const progress = this.gamification.getLevelProgress();
+
+        // Update level and XP
+        document.getElementById('analytics-level').textContent = stats.level;
+        document.getElementById('analytics-xp-text').textContent =
+            `${progress.currentXP} / ${this.gamification.getXPForNextLevel(stats.level)} XP`;
+        document.getElementById('analytics-xp-fill').style.width = `${progress.percentage}%`;
+        document.getElementById('analytics-xp-percent').textContent =
+            `${Math.round(progress.percentage)}% to next level`;
+
+        // Update stats cards
+        document.getElementById('stat-tests-completed').textContent = stats.testsCompleted;
+        document.getElementById('stat-accuracy').textContent = `${stats.accuracy}%`;
+        document.getElementById('stat-study-time').textContent = this.formatStudyTime(stats.totalStudyTime);
+        document.getElementById('stat-streak').textContent =
+            `${stats.streak.current} day${stats.streak.current !== 1 ? 's' : ''}`;
+        document.getElementById('stat-perfect-scores').textContent = stats.perfectScores;
+        document.getElementById('stat-achievements').textContent =
+            `${stats.achievementsUnlocked} / ${stats.totalAchievements}`;
+
+        // Update detailed stats
+        document.getElementById('stat-total-questions').textContent = stats.totalQuestions;
+        document.getElementById('stat-correct-answers').textContent = stats.correctAnswers;
+        document.getElementById('stat-longest-streak').textContent =
+            `${stats.streak.longest} day${stats.streak.longest !== 1 ? 's' : ''}`;
+        document.getElementById('stat-total-xp').textContent = `${stats.xp} XP`;
+
+        // Render achievement gallery
+        this.renderAchievementGallery();
+
+        // Render question type chart
+        this.renderQuestionTypeChart(stats.questionsPerType);
+    }
+
+    /**
+     * Format study time in hours/minutes
+     */
+    formatStudyTime(seconds) {
+        if (seconds < 60) return '< 1m';
+        if (seconds < 3600) {
+            const minutes = Math.floor(seconds / 60);
+            return `${minutes}m`;
+        }
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+    }
+
+    /**
+     * Render achievement gallery
+     */
+    renderAchievementGallery() {
+        const achievements = this.gamification.getAllAchievements();
+        const gallery = this.achievementGallery;
+
+        if (!gallery) return;
+
+        gallery.innerHTML = achievements.map(achievement => `
+            <div class="achievement-card ${achievement.unlocked ? 'unlocked' : 'locked'}"
+                 data-unlocked="${achievement.unlocked}">
+                ${!achievement.unlocked ? `
+                    <svg class="achievement-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                ` : ''}
+                <span class="achievement-icon">${achievement.icon}</span>
+                <div class="achievement-name">${achievement.name}</div>
+                <div class="achievement-description">${achievement.description}</div>
+                <div class="achievement-xp">+${achievement.xpReward} XP</div>
+            </div>
+        `).join('');
+    }
+
+    /**
+     * Filter achievements by unlock status
+     */
+    filterAchievements(filter) {
+        // Update active filter button
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            if (btn.dataset.filter === filter) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+
+        // Filter achievement cards
+        const cards = document.querySelectorAll('.achievement-card');
+        cards.forEach(card => {
+            const isUnlocked = card.dataset.unlocked === 'true';
+
+            if (filter === 'all') {
+                card.style.display = 'block';
+            } else if (filter === 'unlocked' && isUnlocked) {
+                card.style.display = 'block';
+            } else if (filter === 'locked' && !isUnlocked) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+
+    /**
+     * Render question type breakdown chart
+     */
+    renderQuestionTypeChart(questionsPerType) {
+        const chart = this.questionTypeChart;
+        if (!chart) return;
+
+        const typeNames = {
+            'mcq': 'Multiple Choice',
+            'multi-select': 'Multi-Select',
+            'matching': 'Matching',
+            'true-false': 'True/False',
+            'fill-blank': 'Fill in the Blank',
+            'ordering': 'Ordering/Sequencing'
+        };
+
+        const totalQuestions = Object.values(questionsPerType).reduce((sum, count) => sum + count, 0);
+
+        if (totalQuestions === 0) {
+            chart.innerHTML = `
+                <div class="chart-empty-state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 20V10"></path>
+                        <path d="M12 20V4"></path>
+                        <path d="M6 20v-6"></path>
+                    </svg>
+                    <p>No questions answered yet. Complete a test to see your breakdown!</p>
+                </div>
+            `;
+            return;
+        }
+
+        const chartHTML = Object.entries(questionsPerType)
+            .sort((a, b) => b[1] - a[1])
+            .map(([type, count]) => {
+                const percentage = (count / totalQuestions * 100).toFixed(1);
+                return `
+                    <div class="chart-bar">
+                        <div class="chart-bar-header">
+                            <span class="chart-bar-label">${typeNames[type] || type}</span>
+                            <span class="chart-bar-value">${count} (${percentage}%)</span>
+                        </div>
+                        <div class="chart-bar-container">
+                            <div class="chart-bar-fill" style="width: ${percentage}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+        chart.innerHTML = chartHTML;
+    }
+
+    /**
      * Display all tests in the library
      */
     async displayTestLibrary() {
@@ -2537,6 +3121,658 @@ class TestSimulator {
 
         alert(`Test History: ${test.title}\n\nAttempts: ${test.attempts.length}\n\nView detailed history in the modal (coming soon)`);
         // TODO: Could add a proper history modal if needed
+    }
+
+    // =========================================
+    // VISUAL TEST BUILDER METHODS
+    // =========================================
+
+    /**
+     * Open the test builder interface
+     */
+    openTestBuilder() {
+        this.landingSection?.classList.add('hidden');
+        this.jsonInputSection?.classList.add('hidden');
+        this.testBuilderSection?.classList.remove('hidden');
+        this.testLibrarySection?.classList.add('hidden');
+
+        // Reset builder state
+        this.builderQuestions = [];
+        this.builderCurrentQuestionIndex = null;
+        this.builderEditMode = false;
+
+        // Clear form
+        this.builderTestTitle.value = '';
+        this.builderTestCourse.value = '';
+        this.builderTestTopic.value = '';
+
+        this.builderRenderQuestionList();
+        this.builderShowEmptyState();
+
+        console.log('🎨 Test Builder opened');
+    }
+
+    /**
+     * Close the test builder and return to JSON input section
+     */
+    closeTestBuilder() {
+        this.testBuilderSection?.classList.add('hidden');
+        this.jsonInputSection?.classList.remove('hidden');
+
+        console.log('🎨 Test Builder closed');
+    }
+
+    /**
+     * Show the empty state in the editor
+     */
+    builderShowEmptyState() {
+        this.builderEditorEmpty?.classList.remove('hidden');
+        this.builderEditorForm?.classList.add('hidden');
+    }
+
+    /**
+     * Show the question editor form
+     */
+    builderShowEditor() {
+        this.builderEditorEmpty?.classList.add('hidden');
+        this.builderEditorForm?.classList.remove('hidden');
+    }
+
+    /**
+     * Add a new question
+     */
+    builderAddNewQuestion() {
+        this.builderEditMode = false;
+        this.builderCurrentQuestionIndex = null;
+
+        // Clear form
+        this.builderQuestionType.value = 'mcq';
+        this.builderQuestionText.value = '';
+
+        // Show editor and set up for new question
+        this.builderShowEditor();
+        this.builderToggleQuestionTypeFields();
+
+        // Add default options for MCQ
+        this.builderOptionsList.innerHTML = '';
+        for (let i = 0; i < 4; i++) {
+            this.builderAddOption();
+        }
+
+        // Hide delete button for new questions
+        this.builderDeleteQuestionBtn?.classList.add('hidden');
+
+        console.log('➕ Adding new question');
+    }
+
+    /**
+     * Edit an existing question
+     */
+    builderEditQuestion(index) {
+        this.builderEditMode = true;
+        this.builderCurrentQuestionIndex = index;
+        const question = this.builderQuestions[index];
+
+        // Populate form
+        this.builderQuestionType.value = question.type;
+        this.builderQuestionText.value = question.question;
+
+        this.builderShowEditor();
+        this.builderToggleQuestionTypeFields();
+
+        // Populate options based on type
+        if (question.type === 'mcq' || question.type === 'multi-select') {
+            this.builderOptionsList.innerHTML = '';
+            question.options.forEach((option, i) => {
+                this.builderAddOption(option, question.type === 'mcq' ? (question.correct === i) : question.correct.includes(i));
+            });
+        } else if (question.type === 'matching') {
+            this.builderMatchingPairsList.innerHTML = '';
+            question.leftItems.forEach((leftItem, i) => {
+                this.builderAddMatchingPair(leftItem, question.rightItems[i]);
+            });
+        } else if (question.type === 'true-false') {
+            // Set True/False radio
+            const value = question.correct === true || question.correct === 1 ? 'true' : 'false';
+            const radio = document.querySelector(`input[name="builder-tf-answer"][value="${value}"]`);
+            if (radio) radio.checked = true;
+        } else if (question.type === 'fill-blank') {
+            // Set accepted answers
+            const acceptedAnswers = question.acceptedAnswers || [question.correct];
+            this.builderFillAcceptedAnswersInput.value = acceptedAnswers.join('\n');
+            this.builderFillCaseSensitiveCheckbox.checked = question.caseSensitive !== false;
+        } else if (question.type === 'ordering') {
+            // Set ordering items
+            this.builderOrderingItemsList.innerHTML = '';
+            question.items.forEach(item => {
+                this.builderAddOrderingItem(item);
+            });
+        }
+
+        // Show delete button for existing questions
+        this.builderDeleteQuestionBtn?.classList.remove('hidden');
+
+        // Update active state in question list
+        document.querySelectorAll('.builder-question-item').forEach((item, i) => {
+            if (i === index) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
+
+        console.log(`✏️ Editing question ${index + 1}`);
+    }
+
+    /**
+     * Toggle question type-specific fields
+     */
+    builderToggleQuestionTypeFields() {
+        const type = this.builderQuestionType.value;
+
+        // Hide all type-specific containers first
+        this.builderMcqOptionsContainer?.classList.add('hidden');
+        this.builderMatchingOptionsContainer?.classList.add('hidden');
+        this.builderTrueFalseContainer?.classList.add('hidden');
+        this.builderFillBlankContainer?.classList.add('hidden');
+        this.builderOrderingContainer?.classList.add('hidden');
+
+        // Show the appropriate container based on type
+        switch (type) {
+            case 'mcq':
+            case 'multi-select':
+                this.builderMcqOptionsContainer?.classList.remove('hidden');
+                // Initialize with 4 options if empty
+                if (this.builderOptionsList.children.length === 0) {
+                    for (let i = 0; i < 4; i++) {
+                        this.builderAddOption();
+                    }
+                }
+                break;
+
+            case 'matching':
+                this.builderMatchingOptionsContainer?.classList.remove('hidden');
+                // Initialize with 3 matching pairs if empty
+                if (this.builderMatchingPairsList.children.length === 0) {
+                    for (let i = 0; i < 3; i++) {
+                        this.builderAddMatchingPair();
+                    }
+                }
+                break;
+
+            case 'true-false':
+                this.builderTrueFalseContainer?.classList.remove('hidden');
+                break;
+
+            case 'fill-blank':
+                this.builderFillBlankContainer?.classList.remove('hidden');
+                break;
+
+            case 'ordering':
+                this.builderOrderingContainer?.classList.remove('hidden');
+                // Initialize with 4 items if empty
+                if (this.builderOrderingItemsList.children.length === 0) {
+                    for (let i = 0; i < 4; i++) {
+                        this.builderAddOrderingItem();
+                    }
+                }
+                break;
+        }
+    }
+
+    /**
+     * Add an option to MCQ/Multi-Select
+     */
+    builderAddOption(text = '', isCorrect = false) {
+        const optionItem = document.createElement('div');
+        optionItem.className = 'builder-option-item';
+
+        const questionType = this.builderQuestionType.value;
+        const inputType = questionType === 'mcq' ? 'radio' : 'checkbox';
+        const index = this.builderOptionsList.children.length;
+
+        optionItem.innerHTML = `
+            <input type="${inputType}" name="builder-correct-answer" value="${index}" ${isCorrect ? 'checked' : ''}>
+            <input type="text" placeholder="Option ${index + 1}" value="${this.escapeHtml(text)}">
+            <button type="button" class="builder-option-delete" title="Remove option">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        `;
+
+        // Delete handler
+        optionItem.querySelector('.builder-option-delete').addEventListener('click', () => {
+            optionItem.remove();
+            // Re-index remaining options
+            this.builderReindexOptions();
+        });
+
+        this.builderOptionsList.appendChild(optionItem);
+    }
+
+    /**
+     * Re-index options after deletion
+     */
+    builderReindexOptions() {
+        const options = this.builderOptionsList.querySelectorAll('.builder-option-item');
+        options.forEach((option, index) => {
+            const radio = option.querySelector('input[type="radio"], input[type="checkbox"]');
+            const textInput = option.querySelector('input[type="text"]');
+
+            radio.value = index;
+            if (!textInput.value || textInput.value.startsWith('Option ')) {
+                textInput.placeholder = `Option ${index + 1}`;
+            }
+        });
+    }
+
+    /**
+     * Add a matching pair
+     */
+    builderAddMatchingPair(left = '', right = '') {
+        const pairItem = document.createElement('div');
+        pairItem.className = 'builder-matching-pair';
+
+        pairItem.innerHTML = `
+            <input type="text" class="builder-matching-input builder-matching-left" placeholder="Left item" value="${this.escapeHtml(left)}">
+            <div class="builder-matching-arrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+            </div>
+            <input type="text" class="builder-matching-input builder-matching-right" placeholder="Right item" value="${this.escapeHtml(right)}">
+            <button type="button" class="builder-option-delete" title="Remove pair">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        `;
+
+        // Delete handler
+        pairItem.querySelector('.builder-option-delete').addEventListener('click', () => {
+            if (this.builderMatchingPairsList.children.length > 1) {
+                pairItem.remove();
+            } else {
+                alert('You must have at least one matching pair');
+            }
+        });
+
+        this.builderMatchingPairsList.appendChild(pairItem);
+    }
+
+    /**
+     * Add an ordering item
+     */
+    builderAddOrderingItem(text = '') {
+        const itemElement = document.createElement('div');
+        itemElement.className = 'builder-ordering-item';
+
+        const index = this.builderOrderingItemsList.children.length;
+
+        itemElement.innerHTML = `
+            <div class="ordering-item-number">${index + 1}</div>
+            <input type="text" class="builder-ordering-input" placeholder="Item ${index + 1}" value="${this.escapeHtml(text)}">
+            <button type="button" class="builder-option-delete" title="Remove item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        `;
+
+        // Delete handler
+        itemElement.querySelector('.builder-option-delete').addEventListener('click', () => {
+            if (this.builderOrderingItemsList.children.length > 2) {
+                itemElement.remove();
+                // Re-number items
+                this.builderReindexOrderingItems();
+            } else {
+                alert('You must have at least two items for ordering questions');
+            }
+        });
+
+        this.builderOrderingItemsList.appendChild(itemElement);
+    }
+
+    /**
+     * Re-index ordering items after deletion
+     */
+    builderReindexOrderingItems() {
+        const items = this.builderOrderingItemsList.querySelectorAll('.builder-ordering-item');
+        items.forEach((item, index) => {
+            const numberElement = item.querySelector('.ordering-item-number');
+            const inputElement = item.querySelector('.builder-ordering-input');
+            numberElement.textContent = index + 1;
+            if (inputElement.placeholder === inputElement.value || inputElement.placeholder.startsWith('Item ')) {
+                inputElement.placeholder = `Item ${index + 1}`;
+            }
+        });
+    }
+
+    /**
+     * Save the current question
+     */
+    builderSaveQuestion() {
+        const questionType = this.builderQuestionType.value;
+        const questionText = this.builderQuestionText.value.trim();
+
+        if (!questionText) {
+            alert('Please enter a question');
+            return;
+        }
+
+        const question = {
+            id: this.builderEditMode ? this.builderQuestions[this.builderCurrentQuestionIndex].id : Date.now(),
+            type: questionType,
+            question: questionText
+        };
+
+        // Get options/answers based on type
+        if (questionType === 'mcq' || questionType === 'multi-select') {
+            const options = Array.from(this.builderOptionsList.querySelectorAll('.builder-option-item'));
+            question.options = options.map(opt => opt.querySelector('input[type="text"]').value.trim());
+
+            // Validate options
+            if (question.options.length < 2) {
+                alert('Please add at least 2 options');
+                return;
+            }
+            if (question.options.some(opt => !opt)) {
+                alert('Please fill in all option fields');
+                return;
+            }
+
+            // Get correct answer(s)
+            if (questionType === 'mcq') {
+                const selectedRadio = this.builderOptionsList.querySelector('input[type="radio"]:checked');
+                if (!selectedRadio) {
+                    alert('Please select the correct answer');
+                    return;
+                }
+                question.correct = parseInt(selectedRadio.value);
+            } else {
+                const selectedCheckboxes = Array.from(this.builderOptionsList.querySelectorAll('input[type="checkbox"]:checked'));
+                if (selectedCheckboxes.length === 0) {
+                    alert('Please select at least one correct answer');
+                    return;
+                }
+                question.correct = selectedCheckboxes.map(cb => parseInt(cb.value));
+            }
+        } else if (questionType === 'matching') {
+            const pairs = Array.from(this.builderMatchingPairsList.querySelectorAll('.builder-matching-pair'));
+            question.leftItems = pairs.map(pair => pair.querySelector('.builder-matching-left').value.trim());
+            question.rightItems = pairs.map(pair => pair.querySelector('.builder-matching-right').value.trim());
+
+            // Validate matching pairs
+            if (pairs.length < 2) {
+                alert('Please add at least 2 matching pairs');
+                return;
+            }
+            if (question.leftItems.some(item => !item) || question.rightItems.some(item => !item)) {
+                alert('Please fill in all matching pairs');
+                return;
+            }
+
+            // Correct answer is the original order (0, 1, 2, ...)
+            question.correct = question.leftItems.map((_, i) => i);
+        } else if (questionType === 'true-false') {
+            // Get True/False answer
+            const selectedRadio = document.querySelector('input[name="builder-tf-answer"]:checked');
+            if (!selectedRadio) {
+                alert('Please select True or False');
+                return;
+            }
+            question.correct = selectedRadio.value === 'true';
+        } else if (questionType === 'fill-blank') {
+            // Get accepted answers
+            const answersText = this.builderFillAcceptedAnswersInput.value.trim();
+            if (!answersText) {
+                alert('Please enter at least one accepted answer');
+                return;
+            }
+            question.acceptedAnswers = answersText.split('\n').map(a => a.trim()).filter(a => a);
+            if (question.acceptedAnswers.length === 0) {
+                alert('Please enter at least one accepted answer');
+                return;
+            }
+            // Set first answer as the "correct" value (for backward compatibility)
+            question.correct = question.acceptedAnswers[0];
+            question.caseSensitive = this.builderFillCaseSensitiveCheckbox.checked;
+        } else if (questionType === 'ordering') {
+            // Get ordering items
+            const itemInputs = Array.from(this.builderOrderingItemsList.querySelectorAll('.builder-ordering-input'));
+            question.items = itemInputs.map(input => input.value.trim());
+
+            // Validate items
+            if (question.items.length < 2) {
+                alert('Please add at least 2 items for ordering');
+                return;
+            }
+            if (question.items.some(item => !item)) {
+                alert('Please fill in all ordering items');
+                return;
+            }
+
+            // Correct answer is the original order (0, 1, 2, ...)
+            question.correct = question.items.map((_, i) => i);
+        }
+
+        // Save question
+        if (this.builderEditMode) {
+            this.builderQuestions[this.builderCurrentQuestionIndex] = question;
+            console.log(`✅ Updated question ${this.builderCurrentQuestionIndex + 1}`);
+        } else {
+            this.builderQuestions.push(question);
+            console.log(`✅ Added new question (total: ${this.builderQuestions.length})`);
+        }
+
+        // Update UI
+        this.builderRenderQuestionList();
+        this.builderShowEmptyState();
+
+        // Reset state
+        this.builderEditMode = false;
+        this.builderCurrentQuestionIndex = null;
+    }
+
+    /**
+     * Cancel editing
+     */
+    builderCancelEdit() {
+        this.builderShowEmptyState();
+        this.builderEditMode = false;
+        this.builderCurrentQuestionIndex = null;
+
+        // Clear active state
+        document.querySelectorAll('.builder-question-item').forEach(item => {
+            item.classList.remove('active');
+        });
+
+        console.log('❌ Canceled editing');
+    }
+
+    /**
+     * Delete the current question
+     */
+    builderDeleteQuestion() {
+        if (this.builderCurrentQuestionIndex === null) return;
+
+        if (!confirm('Are you sure you want to delete this question?')) return;
+
+        this.builderQuestions.splice(this.builderCurrentQuestionIndex, 1);
+        console.log(`🗑️ Deleted question ${this.builderCurrentQuestionIndex + 1}`);
+
+        this.builderRenderQuestionList();
+        this.builderShowEmptyState();
+        this.builderEditMode = false;
+        this.builderCurrentQuestionIndex = null;
+    }
+
+    /**
+     * Render the question list
+     */
+    builderRenderQuestionList() {
+        this.builderQuestionCount.textContent = this.builderQuestions.length;
+
+        if (this.builderQuestions.length === 0) {
+            this.builderQuestionList.innerHTML = `
+                <div class="empty-state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 48px; height: 48px; color: var(--color-text-secondary); margin-bottom: var(--space-12);">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <p>No questions yet</p>
+                    <p style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">Click "Add Question" to start building your test</p>
+                </div>
+            `;
+            return;
+        }
+
+        this.builderQuestionList.innerHTML = this.builderQuestions.map((q, index) => {
+            const typeLabel = q.type === 'mcq' ? 'MCQ' : q.type === 'multi-select' ? 'Multi-Select' : 'Matching';
+            const preview = q.question.length > 60 ? q.question.substring(0, 60) + '...' : q.question;
+
+            return `
+                <div class="builder-question-item" onclick="testSimulator.builderEditQuestion(${index})">
+                    <div class="builder-question-item-number">${index + 1}</div>
+                    <div class="builder-question-item-content">
+                        <div class="builder-question-item-type">${typeLabel}</div>
+                        <div class="builder-question-item-text">${this.escapeHtml(preview)}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    /**
+     * Export test as JSON
+     */
+    builderExportJSON() {
+        const title = this.builderTestTitle.value.trim();
+
+        if (!title) {
+            alert('Please enter a test title before exporting');
+            return;
+        }
+
+        if (this.builderQuestions.length === 0) {
+            alert('Please add at least one question before exporting');
+            return;
+        }
+
+        const test = {
+            title: title,
+            questions: this.builderQuestions
+        };
+
+        const jsonStr = JSON.stringify(test, null, 2);
+
+        // Copy to clipboard
+        navigator.clipboard.writeText(jsonStr).then(() => {
+            alert('✅ Test JSON copied to clipboard!\n\nYou can now paste it in the JSON input field to load the test, or save it for later.');
+            console.log('📋 Exported JSON:', jsonStr);
+        }).catch(err => {
+            // Fallback: show in alert
+            console.error('Failed to copy to clipboard:', err);
+            prompt('Copy this JSON:', jsonStr);
+        });
+    }
+
+    /**
+     * Preview the test (load it into the simulator)
+     */
+    builderPreviewTest() {
+        const title = this.builderTestTitle.value.trim() || 'Untitled Test';
+
+        if (this.builderQuestions.length === 0) {
+            alert('Please add at least one question before previewing');
+            return;
+        }
+
+        const test = {
+            title: title,
+            questions: this.builderQuestions
+        };
+
+        // Load the test
+        this.currentTest = test;
+        this.currentQuestionIndex = 0;
+        this.userAnswers = {};
+        this.score = null;
+
+        // Close builder and start test
+        this.testBuilderSection?.classList.add('hidden');
+        this.startTest();
+
+        console.log('👁️ Previewing test:', title);
+    }
+
+    /**
+     * Show achievement unlock toasts
+     */
+    showAchievementToasts(achievements) {
+        const container = document.getElementById('achievement-toast-container');
+        if (!container) return;
+
+        achievements.forEach((achievement, index) => {
+            setTimeout(() => {
+                const toast = document.createElement('div');
+                toast.className = 'achievement-toast';
+                toast.innerHTML = `
+                    <div class="achievement-toast-icon">${achievement.icon}</div>
+                    <div class="achievement-toast-content">
+                        <div class="achievement-toast-title">Achievement Unlocked!</div>
+                        <div class="achievement-toast-name">${achievement.name}</div>
+                        <div class="achievement-toast-xp">+${achievement.xpReward} XP</div>
+                    </div>
+                `;
+
+                container.appendChild(toast);
+
+                // Animate in
+                setTimeout(() => toast.classList.add('show'), 10);
+
+                // Remove after 5 seconds
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.remove(), 300);
+                }, 5000);
+            }, index * 500); // Stagger toasts
+        });
+    }
+
+    /**
+     * Show level up toast
+     */
+    showLevelUpToast(newLevel) {
+        const container = document.getElementById('achievement-toast-container');
+        if (!container) return;
+
+        const toast = document.createElement('div');
+        toast.className = 'achievement-toast level-up-toast';
+        toast.innerHTML = `
+            <div class="achievement-toast-icon">🎉</div>
+            <div class="achievement-toast-content">
+                <div class="achievement-toast-title">Level Up!</div>
+                <div class="achievement-toast-name">You reached Level ${newLevel}</div>
+            </div>
+        `;
+
+        container.appendChild(toast);
+
+        // Animate in
+        setTimeout(() => toast.classList.add('show'), 10);
+
+        // Remove after 5 seconds
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 5000);
     }
 }
 

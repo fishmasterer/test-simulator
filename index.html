@@ -22,25 +22,60 @@
 </head>
 <body>
     <!-- Theme Toggle Button -->
-    <button id="theme-toggle" class="theme-toggle-btn" aria-label="Open theme menu">🎨</button>
+    <button id="theme-toggle" class="theme-toggle-btn" aria-label="Open theme menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="13.5" cy="6.5" r=".5"></circle>
+            <circle cx="17.5" cy="10.5" r=".5"></circle>
+            <circle cx="8.5" cy="7.5" r=".5"></circle>
+            <circle cx="6.5" cy="12.5" r=".5"></circle>
+            <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+        </svg>
+    </button>
 
     <!-- Theme Menu -->
     <div id="theme-menu" class="theme-menu hidden" role="menu" aria-label="Theme selection">
         <div class="theme-menu-header">Choose Theme</div>
         <button class="theme-option" data-theme="light" role="menuitem">
-            <span class="theme-icon">☀️</span>
+            <span class="theme-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                </svg>
+            </span>
             <span>Perplexity Light</span>
         </button>
         <button class="theme-option" data-theme="dark" role="menuitem">
-            <span class="theme-icon">🌙</span>
+            <span class="theme-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+            </span>
             <span>Perplexity Dark</span>
         </button>
         <button class="theme-option" data-theme="claude-light" role="menuitem">
-            <span class="theme-icon">🧡</span>
+            <span class="theme-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <circle cx="12" cy="12" r="6"></circle>
+                    <circle cx="12" cy="12" r="2"></circle>
+                </svg>
+            </span>
             <span>Claude Light</span>
         </button>
         <button class="theme-option" data-theme="claude-dark" role="menuitem">
-            <span class="theme-icon">🟠</span>
+            <span class="theme-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <circle cx="12" cy="12" r="4"></circle>
+                </svg>
+            </span>
             <span>Claude Dark</span>
         </button>
     </div>
@@ -141,7 +176,7 @@
                 </div>
 
                 <div class="landing-cta">
-                    <button id="get-started-btn" class="btn btn--primary btn--large landing-btn">Begin Your Study Session</button>
+                    <button id="get-started-btn" class="btn btn--primary btn--large landing-btn">Start Learning</button>
                     <p class="landing-hint">No account needed to start. Sign in anytime to save your progress.</p>
                 </div>
 
@@ -262,8 +297,459 @@ Example format:
                     </div>
 
                     <div class="button-group" style="margin-top: var(--space-12);">
-                        <button id="open-library-btn" class="btn btn--secondary">📚 My Saved Tests</button>
-                        <button id="open-pomodoro-btn" class="btn btn--secondary">🍅 Focus Timer</button>
+                        <button id="open-test-builder-btn" class="btn btn--primary">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
+                            Build a Test
+                        </button>
+                        <button id="open-library-btn" class="btn btn--secondary">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                            </svg>
+                            My Saved Tests
+                        </button>
+                        <button id="open-pomodoro-btn" class="btn btn--secondary">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            Focus Timer
+                        </button>
+                    </div>
+                    <div class="button-group" style="margin-top: var(--space-12);">
+                        <button id="open-analytics-btn" class="btn btn--secondary">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 20V10"></path>
+                                <path d="M12 20V4"></path>
+                                <path d="M6 20v-6"></path>
+                            </svg>
+                            Analytics Dashboard
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Dashboard Section -->
+        <div id="analytics-section" class="section hidden">
+            <div class="library-header">
+                <h1>Analytics Dashboard</h1>
+                <button id="close-analytics-btn" class="btn btn--outline">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                    Back
+                </button>
+            </div>
+
+            <div class="analytics-container">
+                <!-- Level and XP Progress Section -->
+                <div class="analytics-section analytics-hero">
+                    <div class="level-badge">
+                        <div class="level-badge-inner">
+                            <div class="level-badge-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"></path>
+                                </svg>
+                            </div>
+                            <div class="level-badge-text">
+                                <div class="level-label">Level</div>
+                                <div id="analytics-level" class="level-number">1</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="xp-progress-container">
+                        <div class="xp-progress-header">
+                            <span class="xp-label">Experience Points</span>
+                            <span id="analytics-xp-text" class="xp-value">0 / 100 XP</span>
+                        </div>
+                        <div class="xp-progress-bar">
+                            <div id="analytics-xp-fill" class="xp-progress-fill" style="width: 0%"></div>
+                        </div>
+                        <div class="xp-progress-footer">
+                            <span id="analytics-xp-percent" class="xp-percent">0% to next level</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Overview Cards -->
+                <div class="analytics-section">
+                    <h2 class="analytics-heading">Statistics Overview</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon stat-icon--primary">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                </svg>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-label">Tests Completed</div>
+                                <div id="stat-tests-completed" class="stat-value">0</div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon stat-icon--success">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                </svg>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-label">Overall Accuracy</div>
+                                <div id="stat-accuracy" class="stat-value">0%</div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon stat-icon--warning">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polyline points="12 6 12 12 16 14"></polyline>
+                                </svg>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-label">Total Study Time</div>
+                                <div id="stat-study-time" class="stat-value">0h</div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon stat-icon--fire">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path>
+                                    <path d="M8.5 8.5c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5S7 6.17 7 7s.67 1.5 1.5 1.5z"></path>
+                                </svg>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-label">Current Streak</div>
+                                <div id="stat-streak" class="stat-value">0 days</div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon stat-icon--gold">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="8" r="7"></circle>
+                                    <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+                                </svg>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-label">Perfect Scores</div>
+                                <div id="stat-perfect-scores" class="stat-value">0</div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon stat-icon--purple">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"></path>
+                                </svg>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-label">Achievements</div>
+                                <div id="stat-achievements" class="stat-value">0 / 20</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Achievement Gallery -->
+                <div class="analytics-section">
+                    <h2 class="analytics-heading">Achievement Gallery</h2>
+                    <div class="achievement-filters">
+                        <button class="filter-btn active" data-filter="all">All</button>
+                        <button class="filter-btn" data-filter="unlocked">Unlocked</button>
+                        <button class="filter-btn" data-filter="locked">Locked</button>
+                    </div>
+                    <div id="achievement-gallery" class="achievement-gallery">
+                        <!-- Achievement cards will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Question Type Breakdown -->
+                <div class="analytics-section">
+                    <h2 class="analytics-heading">Question Type Breakdown</h2>
+                    <div id="question-type-chart" class="question-type-chart">
+                        <!-- Chart will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Additional Stats -->
+                <div class="analytics-section">
+                    <h2 class="analytics-heading">Detailed Statistics</h2>
+                    <div class="detailed-stats">
+                        <div class="detailed-stat-row">
+                            <span class="detailed-stat-label">Total Questions Answered</span>
+                            <span id="stat-total-questions" class="detailed-stat-value">0</span>
+                        </div>
+                        <div class="detailed-stat-row">
+                            <span class="detailed-stat-label">Correct Answers</span>
+                            <span id="stat-correct-answers" class="detailed-stat-value">0</span>
+                        </div>
+                        <div class="detailed-stat-row">
+                            <span class="detailed-stat-label">Longest Streak</span>
+                            <span id="stat-longest-streak" class="detailed-stat-value">0 days</span>
+                        </div>
+                        <div class="detailed-stat-row">
+                            <span class="detailed-stat-label">Total XP Earned</span>
+                            <span id="stat-total-xp" class="detailed-stat-value">0 XP</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Visual Test Builder Section -->
+        <div id="test-builder-section" class="section hidden">
+            <div class="library-header">
+                <h1>Test Builder</h1>
+                <div style="display: flex; gap: var(--space-12);">
+                    <button id="test-builder-preview-btn" class="btn btn--outline">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        Preview
+                    </button>
+                    <button id="test-builder-export-btn" class="btn btn--primary">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        Export JSON
+                    </button>
+                    <button id="close-test-builder-btn" class="btn btn--outline">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                        Back
+                    </button>
+                </div>
+            </div>
+
+            <!-- Test Builder Container -->
+            <div class="test-builder-container">
+                <!-- Left Sidebar: Test Metadata & Question List -->
+                <div class="test-builder-sidebar">
+                    <!-- Test Metadata -->
+                    <div class="card" style="margin-bottom: var(--space-16);">
+                        <div class="card__body">
+                            <h3 style="margin-bottom: var(--space-16);">Test Details</h3>
+                            <div class="form-group">
+                                <label for="builder-test-title" class="form-label">Test Title *</label>
+                                <input
+                                    type="text"
+                                    id="builder-test-title"
+                                    class="form-control"
+                                    placeholder="e.g., Biology Chapter 5 Quiz"
+                                    required
+                                >
+                            </div>
+                            <div class="form-group">
+                                <label for="builder-test-course" class="form-label">Course</label>
+                                <input
+                                    type="text"
+                                    id="builder-test-course"
+                                    class="form-control"
+                                    placeholder="e.g., Biology 101"
+                                >
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="builder-test-topic" class="form-label">Topic</label>
+                                <input
+                                    type="text"
+                                    id="builder-test-topic"
+                                    class="form-control"
+                                    placeholder="e.g., Cell Structure"
+                                >
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Question List -->
+                    <div class="card">
+                        <div class="card__body">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-16);">
+                                <h3 style="margin: 0;">Questions</h3>
+                                <span class="badge" id="builder-question-count">0</span>
+                            </div>
+
+                            <div id="builder-question-list" class="builder-question-list">
+                                <div class="empty-state">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 48px; height: 48px; color: var(--color-text-secondary); margin-bottom: var(--space-12);">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                    </svg>
+                                    <p>No questions yet</p>
+                                    <p style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">Click "Add Question" to start building your test</p>
+                                </div>
+                            </div>
+
+                            <button id="builder-add-question-btn" class="btn btn--primary btn--full-width" style="margin-top: var(--space-16);">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                Add Question
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Panel: Question Editor -->
+                <div class="test-builder-editor">
+                    <div class="card">
+                        <div class="card__body">
+                            <div id="builder-editor-empty" class="empty-state">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 64px; height: 64px; color: var(--color-text-secondary); margin-bottom: var(--space-16);">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                </svg>
+                                <h3 style="margin-bottom: var(--space-8);">Ready to Build</h3>
+                                <p style="color: var(--color-text-secondary); max-width: 400px; text-align: center;">
+                                    Add a question to get started, or import an existing test to edit
+                                </p>
+                            </div>
+
+                            <div id="builder-editor-form" class="hidden">
+                                <!-- Question Type Selector -->
+                                <div class="form-group">
+                                    <label for="builder-question-type" class="form-label">Question Type *</label>
+                                    <select id="builder-question-type" class="form-control">
+                                        <option value="mcq">Multiple Choice (Single Answer)</option>
+                                        <option value="multi-select">Multiple Choice (Multi-Select)</option>
+                                        <option value="matching">Matching</option>
+                                        <option value="true-false">True/False</option>
+                                        <option value="fill-blank">Fill in the Blank</option>
+                                        <option value="ordering">Ordering/Sequencing</option>
+                                    </select>
+                                </div>
+
+                                <!-- Question Text -->
+                                <div class="form-group">
+                                    <label for="builder-question-text" class="form-label">Question *</label>
+                                    <textarea
+                                        id="builder-question-text"
+                                        class="form-control"
+                                        rows="3"
+                                        placeholder="Enter your question here..."
+                                        required
+                                    ></textarea>
+                                </div>
+
+                                <!-- MCQ / Multi-Select Options -->
+                                <div id="builder-mcq-options-container">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-12);">
+                                        <label class="form-label" style="margin-bottom: 0;">Answer Options *</label>
+                                        <button id="builder-add-option-btn" class="btn btn--sm btn--outline">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                            </svg>
+                                            Add Option
+                                        </button>
+                                    </div>
+                                    <div id="builder-options-list"></div>
+                                </div>
+
+                                <!-- Matching Options -->
+                                <div id="builder-matching-options-container" class="hidden">
+                                    <div class="form-group">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-12);">
+                                            <label class="form-label" style="margin-bottom: 0;">Matching Pairs *</label>
+                                            <button id="builder-add-matching-pair-btn" class="btn btn--sm btn--outline">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                                </svg>
+                                                Add Pair
+                                            </button>
+                                        </div>
+                                        <div id="builder-matching-pairs-list"></div>
+                                    </div>
+                                </div>
+
+                                <!-- True/False Options -->
+                                <div id="builder-true-false-container" class="hidden">
+                                    <div class="form-group">
+                                        <label class="form-label">Correct Answer *</label>
+                                        <div style="display: flex; gap: var(--space-16);">
+                                            <label class="radio-label">
+                                                <input type="radio" name="builder-tf-answer" value="true" checked>
+                                                <span>True</span>
+                                            </label>
+                                            <label class="radio-label">
+                                                <input type="radio" name="builder-tf-answer" value="false">
+                                                <span>False</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Fill-in-the-Blank Options -->
+                                <div id="builder-fill-blank-container" class="hidden">
+                                    <div class="form-group">
+                                        <label for="builder-fill-accepted-answers" class="form-label">Accepted Answers * (one per line)</label>
+                                        <textarea
+                                            id="builder-fill-accepted-answers"
+                                            class="form-control"
+                                            rows="4"
+                                            placeholder="Paris&#10;paris&#10;PARIS"
+                                        ></textarea>
+                                        <p class="hint-text">Add multiple accepted answers (one per line). First answer will be shown in review.</p>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="builder-fill-case-sensitive">
+                                            <span>Case-sensitive matching</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Ordering Options -->
+                                <div id="builder-ordering-container" class="hidden">
+                                    <div class="form-group">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-12);">
+                                            <label class="form-label" style="margin-bottom: 0;">Items in Correct Order *</label>
+                                            <button id="builder-add-ordering-item-btn" class="btn btn--sm btn--outline">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                                </svg>
+                                                Add Item
+                                            </button>
+                                        </div>
+                                        <div id="builder-ordering-items-list"></div>
+                                        <p class="hint-text">Add items in the correct order. They will be shuffled when the test is taken.</p>
+                                    </div>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div style="display: flex; gap: var(--space-12); margin-top: var(--space-24); padding-top: var(--space-24); border-top: 1.5px solid var(--color-border);">
+                                    <button id="builder-save-question-btn" class="btn btn--primary">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg>
+                                        Save Question
+                                    </button>
+                                    <button id="builder-cancel-question-btn" class="btn btn--outline">Cancel</button>
+                                    <button id="builder-delete-question-btn" class="btn btn--outline hidden" style="margin-left: auto; color: var(--color-error); border-color: var(--color-error);">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                        </svg>
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="button-group" style="margin-top: var(--space-12);">
                         <button id="open-notes-btn" class="btn btn--secondary">📝 Notes</button>
@@ -284,10 +770,12 @@ Example format:
         <div id="test-library-section" class="section hidden">
             <div class="library-header">
                 <h1>My Test Library</h1>
-                <div class="library-header-actions">
-                    <button id="view-insights-btn" class="btn btn--secondary">📊 View Insights</button>
-                    <button id="close-library-btn" class="btn btn--outline">← Back</button>
-                </div>
+                <button id="close-library-btn" class="btn btn--outline">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                    Back
+                </button>
             </div>
 
             <!-- Sync Status Banner -->
@@ -305,7 +793,7 @@ Example format:
                     type="text"
                     id="library-search"
                     class="form-control library-search"
-                    placeholder="🔍 Search tests..."
+                    placeholder="Search tests..."
                     aria-label="Search tests"
                 >
                 <div class="library-filters">
@@ -326,8 +814,13 @@ Example format:
         <!-- Pomodoro Timer Section -->
         <div id="pomodoro-section" class="section hidden">
             <div class="library-header">
-                <h1>🍅 Focus Timer</h1>
-                <button id="close-pomodoro-btn" class="btn btn--outline">← Back</button>
+                <h1>Focus Timer</h1>
+                <button id="close-pomodoro-btn" class="btn btn--outline">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                    Back
+                </button>
             </div>
 
             <div class="pomodoro-container">
@@ -1807,6 +2300,9 @@ Example format:
     <!-- Firebase Service Layer -->
     <script src="firebase-service.js"></script>
 
+    <!-- Gamification System -->
+    <script src="gamification.js"></script>
+
     <script src="app.js"></script>
 
     <!-- Pomodoro Timer Module -->
@@ -1887,5 +2383,9 @@ Example format:
             installPrompt?.classList.add('hidden');
         });
     </script>
+
+    <!-- Achievement Toast Notifications -->
+    <div id="achievement-toast-container" class="achievement-toast-container"></div>
+
 </body>
 </html>
