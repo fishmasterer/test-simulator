@@ -20,6 +20,11 @@ class TestSimulator {
         this.themeKey = 'testSimulatorTheme';
         this.testBankKey = 'testSimulatorBank';
 
+        // Test Builder properties
+        this.builderQuestions = [];
+        this.builderCurrentQuestionIndex = null;
+        this.builderEditMode = false;
+
         this.initializeElements();
         this.bindEvents();
         this.loadSampleTestData();
@@ -92,6 +97,32 @@ class TestSimulator {
 
         // Loading overlay
         this.loadingOverlay = document.getElementById('loading-overlay');
+
+        // Test Builder elements
+        this.testBuilderSection = document.getElementById('test-builder-section');
+        this.openTestBuilderBtn = document.getElementById('open-test-builder-btn');
+        this.closeTestBuilderBtn = document.getElementById('close-test-builder-btn');
+        this.builderTestTitle = document.getElementById('builder-test-title');
+        this.builderTestCourse = document.getElementById('builder-test-course');
+        this.builderTestTopic = document.getElementById('builder-test-topic');
+        this.builderQuestionCount = document.getElementById('builder-question-count');
+        this.builderQuestionList = document.getElementById('builder-question-list');
+        this.builderAddQuestionBtn = document.getElementById('builder-add-question-btn');
+        this.builderEditorEmpty = document.getElementById('builder-editor-empty');
+        this.builderEditorForm = document.getElementById('builder-editor-form');
+        this.builderQuestionType = document.getElementById('builder-question-type');
+        this.builderQuestionText = document.getElementById('builder-question-text');
+        this.builderMcqOptionsContainer = document.getElementById('builder-mcq-options-container');
+        this.builderMatchingOptionsContainer = document.getElementById('builder-matching-options-container');
+        this.builderOptionsList = document.getElementById('builder-options-list');
+        this.builderMatchingPairsList = document.getElementById('builder-matching-pairs-list');
+        this.builderAddOptionBtn = document.getElementById('builder-add-option-btn');
+        this.builderAddMatchingPairBtn = document.getElementById('builder-add-matching-pair-btn');
+        this.builderSaveQuestionBtn = document.getElementById('builder-save-question-btn');
+        this.builderCancelQuestionBtn = document.getElementById('builder-cancel-question-btn');
+        this.builderDeleteQuestionBtn = document.getElementById('builder-delete-question-btn');
+        this.testBuilderExportBtn = document.getElementById('test-builder-export-btn');
+        this.testBuilderPreviewBtn = document.getElementById('test-builder-preview-btn');
     }
 
     /**
@@ -123,6 +154,19 @@ class TestSimulator {
         this.librarySearchInput?.addEventListener('input', () => this.filterTestLibrary());
         this.libraryCourseFilter?.addEventListener('change', () => this.filterTestLibrary());
         this.libraryTopicFilter?.addEventListener('change', () => this.filterTestLibrary());
+
+        // Test Builder events
+        this.openTestBuilderBtn?.addEventListener('click', () => this.openTestBuilder());
+        this.closeTestBuilderBtn?.addEventListener('click', () => this.closeTestBuilder());
+        this.builderAddQuestionBtn?.addEventListener('click', () => this.builderAddNewQuestion());
+        this.builderQuestionType?.addEventListener('change', () => this.builderToggleQuestionTypeFields());
+        this.builderAddOptionBtn?.addEventListener('click', () => this.builderAddOption());
+        this.builderAddMatchingPairBtn?.addEventListener('click', () => this.builderAddMatchingPair());
+        this.builderSaveQuestionBtn?.addEventListener('click', () => this.builderSaveQuestion());
+        this.builderCancelQuestionBtn?.addEventListener('click', () => this.builderCancelEdit());
+        this.builderDeleteQuestionBtn?.addEventListener('click', () => this.builderDeleteQuestion());
+        this.testBuilderExportBtn?.addEventListener('click', () => this.builderExportJSON());
+        this.testBuilderPreviewBtn?.addEventListener('click', () => this.builderPreviewTest());
 
         // Theme menu options
         const themeOptions = document.querySelectorAll('.theme-option');
@@ -1788,6 +1832,463 @@ class TestSimulator {
 
         alert(`Test History: ${test.title}\n\nAttempts: ${test.attempts.length}\n\nView detailed history in the modal (coming soon)`);
         // TODO: Could add a proper history modal if needed
+    }
+
+    // =========================================
+    // VISUAL TEST BUILDER METHODS
+    // =========================================
+
+    /**
+     * Open the test builder interface
+     */
+    openTestBuilder() {
+        this.landingSection?.classList.add('hidden');
+        this.jsonInputSection?.classList.add('hidden');
+        this.testBuilderSection?.classList.remove('hidden');
+        this.testLibrarySection?.classList.add('hidden');
+
+        // Reset builder state
+        this.builderQuestions = [];
+        this.builderCurrentQuestionIndex = null;
+        this.builderEditMode = false;
+
+        // Clear form
+        this.builderTestTitle.value = '';
+        this.builderTestCourse.value = '';
+        this.builderTestTopic.value = '';
+
+        this.builderRenderQuestionList();
+        this.builderShowEmptyState();
+
+        console.log('🎨 Test Builder opened');
+    }
+
+    /**
+     * Close the test builder and return to JSON input section
+     */
+    closeTestBuilder() {
+        this.testBuilderSection?.classList.add('hidden');
+        this.jsonInputSection?.classList.remove('hidden');
+
+        console.log('🎨 Test Builder closed');
+    }
+
+    /**
+     * Show the empty state in the editor
+     */
+    builderShowEmptyState() {
+        this.builderEditorEmpty?.classList.remove('hidden');
+        this.builderEditorForm?.classList.add('hidden');
+    }
+
+    /**
+     * Show the question editor form
+     */
+    builderShowEditor() {
+        this.builderEditorEmpty?.classList.add('hidden');
+        this.builderEditorForm?.classList.remove('hidden');
+    }
+
+    /**
+     * Add a new question
+     */
+    builderAddNewQuestion() {
+        this.builderEditMode = false;
+        this.builderCurrentQuestionIndex = null;
+
+        // Clear form
+        this.builderQuestionType.value = 'mcq';
+        this.builderQuestionText.value = '';
+
+        // Show editor and set up for new question
+        this.builderShowEditor();
+        this.builderToggleQuestionTypeFields();
+
+        // Add default options for MCQ
+        this.builderOptionsList.innerHTML = '';
+        for (let i = 0; i < 4; i++) {
+            this.builderAddOption();
+        }
+
+        // Hide delete button for new questions
+        this.builderDeleteQuestionBtn?.classList.add('hidden');
+
+        console.log('➕ Adding new question');
+    }
+
+    /**
+     * Edit an existing question
+     */
+    builderEditQuestion(index) {
+        this.builderEditMode = true;
+        this.builderCurrentQuestionIndex = index;
+        const question = this.builderQuestions[index];
+
+        // Populate form
+        this.builderQuestionType.value = question.type;
+        this.builderQuestionText.value = question.question;
+
+        this.builderShowEditor();
+        this.builderToggleQuestionTypeFields();
+
+        // Populate options based on type
+        if (question.type === 'mcq' || question.type === 'multi-select') {
+            this.builderOptionsList.innerHTML = '';
+            question.options.forEach((option, i) => {
+                this.builderAddOption(option, question.type === 'mcq' ? (question.correct === i) : question.correct.includes(i));
+            });
+        } else if (question.type === 'matching') {
+            this.builderMatchingPairsList.innerHTML = '';
+            question.leftItems.forEach((leftItem, i) => {
+                this.builderAddMatchingPair(leftItem, question.rightItems[i]);
+            });
+        }
+
+        // Show delete button for existing questions
+        this.builderDeleteQuestionBtn?.classList.remove('hidden');
+
+        // Update active state in question list
+        document.querySelectorAll('.builder-question-item').forEach((item, i) => {
+            if (i === index) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
+
+        console.log(`✏️ Editing question ${index + 1}`);
+    }
+
+    /**
+     * Toggle question type-specific fields
+     */
+    builderToggleQuestionTypeFields() {
+        const type = this.builderQuestionType.value;
+
+        if (type === 'matching') {
+            this.builderMcqOptionsContainer?.classList.add('hidden');
+            this.builderMatchingOptionsContainer?.classList.remove('hidden');
+
+            // Initialize with 3 matching pairs if empty
+            if (this.builderMatchingPairsList.children.length === 0) {
+                for (let i = 0; i < 3; i++) {
+                    this.builderAddMatchingPair();
+                }
+            }
+        } else {
+            this.builderMcqOptionsContainer?.classList.remove('hidden');
+            this.builderMatchingOptionsContainer?.classList.add('hidden');
+
+            // Initialize with 4 options if empty
+            if (this.builderOptionsList.children.length === 0) {
+                for (let i = 0; i < 4; i++) {
+                    this.builderAddOption();
+                }
+            }
+        }
+    }
+
+    /**
+     * Add an option to MCQ/Multi-Select
+     */
+    builderAddOption(text = '', isCorrect = false) {
+        const optionItem = document.createElement('div');
+        optionItem.className = 'builder-option-item';
+
+        const questionType = this.builderQuestionType.value;
+        const inputType = questionType === 'mcq' ? 'radio' : 'checkbox';
+        const index = this.builderOptionsList.children.length;
+
+        optionItem.innerHTML = `
+            <input type="${inputType}" name="builder-correct-answer" value="${index}" ${isCorrect ? 'checked' : ''}>
+            <input type="text" placeholder="Option ${index + 1}" value="${this.escapeHtml(text)}">
+            <button type="button" class="builder-option-delete" title="Remove option">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        `;
+
+        // Delete handler
+        optionItem.querySelector('.builder-option-delete').addEventListener('click', () => {
+            optionItem.remove();
+            // Re-index remaining options
+            this.builderReindexOptions();
+        });
+
+        this.builderOptionsList.appendChild(optionItem);
+    }
+
+    /**
+     * Re-index options after deletion
+     */
+    builderReindexOptions() {
+        const options = this.builderOptionsList.querySelectorAll('.builder-option-item');
+        options.forEach((option, index) => {
+            const radio = option.querySelector('input[type="radio"], input[type="checkbox"]');
+            const textInput = option.querySelector('input[type="text"]');
+
+            radio.value = index;
+            if (!textInput.value || textInput.value.startsWith('Option ')) {
+                textInput.placeholder = `Option ${index + 1}`;
+            }
+        });
+    }
+
+    /**
+     * Add a matching pair
+     */
+    builderAddMatchingPair(left = '', right = '') {
+        const pairItem = document.createElement('div');
+        pairItem.className = 'builder-matching-pair';
+
+        pairItem.innerHTML = `
+            <input type="text" class="builder-matching-input builder-matching-left" placeholder="Left item" value="${this.escapeHtml(left)}">
+            <div class="builder-matching-arrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+            </div>
+            <input type="text" class="builder-matching-input builder-matching-right" placeholder="Right item" value="${this.escapeHtml(right)}">
+            <button type="button" class="builder-option-delete" title="Remove pair">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        `;
+
+        // Delete handler
+        pairItem.querySelector('.builder-option-delete').addEventListener('click', () => {
+            if (this.builderMatchingPairsList.children.length > 1) {
+                pairItem.remove();
+            } else {
+                alert('You must have at least one matching pair');
+            }
+        });
+
+        this.builderMatchingPairsList.appendChild(pairItem);
+    }
+
+    /**
+     * Save the current question
+     */
+    builderSaveQuestion() {
+        const questionType = this.builderQuestionType.value;
+        const questionText = this.builderQuestionText.value.trim();
+
+        if (!questionText) {
+            alert('Please enter a question');
+            return;
+        }
+
+        const question = {
+            id: this.builderEditMode ? this.builderQuestions[this.builderCurrentQuestionIndex].id : Date.now(),
+            type: questionType,
+            question: questionText
+        };
+
+        // Get options/answers based on type
+        if (questionType === 'mcq' || questionType === 'multi-select') {
+            const options = Array.from(this.builderOptionsList.querySelectorAll('.builder-option-item'));
+            question.options = options.map(opt => opt.querySelector('input[type="text"]').value.trim());
+
+            // Validate options
+            if (question.options.length < 2) {
+                alert('Please add at least 2 options');
+                return;
+            }
+            if (question.options.some(opt => !opt)) {
+                alert('Please fill in all option fields');
+                return;
+            }
+
+            // Get correct answer(s)
+            if (questionType === 'mcq') {
+                const selectedRadio = this.builderOptionsList.querySelector('input[type="radio"]:checked');
+                if (!selectedRadio) {
+                    alert('Please select the correct answer');
+                    return;
+                }
+                question.correct = parseInt(selectedRadio.value);
+            } else {
+                const selectedCheckboxes = Array.from(this.builderOptionsList.querySelectorAll('input[type="checkbox"]:checked'));
+                if (selectedCheckboxes.length === 0) {
+                    alert('Please select at least one correct answer');
+                    return;
+                }
+                question.correct = selectedCheckboxes.map(cb => parseInt(cb.value));
+            }
+        } else if (questionType === 'matching') {
+            const pairs = Array.from(this.builderMatchingPairsList.querySelectorAll('.builder-matching-pair'));
+            question.leftItems = pairs.map(pair => pair.querySelector('.builder-matching-left').value.trim());
+            question.rightItems = pairs.map(pair => pair.querySelector('.builder-matching-right').value.trim());
+
+            // Validate matching pairs
+            if (pairs.length < 2) {
+                alert('Please add at least 2 matching pairs');
+                return;
+            }
+            if (question.leftItems.some(item => !item) || question.rightItems.some(item => !item)) {
+                alert('Please fill in all matching pairs');
+                return;
+            }
+
+            // Correct answer is the original order (0, 1, 2, ...)
+            question.correct = question.leftItems.map((_, i) => i);
+        }
+
+        // Save question
+        if (this.builderEditMode) {
+            this.builderQuestions[this.builderCurrentQuestionIndex] = question;
+            console.log(`✅ Updated question ${this.builderCurrentQuestionIndex + 1}`);
+        } else {
+            this.builderQuestions.push(question);
+            console.log(`✅ Added new question (total: ${this.builderQuestions.length})`);
+        }
+
+        // Update UI
+        this.builderRenderQuestionList();
+        this.builderShowEmptyState();
+
+        // Reset state
+        this.builderEditMode = false;
+        this.builderCurrentQuestionIndex = null;
+    }
+
+    /**
+     * Cancel editing
+     */
+    builderCancelEdit() {
+        this.builderShowEmptyState();
+        this.builderEditMode = false;
+        this.builderCurrentQuestionIndex = null;
+
+        // Clear active state
+        document.querySelectorAll('.builder-question-item').forEach(item => {
+            item.classList.remove('active');
+        });
+
+        console.log('❌ Canceled editing');
+    }
+
+    /**
+     * Delete the current question
+     */
+    builderDeleteQuestion() {
+        if (this.builderCurrentQuestionIndex === null) return;
+
+        if (!confirm('Are you sure you want to delete this question?')) return;
+
+        this.builderQuestions.splice(this.builderCurrentQuestionIndex, 1);
+        console.log(`🗑️ Deleted question ${this.builderCurrentQuestionIndex + 1}`);
+
+        this.builderRenderQuestionList();
+        this.builderShowEmptyState();
+        this.builderEditMode = false;
+        this.builderCurrentQuestionIndex = null;
+    }
+
+    /**
+     * Render the question list
+     */
+    builderRenderQuestionList() {
+        this.builderQuestionCount.textContent = this.builderQuestions.length;
+
+        if (this.builderQuestions.length === 0) {
+            this.builderQuestionList.innerHTML = `
+                <div class="empty-state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 48px; height: 48px; color: var(--color-text-secondary); margin-bottom: var(--space-12);">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <p>No questions yet</p>
+                    <p style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">Click "Add Question" to start building your test</p>
+                </div>
+            `;
+            return;
+        }
+
+        this.builderQuestionList.innerHTML = this.builderQuestions.map((q, index) => {
+            const typeLabel = q.type === 'mcq' ? 'MCQ' : q.type === 'multi-select' ? 'Multi-Select' : 'Matching';
+            const preview = q.question.length > 60 ? q.question.substring(0, 60) + '...' : q.question;
+
+            return `
+                <div class="builder-question-item" onclick="testSimulator.builderEditQuestion(${index})">
+                    <div class="builder-question-item-number">${index + 1}</div>
+                    <div class="builder-question-item-content">
+                        <div class="builder-question-item-type">${typeLabel}</div>
+                        <div class="builder-question-item-text">${this.escapeHtml(preview)}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    /**
+     * Export test as JSON
+     */
+    builderExportJSON() {
+        const title = this.builderTestTitle.value.trim();
+
+        if (!title) {
+            alert('Please enter a test title before exporting');
+            return;
+        }
+
+        if (this.builderQuestions.length === 0) {
+            alert('Please add at least one question before exporting');
+            return;
+        }
+
+        const test = {
+            title: title,
+            questions: this.builderQuestions
+        };
+
+        const jsonStr = JSON.stringify(test, null, 2);
+
+        // Copy to clipboard
+        navigator.clipboard.writeText(jsonStr).then(() => {
+            alert('✅ Test JSON copied to clipboard!\n\nYou can now paste it in the JSON input field to load the test, or save it for later.');
+            console.log('📋 Exported JSON:', jsonStr);
+        }).catch(err => {
+            // Fallback: show in alert
+            console.error('Failed to copy to clipboard:', err);
+            prompt('Copy this JSON:', jsonStr);
+        });
+    }
+
+    /**
+     * Preview the test (load it into the simulator)
+     */
+    builderPreviewTest() {
+        const title = this.builderTestTitle.value.trim() || 'Untitled Test';
+
+        if (this.builderQuestions.length === 0) {
+            alert('Please add at least one question before previewing');
+            return;
+        }
+
+        const test = {
+            title: title,
+            questions: this.builderQuestions
+        };
+
+        // Load the test
+        this.currentTest = test;
+        this.currentQuestionIndex = 0;
+        this.userAnswers = {};
+        this.score = null;
+
+        // Close builder and start test
+        this.testBuilderSection?.classList.add('hidden');
+        this.startTest();
+
+        console.log('👁️ Previewing test:', title);
     }
 }
 
