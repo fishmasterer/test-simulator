@@ -32,9 +32,14 @@ class TestSimulator {
      */
     initializeElements() {
         // Main sections
+        this.landingSection = document.getElementById('landing-section');
         this.jsonInputSection = document.getElementById('json-input-section');
         this.testSection = document.getElementById('test-section');
         this.resultsSection = document.getElementById('results-section');
+
+        // Landing page elements
+        this.getStartedBtn = document.getElementById('get-started-btn');
+        this.backToLandingBtn = document.getElementById('back-to-landing-btn');
 
         // JSON Input elements
         this.jsonInput = document.getElementById('json-input');
@@ -93,6 +98,8 @@ class TestSimulator {
      * Bind all event listeners
      */
     bindEvents() {
+        this.getStartedBtn?.addEventListener('click', () => this.enterApp());
+        this.backToLandingBtn?.addEventListener('click', () => this.backToLanding());
         this.loadTestBtn.addEventListener('click', () => this.loadTest());
         this.loadSampleBtn.addEventListener('click', () => this.loadSampleTest());
         this.openLibraryBtn?.addEventListener('click', () => this.openTestLibrary());
@@ -1230,6 +1237,41 @@ class TestSimulator {
      */
     exportAsPDF() {
         window.print();
+    }
+
+    /**
+     * Enter the app from landing page
+     */
+    enterApp() {
+        if (this.landingSection) {
+            this.landingSection.classList.add('hidden');
+        }
+        if (this.jsonInputSection) {
+            this.jsonInputSection.classList.remove('hidden');
+        }
+        // Focus on the JSON input for better UX
+        setTimeout(() => {
+            if (this.jsonInput) {
+                this.jsonInput.focus();
+            }
+        }, 100);
+    }
+
+    /**
+     * Return to landing page
+     */
+    backToLanding() {
+        if (this.jsonInputSection) {
+            this.jsonInputSection.classList.add('hidden');
+        }
+        if (this.testLibrarySection) {
+            this.testLibrarySection.classList.add('hidden');
+        }
+        if (this.landingSection) {
+            this.landingSection.classList.remove('hidden');
+        }
+        // Scroll to top for better UX
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     /**
