@@ -87,12 +87,87 @@
     </div>
 
     <div class="container">
+        <!-- Landing Section -->
+        <div id="landing-section" class="section landing-section">
+            <div class="landing-content">
+                <div class="landing-decorative-top">
+                    <svg class="decorative-branch" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10,50 Q30,30 50,50 T90,50" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"/>
+                        <circle cx="25" cy="38" r="3" fill="currentColor" opacity="0.6"/>
+                        <circle cx="45" cy="62" r="2.5" fill="currentColor" opacity="0.5"/>
+                        <circle cx="70" cy="38" r="3.5" fill="currentColor" opacity="0.6"/>
+                    </svg>
+                </div>
+
+                <div class="landing-hero">
+                    <h1 class="landing-title">Welcome to Your Study Space</h1>
+                    <p class="landing-subtitle">A gentle place to practice, learn, and grow</p>
+                </div>
+
+                <div class="landing-features">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                                <path d="M2 17l10 5 10-5"/>
+                                <path d="M2 12l10 5 10-5"/>
+                            </svg>
+                        </div>
+                        <h3>Practice at Your Pace</h3>
+                        <p>Take your time with custom tests designed to support your learning journey</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                        </div>
+                        <h3>Your Personal Library</h3>
+                        <p>Save and organize your tests in one cozy place, accessible anytime</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                        </div>
+                        <h3>Mindful Focus Timer</h3>
+                        <p>Study sessions paired with gentle breaks to keep you refreshed</p>
+                    </div>
+                </div>
+
+                <div class="landing-cta">
+                    <button id="get-started-btn" class="btn btn--primary btn--large landing-btn">Begin Your Study Session</button>
+                    <p class="landing-hint">No account needed to start. Sign in anytime to save your progress.</p>
+                </div>
+
+                <div class="landing-decorative-bottom">
+                    <svg class="decorative-dots" viewBox="0 0 100 20" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="10" cy="10" r="2" fill="currentColor" opacity="0.3"/>
+                        <circle cx="30" cy="10" r="2" fill="currentColor" opacity="0.4"/>
+                        <circle cx="50" cy="10" r="2" fill="currentColor" opacity="0.5"/>
+                        <circle cx="70" cy="10" r="2" fill="currentColor" opacity="0.4"/>
+                        <circle cx="90" cy="10" r="2" fill="currentColor" opacity="0.3"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
         <!-- JSON Input Section -->
-        <div id="json-input-section" class="section">
+        <div id="json-input-section" class="section hidden">
             <div class="card">
                 <div class="card__body">
-                    <h1>Test Simulator</h1>
-                    <p class="text-secondary">Paste your test JSON data below to load a test</p>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-12);">
+                        <div>
+                            <h1 style="margin-bottom: var(--space-8);">Test Simulator</h1>
+                            <p class="text-secondary">Paste your test JSON data below to load a test</p>
+                        </div>
+                        <button id="back-to-landing-btn" class="btn btn--outline btn--sm" style="flex-shrink: 0;">Back to Welcome</button>
+                    </div>
 
                     <!-- Timer Settings -->
                     <div class="timer-settings-container">

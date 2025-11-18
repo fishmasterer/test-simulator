@@ -3,7 +3,7 @@
  * Provides offline functionality and caching
  */
 
-const CACHE_NAME = 'test-simulator-v7';
+const CACHE_NAME = 'test-simulator-v8';
 const urlsToCache = [
   'index.html',
   'app.js',
