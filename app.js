@@ -159,6 +159,9 @@ class TestSimulator {
         this.builderDeleteQuestionBtn = document.getElementById('builder-delete-question-btn');
         this.testBuilderExportBtn = document.getElementById('test-builder-export-btn');
         this.testBuilderPreviewBtn = document.getElementById('test-builder-preview-btn');
+
+        // Initialize gamification system
+        this.gamification = new GamificationSystem();
     }
 
     /**
@@ -1439,8 +1442,37 @@ class TestSimulator {
     submitTest() {
         this.stopTimer();
         this.calculateResults();
+
+        // Record completion for gamification
+        const timeSpent = this.testDuration ? (this.testDuration - (this.timeRemaining || 0)) : 0;
+        const questionTypes = {};
+        this.currentTest.questions.forEach(q => {
+            questionTypes[q.type] = (questionTypes[q.type] || 0) + 1;
+        });
+
+        const gamificationResult = this.gamification.recordTestCompletion({
+            score: this.score.percentage,
+            totalQuestions: this.score.total,
+            correctAnswers: this.score.correct,
+            timeSpent,
+            questionTypes
+        });
+
+        // Show achievement toasts
+        if (gamificationResult.newAchievements.length > 0) {
+            this.showAchievementToasts(gamificationResult.newAchievements);
+        }
+
+        // Show level up notification
+        if (gamificationResult.leveledUp) {
+            const stats = this.gamification.getStats();
+            this.showLevelUpToast(stats.level);
+        }
+
         this.displayResults();
         this.clearProgress(); // Clear saved progress after submission
+
+        console.log(`🎮 Gamification: +${gamificationResult.xpEarned} XP, ${gamificationResult.newAchievements.length} new achievements`);
     }
 
     /**
@@ -3478,6 +3510,69 @@ class TestSimulator {
         this.startTest();
 
         console.log('👁️ Previewing test:', title);
+    }
+
+    /**
+     * Show achievement unlock toasts
+     */
+    showAchievementToasts(achievements) {
+        const container = document.getElementById('achievement-toast-container');
+        if (!container) return;
+
+        achievements.forEach((achievement, index) => {
+            setTimeout(() => {
+                const toast = document.createElement('div');
+                toast.className = 'achievement-toast';
+                toast.innerHTML = `
+                    <div class="achievement-toast-icon">${achievement.icon}</div>
+                    <div class="achievement-toast-content">
+                        <div class="achievement-toast-title">Achievement Unlocked!</div>
+                        <div class="achievement-toast-name">${achievement.name}</div>
+                        <div class="achievement-toast-xp">+${achievement.xpReward} XP</div>
+                    </div>
+                `;
+
+                container.appendChild(toast);
+
+                // Animate in
+                setTimeout(() => toast.classList.add('show'), 10);
+
+                // Remove after 5 seconds
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.remove(), 300);
+                }, 5000);
+            }, index * 500); // Stagger toasts
+        });
+    }
+
+    /**
+     * Show level up toast
+     */
+    showLevelUpToast(newLevel) {
+        const container = document.getElementById('achievement-toast-container');
+        if (!container) return;
+
+        const toast = document.createElement('div');
+        toast.className = 'achievement-toast level-up-toast';
+        toast.innerHTML = `
+            <div class="achievement-toast-icon">🎉</div>
+            <div class="achievement-toast-content">
+                <div class="achievement-toast-title">Level Up!</div>
+                <div class="achievement-toast-name">You reached Level ${newLevel}</div>
+            </div>
+        `;
+
+        container.appendChild(toast);
+
+        // Animate in
+        setTimeout(() => toast.classList.add('show'), 10);
+
+        // Remove after 5 seconds
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 5000);
     }
 }
 
