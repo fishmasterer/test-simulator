@@ -20,6 +20,7 @@ class TestSimulator {
         this.testDuration = null; // in seconds
         this.testMode = 'exam'; // 'exam' or 'practice'
         this.isReviewSession = false; // true when reviewing wrong answers
+        this.timeWarningsShown = new Set(); // Track which time warnings have been shown
         this.storageKey = 'testSimulatorProgress';
         this.themeKey = 'testSimulatorTheme';
         this.testBankKey = 'testSimulatorBank';
@@ -948,6 +949,9 @@ class TestSimulator {
             this.timeRemaining--;
             this.updateTimerDisplay();
 
+            // Show time warnings at specific thresholds
+            this.checkTimeWarnings();
+
             // Save progress every 5 seconds instead of every second for better performance
             if (this.timeRemaining % 5 === 0) {
                 this.saveProgress();
@@ -956,9 +960,29 @@ class TestSimulator {
             if (this.timeRemaining <= 0) {
                 this.stopTimer();
                 this.submitTest();
-                alert('Time is up! Your test has been automatically submitted.');
+                this.showToast('⏰ Time is up! Your test has been automatically submitted.', 'error');
             }
         }, 1000);
+    }
+
+    /**
+     * Check and show time warnings at specific thresholds
+     */
+    checkTimeWarnings() {
+        const warnings = [
+            { time: 600, message: '⏰ 10 minutes remaining', level: 'info' },
+            { time: 300, message: '⚠️ 5 minutes remaining', level: 'warning' },
+            { time: 120, message: '🚨 2 minutes remaining', level: 'warning' },
+            { time: 60, message: '🔴 1 minute remaining!', level: 'error' }
+        ];
+
+        warnings.forEach(warning => {
+            if (this.timeRemaining === warning.time && !this.timeWarningsShown.has(warning.time)) {
+                this.timeWarningsShown.add(warning.time);
+                this.showToast(warning.message, warning.level);
+                console.log(`⏱️ Time warning: ${warning.message}`);
+            }
+        });
     }
 
     /**
@@ -1655,19 +1679,30 @@ class TestSimulator {
      * Show confirmation modal before submitting
      */
     showConfirmModal() {
+        const totalQuestions = this.currentTest.questions.length;
         const unanswered = this.currentTest.questions.filter(q => {
             const answer = this.userAnswers[q.id];
             return answer === undefined ||
                    (Array.isArray(answer) && answer.length === 0) ||
                    answer === null;
         }).length;
+        const answered = totalQuestions - unanswered;
+        const flagged = this.flaggedQuestions.size;
 
-        const message = unanswered > 0
-            ? `You have ${unanswered} unanswered question${unanswered > 1 ? 's' : ''}. Are you sure you want to submit?`
-            : 'Are you sure you want to submit your test?';
+        let message = `Progress: ${answered}/${totalQuestions} answered`;
+        if (flagged > 0) {
+            message += `, ${flagged} flagged`;
+        }
+        if (unanswered > 0) {
+            message += `\n\n⚠️ You have ${unanswered} unanswered question${unanswered > 1 ? 's' : ''}. They will be marked incorrect.`;
+        }
+        message += '\n\nAre you sure you want to submit?';
 
         const messageEl = this.confirmModal.querySelector('.confirm-message');
-        if (messageEl) messageEl.textContent = message;
+        if (messageEl) {
+            messageEl.style.whiteSpace = 'pre-line';
+            messageEl.textContent = message;
+        }
 
         this.confirmModal?.classList.remove('hidden');
 
@@ -4066,6 +4101,46 @@ class TestSimulator {
         this.startTest();
 
         console.log('👁️ Previewing test:', title);
+    }
+
+    /**
+     * Show general toast notification
+     */
+    showToast(message, type = 'info') {
+        // Create toast container if it doesn't exist
+        let container = document.getElementById('toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'toast-container';
+            container.className = 'toast-container';
+            document.body.appendChild(container);
+        }
+
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+
+        const icons = {
+            info: 'ℹ️',
+            success: '✅',
+            warning: '⚠️',
+            error: '🚨'
+        };
+
+        toast.innerHTML = `
+            <div class="toast-icon">${icons[type] || icons.info}</div>
+            <div class="toast-message">${message}</div>
+        `;
+
+        container.appendChild(toast);
+
+        // Animate in
+        setTimeout(() => toast.classList.add('show'), 10);
+
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 5000);
     }
 
     /**
