@@ -84,9 +84,9 @@ class MusicPlayer {
             videoId: this.currentVideoId,
             playerVars: {
                 autoplay: 0,
-                controls: 0,
-                disablekb: 1,
-                fs: 0,
+                controls: 1,  // Show YouTube controls
+                disablekb: 0,  // Allow keyboard controls
+                fs: 1,  // Allow fullscreen
                 iv_load_policy: 3,
                 modestbranding: 1,
                 rel: 0,
@@ -169,6 +169,7 @@ class MusicPlayer {
         if (this.playerContent) {
             if (this.isExpanded) {
                 this.playerContent.classList.remove('hidden');
+                this.musicPlayer?.classList.add('expanded');
 
                 // Initialize player if not already done
                 if (!this.player && window.YT && window.YT.Player) {
@@ -176,6 +177,7 @@ class MusicPlayer {
                 }
             } else {
                 this.playerContent.classList.add('hidden');
+                this.musicPlayer?.classList.remove('expanded');
             }
         }
 
@@ -267,9 +269,11 @@ class MusicPlayer {
             if (this.isPlaying) {
                 this.playBtn.classList.add('hidden');
                 this.pauseBtn.classList.remove('hidden');
+                this.musicPlayer?.classList.add('playing');
             } else {
                 this.playBtn.classList.remove('hidden');
                 this.pauseBtn.classList.add('hidden');
+                this.musicPlayer?.classList.remove('playing');
             }
         }
     }

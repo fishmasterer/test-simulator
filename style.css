@@ -2963,6 +2963,20 @@ select.form-control {
   width: 20px;
   height: 20px;
   flex-shrink: 0;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.music-player.expanded .music-icon {
+  transform: rotate(15deg) scale(1.1);
+}
+
+.music-player.playing .music-icon {
+  animation: musicPulse 2s ease-in-out infinite;
+}
+
+@keyframes musicPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
 }
 
 .music-label {
@@ -2980,17 +2994,37 @@ select.form-control {
   box-shadow:
     0 8px 24px rgba(90, 74, 58, 0.12),
     0 4px 8px rgba(90, 74, 58, 0.08);
-  animation: slideUpFade 0.3s ease-out;
+  transform-origin: bottom left;
+  animation: expandPlayer 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-@keyframes slideUpFade {
-  from {
+.music-player-content.hidden {
+  animation: collapsePlayer 0.3s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+@keyframes expandPlayer {
+  0% {
     opacity: 0;
-    transform: translateY(8px);
+    transform: scale(0.85) translateY(12px);
   }
-  to {
+  60% {
+    transform: scale(1.02) translateY(-2px);
+  }
+  100% {
     opacity: 1;
-    transform: translateY(0);
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes collapsePlayer {
+  0% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.9) translateY(8px);
+    display: none;
   }
 }
 
