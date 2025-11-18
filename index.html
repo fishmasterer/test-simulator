@@ -22,25 +22,60 @@
 </head>
 <body>
     <!-- Theme Toggle Button -->
-    <button id="theme-toggle" class="theme-toggle-btn" aria-label="Open theme menu">🎨</button>
+    <button id="theme-toggle" class="theme-toggle-btn" aria-label="Open theme menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="13.5" cy="6.5" r=".5"></circle>
+            <circle cx="17.5" cy="10.5" r=".5"></circle>
+            <circle cx="8.5" cy="7.5" r=".5"></circle>
+            <circle cx="6.5" cy="12.5" r=".5"></circle>
+            <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+        </svg>
+    </button>
 
     <!-- Theme Menu -->
     <div id="theme-menu" class="theme-menu hidden" role="menu" aria-label="Theme selection">
         <div class="theme-menu-header">Choose Theme</div>
         <button class="theme-option" data-theme="light" role="menuitem">
-            <span class="theme-icon">☀️</span>
+            <span class="theme-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                </svg>
+            </span>
             <span>Perplexity Light</span>
         </button>
         <button class="theme-option" data-theme="dark" role="menuitem">
-            <span class="theme-icon">🌙</span>
+            <span class="theme-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+            </span>
             <span>Perplexity Dark</span>
         </button>
         <button class="theme-option" data-theme="claude-light" role="menuitem">
-            <span class="theme-icon">🧡</span>
+            <span class="theme-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <circle cx="12" cy="12" r="6"></circle>
+                    <circle cx="12" cy="12" r="2"></circle>
+                </svg>
+            </span>
             <span>Claude Light</span>
         </button>
         <button class="theme-option" data-theme="claude-dark" role="menuitem">
-            <span class="theme-icon">🟠</span>
+            <span class="theme-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <circle cx="12" cy="12" r="4"></circle>
+                </svg>
+            </span>
             <span>Claude Dark</span>
         </button>
     </div>
@@ -225,8 +260,20 @@ Example format:
                     </div>
 
                     <div class="button-group" style="margin-top: var(--space-12);">
-                        <button id="open-library-btn" class="btn btn--secondary">📚 My Saved Tests</button>
-                        <button id="open-pomodoro-btn" class="btn btn--secondary">🍅 Focus Timer</button>
+                        <button id="open-library-btn" class="btn btn--secondary">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                            </svg>
+                            My Saved Tests
+                        </button>
+                        <button id="open-pomodoro-btn" class="btn btn--secondary">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            Focus Timer
+                        </button>
                     </div>
                 </div>
             </div>
@@ -236,7 +283,12 @@ Example format:
         <div id="test-library-section" class="section hidden">
             <div class="library-header">
                 <h1>My Test Library</h1>
-                <button id="close-library-btn" class="btn btn--outline">← Back</button>
+                <button id="close-library-btn" class="btn btn--outline">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                    Back
+                </button>
             </div>
 
             <!-- Sync Status Banner -->
@@ -254,7 +306,7 @@ Example format:
                     type="text"
                     id="library-search"
                     class="form-control library-search"
-                    placeholder="🔍 Search tests..."
+                    placeholder="Search tests..."
                     aria-label="Search tests"
                 >
                 <div class="library-filters">
@@ -275,8 +327,13 @@ Example format:
         <!-- Pomodoro Timer Section -->
         <div id="pomodoro-section" class="section hidden">
             <div class="library-header">
-                <h1>🍅 Focus Timer</h1>
-                <button id="close-pomodoro-btn" class="btn btn--outline">← Back</button>
+                <h1>Focus Timer</h1>
+                <button id="close-pomodoro-btn" class="btn btn--outline">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                    Back
+                </button>
             </div>
 
             <div class="pomodoro-container">
