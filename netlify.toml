@@ -1,41 +1,26 @@
-# Netlify Configuration for Pure Static Site (No Build Required)
+# Netlify Configuration for Static Site
 [build]
-  # This is a vanilla JS app - no build step needed!
-  command = "echo 'No build required - static site'"
   publish = "."
+  command = "# No build command needed for static site"
 
-# Skip build image entirely - just deploy files as-is
-[build.processing]
-  skip_processing = false
-
-[build.processing.css]
-  bundle = false
-  minify = false
-
-[build.processing.js]
-  bundle = false
-  minify = false
-
-[build.processing.html]
-  pretty_urls = false
-
-[build.processing.images]
-  compress = false
-
-# Redirect rules for PWA
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-
-# Headers for better PWA support
+# Headers for security and PWA support
 [[headers]]
-  for = "/*"
+  for = "/*.html"
   [headers.values]
-    X-Frame-Options = "DENY"
-    X-XSS-Protection = "1; mode=block"
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
+    Content-Type = "text/html; charset=utf-8"
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Content-Type = "application/javascript; charset=utf-8"
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Content-Type = "text/css; charset=utf-8"
+    Cache-Control = "public, max-age=31536000, immutable"
 
 [[headers]]
   for = "/manifest.json"
@@ -46,7 +31,7 @@
 [[headers]]
   for = "/service-worker.js"
   [headers.values]
-    Content-Type = "application/javascript"
+    Content-Type = "application/javascript; charset=utf-8"
     Cache-Control = "public, max-age=0, must-revalidate"
 
 [[headers]]
@@ -55,6 +40,23 @@
     Content-Type = "image/svg+xml"
     Cache-Control = "public, max-age=31536000, immutable"
 
-# Environment variables (add these in Netlify dashboard if needed)
-# [context.production.environment]
-#   NODE_ENV = "production"
+[[headers]]
+  for = "/*.png"
+  [headers.values]
+    Content-Type = "image/png"
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.ico"
+  [headers.values]
+    Content-Type = "image/x-icon"
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Security headers (excluding X-Frame-Options to allow YouTube embeds)
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
