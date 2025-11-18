@@ -1347,6 +1347,95 @@ select.form-control {
   line-height: var(--line-height-normal);
 }
 
+/* Question Controls (Flag & Confidence) */
+.question-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-16);
+  margin-top: var(--space-20);
+  padding: var(--space-16);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(240, 245, 255, 0.4) 100%);
+  border-radius: var(--radius-md);
+  border: 1.5px solid rgba(33, 128, 141, 0.15);
+}
+
+.btn-flag {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  padding: var(--space-8) var(--space-16);
+  background: white;
+  border: 1.5px solid rgba(0, 0, 0, 0.15);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-standard);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+}
+
+.btn-flag svg {
+  width: 18px;
+  height: 18px;
+  transition: all var(--duration-fast) var(--ease-standard);
+}
+
+.btn-flag:hover {
+  border-color: #f59e0b;
+  background: #fff7ed;
+  color: #d97706;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+}
+
+.btn-flag.flagged {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-color: #f59e0b;
+  color: #92400e;
+}
+
+.btn-flag.flagged svg {
+  fill: #f59e0b;
+}
+
+.btn-flag.flagged:hover {
+  background: linear-gradient(135deg, #fde68a 0%, #fcd34d 100%);
+  transform: translateY(-1px) scale(1.02);
+}
+
+.confidence-selector {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.confidence-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+}
+
+.confidence-select {
+  padding: var(--space-6) var(--space-12);
+  border: 1.5px solid rgba(0, 0, 0, 0.15);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  background: white;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-standard);
+}
+
+.confidence-select:hover {
+  border-color: var(--color-primary);
+}
+
+.confidence-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(33, 128, 141, 0.1);
+}
+
 .multi-select-note {
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
@@ -2221,6 +2310,98 @@ select.form-control {
 .overview-item:focus-visible {
   outline: var(--focus-outline);
   outline-offset: 2px;
+}
+
+/* Enhanced Overview Styles */
+.overview-stats {
+  display: flex;
+  gap: var(--space-12);
+  margin-top: var(--space-12);
+  padding: var(--space-12);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(240, 245, 255, 0.6) 100%);
+  border-radius: var(--radius-md);
+  border: 1.5px solid rgba(33, 128, 141, 0.15);
+}
+
+.stat-item {
+  flex: 1;
+  text-align: center;
+}
+
+.stat-value {
+  display: block;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  line-height: 1.2;
+}
+
+.stat-label {
+  display: block;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-4);
+}
+
+.overview-legend {
+  display: flex;
+  gap: var(--space-12);
+  margin: var(--space-12) 0;
+  padding: var(--space-8);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+.legend-indicator {
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+  border: 1.5px solid currentColor;
+}
+
+.legend-answered {
+  background: rgba(var(--color-success-rgb), 0.15);
+  border-color: var(--color-success);
+}
+
+.legend-flagged {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-color: #f59e0b;
+}
+
+.legend-current {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+/* Flagged Overview Item */
+.overview-item.flagged {
+  position: relative;
+  background: linear-gradient(135deg, #fff7ed 0%, #fef3c7 100%);
+  border-color: #f59e0b;
+}
+
+.overview-item.flagged.answered {
+  background: linear-gradient(135deg, rgba(var(--color-success-rgb), 0.15) 0%, #fef3c7 100%);
+}
+
+.overview-number {
+  position: relative;
+  z-index: 1;
+}
+
+.overview-flag {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  font-size: 10px;
+  line-height: 1;
 }
 
 /* Keyboard Hints */

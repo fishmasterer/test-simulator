@@ -12,6 +12,8 @@ class TestSimulator {
         this.currentTest = null;
         this.currentQuestionIndex = 0;
         this.userAnswers = {};
+        this.flaggedQuestions = new Set(); // Track flagged questions by ID
+        this.questionConfidence = {}; // Track confidence level per question
         this.testStartTime = null;
         this.timerInterval = null;
         this.timeRemaining = null;
@@ -456,6 +458,8 @@ class TestSimulator {
                 this.currentTest = saved.currentTest;
                 this.currentQuestionIndex = saved.currentQuestionIndex || 0;
                 this.userAnswers = saved.userAnswers || {};
+                this.flaggedQuestions = new Set(saved.flaggedQuestions || []); // Convert Array back to Set
+                this.questionConfidence = saved.questionConfidence || {};
                 this.testStartTime = saved.testStartTime || Date.now();
                 this.testDuration = saved.testDuration;
                 this.timeRemaining = saved.timeRemaining;
@@ -476,6 +480,8 @@ class TestSimulator {
             currentTest: this.currentTest,
             currentQuestionIndex: this.currentQuestionIndex,
             userAnswers: this.userAnswers,
+            flaggedQuestions: Array.from(this.flaggedQuestions), // Convert Set to Array
+            questionConfidence: this.questionConfidence,
             testStartTime: this.testStartTime,
             testDuration: this.testDuration,
             timeRemaining: this.timeRemaining,
@@ -996,11 +1002,35 @@ class TestSimulator {
 
         const totalQuestions = this.currentTest.questions.length;
         const answeredCount = Object.keys(this.userAnswers).length;
+        const flaggedCount = this.flaggedQuestions.size;
+        const progressPercentage = Math.round((answeredCount / totalQuestions) * 100);
 
-        let html = `<div class="overview-header">
-            <h4>Progress: ${answeredCount}/${totalQuestions}</h4>
-        </div>
-        <div class="overview-grid" role="list" aria-label="Question overview">`;
+        let html = `
+            <div class="overview-header">
+                <h4>Question Navigator</h4>
+                <div class="overview-stats">
+                    <div class="stat-item">
+                        <span class="stat-value">${answeredCount}/${totalQuestions}</span>
+                        <span class="stat-label">Answered</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">${progressPercentage}%</span>
+                        <span class="stat-label">Complete</span>
+                    </div>
+                    ${flaggedCount > 0 ? `
+                        <div class="stat-item">
+                            <span class="stat-value">🚩 ${flaggedCount}</span>
+                            <span class="stat-label">Flagged</span>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+            <div class="overview-legend">
+                <div class="legend-item"><span class="legend-indicator legend-answered"></span>Answered</div>
+                <div class="legend-item"><span class="legend-indicator legend-flagged"></span>Flagged</div>
+                <div class="legend-item"><span class="legend-indicator legend-current"></span>Current</div>
+            </div>
+            <div class="overview-grid" role="list" aria-label="Question overview">`;
 
         this.currentTest.questions.forEach((question, index) => {
             const isAnswered = this.userAnswers[question.id] !== undefined &&
@@ -1008,14 +1038,27 @@ class TestSimulator {
                                this.userAnswers[question.id].length > 0 :
                                this.userAnswers[question.id] !== null);
             const isCurrent = index === this.currentQuestionIndex;
+            const isFlagged = this.flaggedQuestions.has(question.id);
+            const confidence = this.questionConfidence[question.id];
+
+            let statusText = '';
+            if (isCurrent) statusText += ' (current)';
+            if (isAnswered) statusText += ' (answered)';
+            if (isFlagged) statusText += ' (flagged)';
+            if (confidence) statusText += ` (confidence: ${confidence})`;
 
             html += `<button
-                class="overview-item ${isAnswered ? 'answered' : ''} ${isCurrent ? 'current' : ''}"
+                class="overview-item
+                    ${isAnswered ? 'answered' : ''}
+                    ${isCurrent ? 'current' : ''}
+                    ${isFlagged ? 'flagged' : ''}
+                    ${confidence ? 'confidence-' + confidence : ''}"
                 onclick="testSimulator.goToQuestion(${index})"
-                aria-label="Question ${index + 1}${isAnswered ? ' (answered)' : ' (not answered)'}${isCurrent ? ' (current)' : ''}"
-                role="listitem"
-            >
-                ${index + 1}
+                aria-label="Question ${index + 1}${statusText}"
+                title="Question ${index + 1}${statusText}"
+                role="listitem">
+                <span class="overview-number">${index + 1}</span>
+                ${isFlagged ? '<span class="overview-flag">🚩</span>' : ''}
             </button>`;
         });
 
@@ -1076,11 +1119,80 @@ class TestSimulator {
                 break;
         }
 
+        // Add flag and confidence controls
+        this.addQuestionControls(question);
+
         // Focus management
         setTimeout(() => {
             const firstInput = this.questionContainer.querySelector('input, select');
             if (firstInput) firstInput.focus();
         }, 50);
+    }
+
+    /**
+     * Add flag button and confidence selector to question
+     */
+    addQuestionControls(question) {
+        const controlsHTML = `
+            <div class="question-controls">
+                <button
+                    class="btn-flag ${this.flaggedQuestions.has(question.id) ? 'flagged' : ''}"
+                    onclick="testSimulator.toggleFlag(${question.id})"
+                    title="${this.flaggedQuestions.has(question.id) ? 'Unflag question' : 'Flag for review'}"
+                    aria-label="${this.flaggedQuestions.has(question.id) ? 'Remove flag' : 'Flag this question for review'}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+                        <line x1="4" y1="22" x2="4" y2="15"></line>
+                    </svg>
+                    <span class="flag-text">${this.flaggedQuestions.has(question.id) ? 'Flagged' : 'Flag'}</span>
+                </button>
+                <div class="confidence-selector">
+                    <label class="confidence-label">Confidence:</label>
+                    <select
+                        class="confidence-select"
+                        onchange="testSimulator.setConfidence(${question.id}, this.value)"
+                        aria-label="Answer confidence level">
+                        <option value="" ${!this.questionConfidence[question.id] ? 'selected' : ''}>Not set</option>
+                        <option value="high" ${this.questionConfidence[question.id] === 'high' ? 'selected' : ''}>High</option>
+                        <option value="medium" ${this.questionConfidence[question.id] === 'medium' ? 'selected' : ''}>Medium</option>
+                        <option value="low" ${this.questionConfidence[question.id] === 'low' ? 'selected' : ''}>Low</option>
+                        <option value="guess" ${this.questionConfidence[question.id] === 'guess' ? 'selected' : ''}>Guess</option>
+                    </select>
+                </div>
+            </div>
+        `;
+
+        this.questionContainer.insertAdjacentHTML('beforeend', controlsHTML);
+    }
+
+    /**
+     * Toggle flag status for a question
+     */
+    toggleFlag(questionId) {
+        if (this.flaggedQuestions.has(questionId)) {
+            this.flaggedQuestions.delete(questionId);
+            console.log('🏳️ Question unflagged');
+        } else {
+            this.flaggedQuestions.add(questionId);
+            console.log('🚩 Question flagged for review');
+        }
+        this.displayQuestion();
+        this.updateQuestionOverview();
+        this.saveProgress();
+    }
+
+    /**
+     * Set confidence level for a question
+     */
+    setConfidence(questionId, level) {
+        if (level) {
+            this.questionConfidence[questionId] = level;
+            console.log(`💭 Confidence set to: ${level}`);
+        } else {
+            delete this.questionConfidence[questionId];
+        }
+        this.updateQuestionOverview();
+        this.saveProgress();
     }
 
     /**
