@@ -17,6 +17,7 @@ class TestSimulator {
         this.timeRemaining = null;
         this.testDuration = null; // in seconds
         this.testMode = 'exam'; // 'exam' or 'practice'
+        this.isReviewSession = false; // true when reviewing wrong answers
         this.storageKey = 'testSimulatorProgress';
         this.themeKey = 'testSimulatorTheme';
         this.testBankKey = 'testSimulatorBank';
@@ -79,6 +80,7 @@ class TestSimulator {
         this.scoreSummary = document.getElementById('score-summary');
         this.resultsReview = document.getElementById('results-review');
         this.restartBtn = document.getElementById('restart-btn');
+        this.reviewWrongBtn = document.getElementById('review-wrong-btn');
         this.exportPdfBtn = document.getElementById('export-pdf-btn');
         this.exportCsvBtn = document.getElementById('export-csv-btn');
         this.saveTestBtn = document.getElementById('save-test-btn');
@@ -185,6 +187,7 @@ class TestSimulator {
         this.nextBtn.addEventListener('click', () => this.nextQuestion());
         this.submitBtn.addEventListener('click', () => this.showConfirmModal());
         this.restartBtn.addEventListener('click', () => this.restart());
+        this.reviewWrongBtn?.addEventListener('click', () => this.reviewWrongAnswers());
         this.showPromptBtn.addEventListener('click', () => this.showPromptModal());
         this.closeModalBtn.addEventListener('click', () => this.hidePromptModal());
         this.confirmSubmitBtn.addEventListener('click', () => this.confirmSubmit());
@@ -759,6 +762,7 @@ class TestSimulator {
             const modeExam = document.getElementById('mode-exam');
             const modePractice = document.getElementById('mode-practice');
             this.testMode = modePractice?.checked ? 'practice' : 'exam';
+            this.isReviewSession = false; // Reset review flag for new tests
 
             console.log(`🎯 Test mode: ${this.testMode}`);
 
@@ -892,6 +896,16 @@ class TestSimulator {
             } else {
                 modeIndicator.classList.add('mode-badge--exam');
                 modeIndicator.textContent = 'Exam Mode';
+            }
+        }
+
+        // Show/hide review badge
+        const reviewIndicator = document.getElementById('review-indicator');
+        if (reviewIndicator) {
+            if (this.isReviewSession) {
+                reviewIndicator.classList.remove('hidden');
+            } else {
+                reviewIndicator.classList.add('hidden');
             }
         }
 
@@ -1676,11 +1690,76 @@ class TestSimulator {
 
         this.resultsReview.innerHTML = reviewHTML;
 
+        // Show/hide review wrong answers button
+        const wrongCount = this.score.total - this.score.correct;
+        if (this.reviewWrongBtn) {
+            if (wrongCount > 0) {
+                this.reviewWrongBtn.classList.remove('hidden');
+                this.reviewWrongBtn.textContent = `Review ${wrongCount} Wrong Answer${wrongCount !== 1 ? 's' : ''}`;
+                // Re-add the icon
+                const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                icon.setAttribute('viewBox', '0 0 24 24');
+                icon.setAttribute('fill', 'none');
+                icon.setAttribute('stroke', 'currentColor');
+                icon.setAttribute('stroke-width', '2');
+                icon.style.cssText = 'width: 20px; height: 20px; margin-right: 8px;';
+                icon.innerHTML = '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line>';
+                this.reviewWrongBtn.insertBefore(icon, this.reviewWrongBtn.firstChild);
+            } else {
+                this.reviewWrongBtn.classList.add('hidden');
+            }
+        }
+
         // Focus on score
         setTimeout(() => {
             const scoreNumber = this.scoreSummary.querySelector('.score-number');
             if (scoreNumber) scoreNumber.focus();
         }, 100);
+    }
+
+    /**
+     * Review wrong answers - restart test with only incorrect questions in practice mode
+     */
+    reviewWrongAnswers() {
+        // Filter questions to only those answered incorrectly
+        const wrongQuestions = this.currentTest.questions.filter(question => {
+            const userAnswer = this.userAnswers[question.id];
+            const correctAnswer = question.correct;
+            return !this.isAnswerCorrect(question, userAnswer, correctAnswer);
+        });
+
+        if (wrongQuestions.length === 0) {
+            alert('No wrong answers to review!');
+            return;
+        }
+
+        console.log(`📝 Starting review of ${wrongQuestions.length} wrong answer${wrongQuestions.length !== 1 ? 's' : ''}`);
+
+        // Create new test with only wrong questions
+        const reviewTest = {
+            ...this.currentTest,
+            title: `Review: ${this.currentTest.title}`,
+            questions: wrongQuestions
+        };
+
+        // Clear state and load review test
+        this.currentTest = reviewTest;
+        this.currentQuestionIndex = 0;
+        this.userAnswers = {};
+        this.testStartTime = Date.now();
+        this.testMode = 'practice'; // Always use practice mode for review
+        this.isReviewSession = true; // Mark as review session
+
+        // Clear timer for review
+        this.testDuration = null;
+        this.timeRemaining = null;
+        if (this.timerInterval) {
+            clearInterval(this.timerInterval);
+            this.timerInterval = null;
+        }
+
+        // Start the review session
+        this.startTest();
     }
 
     /**
