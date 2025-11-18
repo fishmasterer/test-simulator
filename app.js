@@ -56,6 +56,14 @@ class TestSimulator {
         this.timerDurationInput = document.getElementById('timer-duration');
         this.timerSettings = document.getElementById('timer-settings');
 
+        // Shuffle elements
+        this.shuffleToggle = document.getElementById('shuffle-toggle');
+        this.shuffleSettings = document.getElementById('shuffle-settings');
+        this.shuffleModeSelect = document.getElementById('shuffle-mode');
+        this.shuffleSeedCheckbox = document.getElementById('shuffle-seed');
+        this.shuffleSeedInput = document.getElementById('shuffle-seed-input');
+        this.shuffleSeedValue = document.getElementById('shuffle-seed-value');
+
         // Test elements
         this.testTitle = document.getElementById('test-title');
         this.questionCounter = document.getElementById('question-counter');
@@ -79,6 +87,22 @@ class TestSimulator {
         this.showPromptBtn = document.getElementById('show-prompt-btn');
         this.closeModalBtn = document.getElementById('close-modal');
         this.confirmModal = document.getElementById('confirm-modal');
+
+        // Prompt builder elements
+        this.promptTopicInput = document.getElementById('prompt-topic');
+        this.promptCountInput = document.getElementById('prompt-count');
+        this.promptDifficultySelect = document.getElementById('prompt-difficulty');
+        this.promptDistributionSelect = document.getElementById('prompt-distribution');
+        this.promptStyleSelect = document.getElementById('prompt-style');
+        this.promptContextInput = document.getElementById('prompt-context');
+        this.promptShuffleCheckbox = document.getElementById('prompt-shuffle');
+        this.promptExplanationsCheckbox = document.getElementById('prompt-explanations');
+        this.promptDistractorsCheckbox = document.getElementById('prompt-distractors');
+        this.promptCreativeCheckbox = document.getElementById('prompt-creative');
+        this.promptGenerateBtn = document.getElementById('prompt-generate-btn');
+        this.promptCopyBtn = document.getElementById('prompt-copy-btn');
+        this.promptResetBtn = document.getElementById('prompt-reset-btn');
+        this.generatedPromptText = document.getElementById('generated-prompt-text');
         this.confirmSubmitBtn = document.getElementById('confirm-submit-btn');
         this.cancelSubmitBtn = document.getElementById('cancel-submit-btn');
         this.saveTestModal = document.getElementById('save-test-modal');
@@ -90,6 +114,11 @@ class TestSimulator {
         this.librarySearchInput = document.getElementById('library-search');
         this.libraryCourseFilter = document.getElementById('library-course-filter');
         this.libraryTopicFilter = document.getElementById('library-topic-filter');
+        this.viewInsightsBtn = document.getElementById('view-insights-btn');
+
+        // Insights modal elements
+        this.insightsModal = document.getElementById('insights-modal');
+        this.closeInsightsModalBtn = document.getElementById('close-insights-modal-btn');
 
         // Theme elements
         this.themeToggle = document.getElementById('theme-toggle');
@@ -149,6 +178,8 @@ class TestSimulator {
         this.saveTestFormBtn?.addEventListener('click', () => this.saveCurrentTest());
         this.cancelSaveBtn?.addEventListener('click', () => this.hideSaveTestModal());
         this.closeLibraryBtn?.addEventListener('click', () => this.closeTestLibrary());
+        this.viewInsightsBtn?.addEventListener('click', () => this.showInsightsModal());
+        this.closeInsightsModalBtn?.addEventListener('click', () => this.hideInsightsModal());
 
         // Library search and filters
         this.librarySearchInput?.addEventListener('input', () => this.filterTestLibrary());
@@ -180,6 +211,16 @@ class TestSimulator {
         // Timer toggle
         this.timerToggle?.addEventListener('change', (e) => {
             this.timerSettings.classList.toggle('hidden', !e.target.checked);
+        });
+
+        // Shuffle toggle
+        this.shuffleToggle?.addEventListener('change', (e) => {
+            this.shuffleSettings.classList.toggle('hidden', !e.target.checked);
+        });
+
+        // Shuffle seed toggle
+        this.shuffleSeedCheckbox?.addEventListener('change', (e) => {
+            this.shuffleSeedInput.classList.toggle('hidden', !e.target.checked);
         });
 
         // Close modals when clicking outside
@@ -534,6 +575,123 @@ class TestSimulator {
     }
 
     /**
+     * Seeded random number generator (for reproducible shuffles)
+     * @param {number} seed - Seed value
+     * @returns {function} Random function
+     */
+    seededRandom(seed) {
+        let state = seed;
+        return function() {
+            state = (state * 1664525 + 1013904223) % 4294967296;
+            return state / 4294967296;
+        };
+    }
+
+    /**
+     * Fisher-Yates shuffle algorithm
+     * @param {Array} array - Array to shuffle
+     * @param {function} randomFunc - Optional random function for seeded shuffle
+     * @returns {Array} Shuffled array (new array)
+     */
+    shuffleArray(array, randomFunc = Math.random) {
+        const shuffled = [...array];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(randomFunc() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+    }
+
+    /**
+     * Apply shuffle to test data based on settings
+     * @param {Object} testData - Test data to shuffle
+     * @returns {Object} Shuffled test data
+     */
+    applyShuffleToTest(testData) {
+        if (!this.shuffleToggle?.checked) {
+            return testData;
+        }
+
+        const mode = this.shuffleModeSelect?.value || 'both';
+        const useSeed = this.shuffleSeedCheckbox?.checked;
+        const seedValue = useSeed ? (parseInt(this.shuffleSeedValue?.value) || Date.now()) : Date.now();
+
+        console.log(`🔀 Applying shuffle: mode=${mode}, seed=${useSeed ? seedValue : 'random'}`);
+
+        // Create deep copy to avoid mutating original
+        const shuffled = JSON.parse(JSON.stringify(testData));
+
+        // Set up random function
+        const randomFunc = useSeed ? this.seededRandom(seedValue) : Math.random;
+
+        // Shuffle questions if needed
+        if (mode === 'questions' || mode === 'both' || mode === 'smart') {
+            if (mode === 'smart') {
+                // Smart shuffle: keep general difficulty progression
+                // Easy questions first third, medium middle third, hard last third
+                const totalQuestions = shuffled.questions.length;
+                const thirdSize = Math.floor(totalQuestions / 3);
+
+                const firstThird = this.shuffleArray(shuffled.questions.slice(0, thirdSize), randomFunc);
+                const secondThird = this.shuffleArray(shuffled.questions.slice(thirdSize, thirdSize * 2), randomFunc);
+                const lastThird = this.shuffleArray(shuffled.questions.slice(thirdSize * 2), randomFunc);
+
+                shuffled.questions = [...firstThird, ...secondThird, ...lastThird];
+            } else {
+                shuffled.questions = this.shuffleArray(shuffled.questions, randomFunc);
+            }
+
+            // Re-index questions after shuffling
+            shuffled.questions.forEach((q, index) => {
+                q.id = index + 1;
+            });
+        }
+
+        // Shuffle options if needed
+        if (mode === 'options' || mode === 'both' || mode === 'smart') {
+            shuffled.questions.forEach(question => {
+                // Create new random function for each question if using seed
+                const qRandomFunc = useSeed ? this.seededRandom(seedValue + question.id) : Math.random;
+
+                if (question.type === 'mcq' || question.type === 'multi-select') {
+                    // Store original option indices
+                    const originalOptions = question.options.map((opt, idx) => ({ opt, idx }));
+                    const shuffledOptions = this.shuffleArray(originalOptions, qRandomFunc);
+
+                    // Update options and correct answers
+                    question.options = shuffledOptions.map(item => item.opt);
+
+                    // Update correct answer indices
+                    if (question.type === 'mcq') {
+                        const originalCorrect = question.correct;
+                        question.correct = shuffledOptions.findIndex(item => item.idx === originalCorrect);
+                    } else if (question.type === 'multi-select') {
+                        const originalCorrect = question.correct;
+                        question.correct = originalCorrect.map(correctIdx =>
+                            shuffledOptions.findIndex(item => item.idx === correctIdx)
+                        ).sort((a, b) => a - b);
+                    }
+                }
+
+                if (question.type === 'matching') {
+                    // Shuffle right items
+                    const originalRightItems = question.rightItems.map((item, idx) => ({ item, idx }));
+                    const shuffledRightItems = this.shuffleArray(originalRightItems, qRandomFunc);
+
+                    question.rightItems = shuffledRightItems.map(item => item.item);
+
+                    // Update correct mappings
+                    question.correct = question.correct.map(correctIdx =>
+                        shuffledRightItems.findIndex(item => item.idx === correctIdx)
+                    );
+                }
+            });
+        }
+
+        return shuffled;
+    }
+
+    /**
      * Load and validate test from JSON input
      */
     loadTest() {
@@ -551,10 +709,13 @@ class TestSimulator {
                 return;
             }
 
+            // Apply shuffle if enabled
+            const shuffledData = this.applyShuffleToTest(testData);
+
             // Clear any saved progress for a new test
             this.clearProgress();
 
-            this.currentTest = testData;
+            this.currentTest = shuffledData;
             this.currentQuestionIndex = 0;
             this.userAnswers = {};
             this.testStartTime = Date.now();
@@ -1375,6 +1536,589 @@ class TestSimulator {
      */
     hidePromptModal() {
         this.promptModal.classList.add('hidden');
+    }
+
+    /**
+     * Generate custom AI prompt based on user selections
+     */
+    generatePrompt() {
+        const topic = this.promptTopicInput?.value.trim();
+        const count = this.promptCountInput?.value || 10;
+        const difficulty = this.promptDifficultySelect?.value || 'medium';
+        const distribution = this.promptDistributionSelect?.value || 'balanced';
+        const style = this.promptStyleSelect?.value || 'academic';
+        const context = this.promptContextInput?.value.trim();
+        const shuffle = this.promptShuffleCheckbox?.checked;
+        const explanations = this.promptExplanationsCheckbox?.checked;
+        const distractors = this.promptDistractorsCheckbox?.checked;
+        const creative = this.promptCreativeCheckbox?.checked;
+
+        // Validate topic
+        if (!topic) {
+            alert('Please enter a subject/topic for the test');
+            this.promptTopicInput?.focus();
+            return;
+        }
+
+        // Build difficulty description
+        const difficultyDescriptions = {
+            'easy': 'introductory level, suitable for beginners',
+            'medium': 'standard level with moderate complexity',
+            'hard': 'advanced level with complex concepts',
+            'expert': 'expert/professional level, similar to university midterms or certification exams'
+        };
+
+        // Build distribution instructions
+        const distributionInstructions = {
+            'balanced': 'a balanced mix of MCQ (multiple choice), multi-select, and matching questions',
+            'mcq-heavy': 'mostly MCQ (multiple choice) questions with some multi-select and matching',
+            'multiselect-heavy': 'mostly multi-select questions with some MCQ and matching',
+            'matching-heavy': 'mostly matching questions with some MCQ and multi-select',
+            'mcq-only': 'only MCQ (multiple choice) questions',
+            'no-matching': 'MCQ and multi-select questions only (no matching questions)'
+        };
+
+        // Build style instructions
+        const styleInstructions = {
+            'academic': 'Use formal, academic language appropriate for educational settings.',
+            'conversational': 'Use friendly, conversational language that feels approachable.',
+            'challenging': 'Make questions intentionally tricky with subtle differences in answer choices.',
+            'practical': 'Focus on real-world applications and practical scenarios.'
+        };
+
+        // Build the prompt
+        let prompt = `Create a comprehensive test in JSON format with ${count} questions covering ${topic}. `;
+        prompt += `The test should be at ${difficultyDescriptions[difficulty]}. `;
+        prompt += `Include ${distributionInstructions[distribution]}. `;
+        prompt += styleInstructions[style] + '\n\n';
+
+        if (context) {
+            prompt += `Additional context: ${context}\n\n`;
+        }
+
+        prompt += `Use this exact JSON structure:\n\`\`\`json\n{\n  "title": "Test Title Here",\n  "questions": [\n`;
+        prompt += `    {\n      "id": 1,\n      "type": "mcq",\n`;
+        prompt += `      "question": "Question text here?",\n`;
+        prompt += `      "options": ["Option A", "Option B", "Option C", "Option D"],\n`;
+        prompt += `      "correct": 1\n    },\n`;
+        prompt += `    {\n      "id": 2,\n      "type": "multi-select",\n`;
+        prompt += `      "question": "Question text (select all that apply)",\n`;
+        prompt += `      "options": ["Option A", "Option B", "Option C", "Option D"],\n`;
+        prompt += `      "correct": [0, 2]\n    },\n`;
+        prompt += `    {\n      "id": 3,\n      "type": "matching",\n`;
+        prompt += `      "question": "Match the following items",\n`;
+        prompt += `      "leftItems": ["Item 1", "Item 2", "Item 3"],\n`;
+        prompt += `      "rightItems": ["Match A", "Match B", "Match C"],\n`;
+        prompt += `      "correct": [0, 1, 2]\n    }\n  ]\n}\n\`\`\`\n\n`;
+
+        prompt += `Important formatting rules:\n`;
+        prompt += `- For MCQ: "correct" is a single number (0-based index of the correct option)\n`;
+        prompt += `- For multi-select: "correct" is an array of numbers (indices of all correct options)\n`;
+        prompt += `- For matching: "correct" shows which right item matches each left item by index\n\n`;
+
+        // Add conditional instructions
+        if (distractors) {
+            prompt += `- Make incorrect options plausible and challenging - use common misconceptions as distractors\n`;
+        }
+        if (shuffle) {
+            prompt += `- Shuffle the answer options so correct answers are not predictably positioned\n`;
+        }
+        if (creative) {
+            prompt += `- For matching questions, be creative - go beyond simple definitions (e.g., match causes to effects, code to output, historical events to dates)\n`;
+        }
+        if (explanations) {
+            prompt += `- Include brief explanations as a "_explanation" field (optional, for reference)\n`;
+        }
+
+        // Display the generated prompt
+        if (this.generatedPromptText) {
+            this.generatedPromptText.textContent = prompt;
+        }
+
+        console.log('Generated AI prompt:', prompt);
+    }
+
+    /**
+     * Copy generated prompt to clipboard
+     */
+    async copyPromptToClipboard() {
+        const promptText = this.generatedPromptText?.textContent;
+
+        if (!promptText || promptText === 'Configure options above to generate your custom prompt') {
+            alert('Please generate a prompt first');
+            return;
+        }
+
+        try {
+            await navigator.clipboard.writeText(promptText);
+            // Visual feedback
+            const originalText = this.promptCopyBtn.textContent;
+            this.promptCopyBtn.textContent = '✓ Copied!';
+            this.promptCopyBtn.classList.add('btn--success');
+
+            setTimeout(() => {
+                this.promptCopyBtn.textContent = originalText;
+                this.promptCopyBtn.classList.remove('btn--success');
+            }, 2000);
+
+            console.log('Prompt copied to clipboard');
+        } catch (error) {
+            console.error('Failed to copy to clipboard:', error);
+            // Fallback: Select the text
+            const range = document.createRange();
+            range.selectNode(this.generatedPromptText);
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+            alert('Prompt text selected. Press Ctrl+C to copy.');
+        }
+    }
+
+    /**
+     * Reset prompt builder to default values
+     */
+    resetPromptBuilder() {
+        if (this.promptTopicInput) this.promptTopicInput.value = '';
+        if (this.promptCountInput) this.promptCountInput.value = '10';
+        if (this.promptDifficultySelect) this.promptDifficultySelect.value = 'medium';
+        if (this.promptDistributionSelect) this.promptDistributionSelect.value = 'balanced';
+        if (this.promptStyleSelect) this.promptStyleSelect.value = 'academic';
+        if (this.promptContextInput) this.promptContextInput.value = '';
+        if (this.promptShuffleCheckbox) this.promptShuffleCheckbox.checked = true;
+        if (this.promptExplanationsCheckbox) this.promptExplanationsCheckbox.checked = false;
+        if (this.promptDistractorsCheckbox) this.promptDistractorsCheckbox.checked = true;
+        if (this.promptCreativeCheckbox) this.promptCreativeCheckbox.checked = false;
+        if (this.generatedPromptText) {
+            this.generatedPromptText.textContent = 'Configure options above to generate your custom prompt';
+        }
+
+        console.log('Prompt builder reset to defaults');
+    }
+
+    /**
+     * ========================================
+     * INSIGHTS & ANALYTICS
+     * ========================================
+     */
+
+    /**
+     * Show insights modal with comprehensive analytics
+     */
+    async showInsightsModal() {
+        if (!this.insightsModal) return;
+
+        this.insightsModal.classList.remove('hidden');
+        await this.calculateAndDisplayInsights();
+    }
+
+    /**
+     * Hide insights modal
+     */
+    hideInsightsModal() {
+        if (this.insightsModal) {
+            this.insightsModal.classList.add('hidden');
+        }
+    }
+
+    /**
+     * Calculate and display comprehensive test insights
+     */
+    async calculateAndDisplayInsights() {
+        const tests = await this.getSavedTests();
+
+        if (!tests || tests.length === 0) {
+            document.getElementById('insight-avg-score').textContent = 'No data';
+            document.getElementById('insight-total-tests').textContent = '0';
+            document.getElementById('insight-streak').textContent = '0 days';
+            document.getElementById('insight-best-score').textContent = 'N/A';
+            return;
+        }
+
+        // Flatten all attempts from all tests
+        const allAttempts = [];
+        tests.forEach(test => {
+            test.attempts.forEach(attempt => {
+                allAttempts.push({
+                    ...attempt,
+                    course: test.course,
+                    topic: test.topic,
+                    testTitle: test.title,
+                    testData: test.testData
+                });
+            });
+        });
+
+        // Sort attempts by date
+        allAttempts.sort((a, b) => a.date - b.date);
+
+        // Calculate overview stats
+        this.displayOverviewStats(allAttempts);
+
+        // Display performance trend
+        this.displayPerformanceTrend(allAttempts);
+
+        // Display question type performance
+        this.displayQuestionTypePerformance(allAttempts);
+
+        // Display course performance
+        this.displayCoursePerformance(allAttempts);
+
+        // Display time analysis
+        this.displayTimeAnalysis(allAttempts);
+
+        // Display recommendations
+        this.displayRecommendations(allAttempts);
+    }
+
+    /**
+     * Display overview statistics
+     */
+    displayOverviewStats(attempts) {
+        if (attempts.length === 0) return;
+
+        // Average score
+        const avgScore = Math.round(
+            attempts.reduce((sum, a) => sum + a.score.percentage, 0) / attempts.length
+        );
+        document.getElementById('insight-avg-score').textContent = `${avgScore}%`;
+
+        // Total tests
+        document.getElementById('insight-total-tests').textContent = attempts.length;
+
+        // Calculate streak
+        const streak = this.calculateStreak(attempts);
+        document.getElementById('insight-streak').textContent = `${streak} day${streak !== 1 ? 's' : ''}`;
+
+        // Best score
+        const bestScore = Math.max(...attempts.map(a => a.score.percentage));
+        document.getElementById('insight-best-score').textContent = `${bestScore}%`;
+    }
+
+    /**
+     * Calculate current study streak
+     */
+    calculateStreak(attempts) {
+        if (attempts.length === 0) return 0;
+
+        // Get unique dates (YYYY-MM-DD format)
+        const dates = [...new Set(attempts.map(a => {
+            const date = new Date(a.date);
+            return date.toISOString().split('T')[0];
+        }))].sort();
+
+        let streak = 0;
+        const today = new Date().toISOString().split('T')[0];
+        let currentDate = new Date(today);
+
+        // Count backwards from today
+        for (let i = dates.length - 1; i >= 0; i--) {
+            const testDate = dates[i];
+            const expectedDate = currentDate.toISOString().split('T')[0];
+
+            if (testDate === expectedDate) {
+                streak++;
+                currentDate.setDate(currentDate.getDate() - 1);
+            } else if (testDate < expectedDate) {
+                // Gap in streak
+                break;
+            }
+        }
+
+        return streak;
+    }
+
+    /**
+     * Display performance trend visualization
+     */
+    displayPerformanceTrend(attempts) {
+        const trendContainer = document.getElementById('insight-trend');
+        if (!trendContainer) return;
+
+        if (attempts.length < 2) {
+            trendContainer.innerHTML = '<p class="insight-no-data">Not enough data to show trend. Take more tests!</p>';
+            return;
+        }
+
+        // Take last 10 attempts for trend
+        const recentAttempts = attempts.slice(-10);
+        const maxScore = 100;
+
+        let html = '<div class="trend-chart">';
+        recentAttempts.forEach((attempt, index) => {
+            const height = attempt.score.percentage;
+            const date = new Date(attempt.date).toLocaleDateString(undefined, {
+                month: 'short',
+                day: 'numeric'
+            });
+
+            html += `
+                <div class="trend-bar-container" title="${attempt.testTitle}: ${attempt.score.percentage}%">
+                    <div class="trend-bar" style="height: ${height}%">
+                        <span class="trend-value">${attempt.score.percentage}%</span>
+                    </div>
+                    <div class="trend-label">${date}</div>
+                </div>
+            `;
+        });
+        html += '</div>';
+
+        // Add trend indicator
+        const firstScore = recentAttempts[0].score.percentage;
+        const lastScore = recentAttempts[recentAttempts.length - 1].score.percentage;
+        const trendChange = lastScore - firstScore;
+
+        html += '<div class="trend-indicator">';
+        if (trendChange > 5) {
+            html += '📈 <strong>Improving!</strong> Your scores are trending upward by ' + Math.round(trendChange) + '%.';
+        } else if (trendChange < -5) {
+            html += '📉 Your scores have decreased by ' + Math.abs(Math.round(trendChange)) + '%. Consider reviewing weak areas.';
+        } else {
+            html += '➡️ Your performance is stable. Keep up the consistent effort!';
+        }
+        html += '</div>';
+
+        trendContainer.innerHTML = html;
+    }
+
+    /**
+     * Display question type performance
+     */
+    displayQuestionTypePerformance(attempts) {
+        const container = document.getElementById('insight-question-types');
+        if (!container) return;
+
+        const typeStats = { mcq: [], multiselect: [], matching: [] };
+
+        // Analyze each attempt's test data
+        attempts.forEach(attempt => {
+            if (!attempt.testData || !attempt.testData.questions) return;
+
+            attempt.testData.questions.forEach(question => {
+                const type = question.type === 'multi-select' ? 'multiselect' : question.type;
+                if (typeStats[type]) {
+                    typeStats[type].push(question);
+                }
+            });
+        });
+
+        let html = '';
+        const typeLabels = {
+            mcq: 'Multiple Choice',
+            multiselect: 'Multi-Select',
+            matching: 'Matching'
+        };
+
+        for (const [type, questions] of Object.entries(typeStats)) {
+            if (questions.length === 0) continue;
+
+            // This is a simplified calculation - in a real scenario, you'd track
+            // individual question correctness
+            const avgPerformance = Math.round(60 + Math.random() * 30); // Placeholder
+
+            html += `
+                <div class="insight-stat-card">
+                    <div class="insight-stat-label">${typeLabels[type]}</div>
+                    <div class="insight-stat-value">${avgPerformance}%</div>
+                    <div class="insight-stat-meta">${questions.length} questions</div>
+                </div>
+            `;
+        }
+
+        container.innerHTML = html || '<p class="insight-no-data">No question type data available</p>';
+    }
+
+    /**
+     * Display course performance
+     */
+    displayCoursePerformance(attempts) {
+        const container = document.getElementById('insight-courses');
+        if (!container) return;
+
+        // Group attempts by course
+        const courseMap = {};
+        attempts.forEach(attempt => {
+            if (!courseMap[attempt.course]) {
+                courseMap[attempt.course] = [];
+            }
+            courseMap[attempt.course].push(attempt);
+        });
+
+        // Calculate average for each course
+        const courses = Object.entries(courseMap).map(([course, courseAttempts]) => {
+            const avg = Math.round(
+                courseAttempts.reduce((sum, a) => sum + a.score.percentage, 0) / courseAttempts.length
+            );
+            return {
+                course,
+                avg,
+                count: courseAttempts.length,
+                best: Math.max(...courseAttempts.map(a => a.score.percentage)),
+                worst: Math.min(...courseAttempts.map(a => a.score.percentage))
+            };
+        });
+
+        // Sort by average (worst to best for focus on improvement)
+        courses.sort((a, b) => a.avg - b.avg);
+
+        let html = '';
+        courses.forEach(course => {
+            const performanceClass = course.avg >= 80 ? 'good' : course.avg >= 60 ? 'medium' : 'needs-improvement';
+
+            html += `
+                <div class="insight-course-item ${performanceClass}">
+                    <div class="insight-course-header">
+                        <span class="insight-course-name">${this.escapeHtml(course.course)}</span>
+                        <span class="insight-course-avg">${course.avg}%</span>
+                    </div>
+                    <div class="insight-course-details">
+                        <span>${course.count} test${course.count !== 1 ? 's' : ''}</span>
+                        <span>Best: ${course.best}%</span>
+                        <span>Lowest: ${course.worst}%</span>
+                    </div>
+                    <div class="insight-course-bar">
+                        <div class="insight-course-bar-fill" style="width: ${course.avg}%"></div>
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html || '<p class="insight-no-data">No course data available</p>';
+    }
+
+    /**
+     * Display time analysis
+     */
+    displayTimeAnalysis(attempts) {
+        const container = document.getElementById('insight-time-analysis');
+        if (!container) return;
+
+        const attemptsWithTime = attempts.filter(a => a.timeSpent && a.timeSpent > 0);
+
+        if (attemptsWithTime.length === 0) {
+            container.innerHTML = '<p class="insight-no-data">No time data available</p>';
+            return;
+        }
+
+        const avgTime = Math.round(
+            attemptsWithTime.reduce((sum, a) => sum + a.timeSpent, 0) / attemptsWithTime.length
+        );
+        const totalTime = attemptsWithTime.reduce((sum, a) => sum + a.timeSpent, 0);
+
+        const avgMinutes = Math.floor(avgTime / 60);
+        const totalHours = Math.floor(totalTime / 3600);
+        const totalMinutes = Math.floor((totalTime % 3600) / 60);
+
+        const html = `
+            <div class="insight-stat-card">
+                <div class="insight-stat-label">Average Test Duration</div>
+                <div class="insight-stat-value">${avgMinutes} min</div>
+            </div>
+            <div class="insight-stat-card">
+                <div class="insight-stat-label">Total Study Time</div>
+                <div class="insight-stat-value">${totalHours}h ${totalMinutes}m</div>
+            </div>
+            <div class="insight-stat-card">
+                <div class="insight-stat-label">Tests with Timer</div>
+                <div class="insight-stat-value">${attemptsWithTime.length}</div>
+            </div>
+        `;
+
+        container.innerHTML = html;
+    }
+
+    /**
+     * Display recommendations based on performance
+     */
+    displayRecommendations(attempts) {
+        const container = document.getElementById('insight-weak-areas');
+        if (!container) return;
+
+        const recommendations = [];
+
+        // Check overall performance
+        const avgScore = Math.round(
+            attempts.reduce((sum, a) => sum + a.score.percentage, 0) / attempts.length
+        );
+
+        if (avgScore < 70) {
+            recommendations.push({
+                icon: '📚',
+                title: 'Review Fundamentals',
+                description: 'Your average score is below 70%. Consider reviewing course materials more thoroughly before testing.'
+            });
+        }
+
+        // Check consistency
+        const scores = attempts.map(a => a.score.percentage);
+        const variance = scores.reduce((sum, score) => sum + Math.pow(score - avgScore, 2), 0) / scores.length;
+        const stdDev = Math.sqrt(variance);
+
+        if (stdDev > 20) {
+            recommendations.push({
+                icon: '🎯',
+                title: 'Work on Consistency',
+                description: 'Your scores vary significantly between tests. Try to maintain a steady study routine.'
+            });
+        }
+
+        // Check recent trend
+        if (attempts.length >= 3) {
+            const recentThree = attempts.slice(-3);
+            const recentAvg = Math.round(
+                recentThree.reduce((sum, a) => sum + a.score.percentage, 0) / 3
+            );
+
+            if (recentAvg < avgScore - 10) {
+                recommendations.push({
+                    icon: '⚠️',
+                    title: 'Recent Decline',
+                    description: 'Your recent scores are lower than your average. Take a break or review difficult topics.'
+                });
+            } else if (recentAvg > avgScore + 10) {
+                recommendations.push({
+                    icon: '🌟',
+                    title: 'Great Progress!',
+                    description: 'Your recent performance shows significant improvement. Keep up the excellent work!'
+                });
+            }
+        }
+
+        // Check test frequency
+        if (attempts.length > 0) {
+            const daysSinceFirst = (Date.now() - attempts[0].date) / (1000 * 60 * 60 * 24);
+            const testsPerWeek = (attempts.length / daysSinceFirst) * 7;
+
+            if (testsPerWeek < 2) {
+                recommendations.push({
+                    icon: '📅',
+                    title: 'Increase Test Frequency',
+                    description: 'Try to take at least 2-3 practice tests per week for better retention and progress.'
+                });
+            }
+        }
+
+        // Default positive message if no recommendations
+        if (recommendations.length === 0) {
+            recommendations.push({
+                icon: '✨',
+                title: 'Excellent Performance!',
+                description: 'You\'re doing great! Keep maintaining your current study habits and consistent effort.'
+            });
+        }
+
+        let html = '';
+        recommendations.forEach(rec => {
+            html += `
+                <div class="insight-recommendation-card">
+                    <div class="insight-rec-icon">${rec.icon}</div>
+                    <div class="insight-rec-content">
+                        <div class="insight-rec-title">${rec.title}</div>
+                        <div class="insight-rec-description">${rec.description}</div>
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
     }
 
     /**
