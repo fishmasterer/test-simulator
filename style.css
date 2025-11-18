@@ -2418,6 +2418,87 @@ select.form-control {
   height: 20px;
 }
 
+/* Builder Ordering Item */
+.builder-ordering-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  margin-bottom: var(--space-8);
+  padding: var(--space-12);
+  border-radius: var(--radius-md);
+  background-color: var(--color-background);
+  border: 1.5px solid var(--color-border);
+  transition: all var(--duration-fast) var(--ease-standard);
+}
+
+.builder-ordering-item:hover {
+  border-color: var(--color-primary);
+}
+
+.ordering-item-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+  color: #fff;
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-sm);
+  flex-shrink: 0;
+}
+
+.builder-ordering-input {
+  flex: 1;
+  padding: var(--space-8) var(--space-12);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+  background-color: var(--color-surface);
+  transition: all var(--duration-fast) var(--ease-standard);
+}
+
+.builder-ordering-input:focus {
+  border-color: var(--color-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(var(--color-teal-500-rgb), 0.1);
+}
+
+/* Radio Label */
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  padding: var(--space-12) var(--space-16);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-standard);
+}
+
+.radio-label:hover {
+  border-color: var(--color-primary);
+  background-color: var(--color-bg-3);
+}
+
+.radio-label input[type="radio"] {
+  margin: 0;
+  cursor: pointer;
+}
+
+.radio-label input[type="radio"]:checked + span,
+.radio-label:has(input[type="radio"]:checked) {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+}
+
+.radio-label:has(input[type="radio"]:checked) {
+  border-color: var(--color-primary);
+  background-color: rgba(var(--color-teal-500-rgb, 33, 128, 141), 0.05);
+}
+
 /* Badge */
 .badge {
   display: inline-flex;

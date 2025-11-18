@@ -143,10 +143,17 @@ class TestSimulator {
         this.builderQuestionText = document.getElementById('builder-question-text');
         this.builderMcqOptionsContainer = document.getElementById('builder-mcq-options-container');
         this.builderMatchingOptionsContainer = document.getElementById('builder-matching-options-container');
+        this.builderTrueFalseContainer = document.getElementById('builder-true-false-container');
+        this.builderFillBlankContainer = document.getElementById('builder-fill-blank-container');
+        this.builderOrderingContainer = document.getElementById('builder-ordering-container');
         this.builderOptionsList = document.getElementById('builder-options-list');
         this.builderMatchingPairsList = document.getElementById('builder-matching-pairs-list');
+        this.builderOrderingItemsList = document.getElementById('builder-ordering-items-list');
+        this.builderFillAcceptedAnswersInput = document.getElementById('builder-fill-accepted-answers');
+        this.builderFillCaseSensitiveCheckbox = document.getElementById('builder-fill-case-sensitive');
         this.builderAddOptionBtn = document.getElementById('builder-add-option-btn');
         this.builderAddMatchingPairBtn = document.getElementById('builder-add-matching-pair-btn');
+        this.builderAddOrderingItemBtn = document.getElementById('builder-add-ordering-item-btn');
         this.builderSaveQuestionBtn = document.getElementById('builder-save-question-btn');
         this.builderCancelQuestionBtn = document.getElementById('builder-cancel-question-btn');
         this.builderDeleteQuestionBtn = document.getElementById('builder-delete-question-btn');
@@ -193,11 +200,12 @@ class TestSimulator {
         this.builderQuestionType?.addEventListener('change', () => this.builderToggleQuestionTypeFields());
         this.builderAddOptionBtn?.addEventListener('click', () => this.builderAddOption());
         this.builderAddMatchingPairBtn?.addEventListener('click', () => this.builderAddMatchingPair());
+        this.builderAddOrderingItemBtn?.addEventListener('click', () => this.builderAddOrderingItem());
         this.builderSaveQuestionBtn?.addEventListener('click', () => this.builderSaveQuestion());
         this.builderCancelQuestionBtn?.addEventListener('click', () => this.builderCancelEdit());
         this.builderDeleteQuestionBtn?.addEventListener('click', () => this.builderDeleteQuestion());
         this.testBuilderExportBtn?.addEventListener('click', () => this.builderExportJSON());
-        this.testBuilderPreviewBtn?.addEventListener('click', () => this.builderPreviewTest());
+        this.builderPreviewBtn?.addEventListener('click', () => this.builderPreviewTest());
 
         // Theme menu options
         const themeOptions = document.querySelectorAll('.theme-option');
@@ -2991,6 +2999,22 @@ class TestSimulator {
             question.leftItems.forEach((leftItem, i) => {
                 this.builderAddMatchingPair(leftItem, question.rightItems[i]);
             });
+        } else if (question.type === 'true-false') {
+            // Set True/False radio
+            const value = question.correct === true || question.correct === 1 ? 'true' : 'false';
+            const radio = document.querySelector(`input[name="builder-tf-answer"][value="${value}"]`);
+            if (radio) radio.checked = true;
+        } else if (question.type === 'fill-blank') {
+            // Set accepted answers
+            const acceptedAnswers = question.acceptedAnswers || [question.correct];
+            this.builderFillAcceptedAnswersInput.value = acceptedAnswers.join('\n');
+            this.builderFillCaseSensitiveCheckbox.checked = question.caseSensitive !== false;
+        } else if (question.type === 'ordering') {
+            // Set ordering items
+            this.builderOrderingItemsList.innerHTML = '';
+            question.items.forEach(item => {
+                this.builderAddOrderingItem(item);
+            });
         }
 
         // Show delete button for existing questions
@@ -3014,26 +3038,53 @@ class TestSimulator {
     builderToggleQuestionTypeFields() {
         const type = this.builderQuestionType.value;
 
-        if (type === 'matching') {
-            this.builderMcqOptionsContainer?.classList.add('hidden');
-            this.builderMatchingOptionsContainer?.classList.remove('hidden');
+        // Hide all type-specific containers first
+        this.builderMcqOptionsContainer?.classList.add('hidden');
+        this.builderMatchingOptionsContainer?.classList.add('hidden');
+        this.builderTrueFalseContainer?.classList.add('hidden');
+        this.builderFillBlankContainer?.classList.add('hidden');
+        this.builderOrderingContainer?.classList.add('hidden');
 
-            // Initialize with 3 matching pairs if empty
-            if (this.builderMatchingPairsList.children.length === 0) {
-                for (let i = 0; i < 3; i++) {
-                    this.builderAddMatchingPair();
+        // Show the appropriate container based on type
+        switch (type) {
+            case 'mcq':
+            case 'multi-select':
+                this.builderMcqOptionsContainer?.classList.remove('hidden');
+                // Initialize with 4 options if empty
+                if (this.builderOptionsList.children.length === 0) {
+                    for (let i = 0; i < 4; i++) {
+                        this.builderAddOption();
+                    }
                 }
-            }
-        } else {
-            this.builderMcqOptionsContainer?.classList.remove('hidden');
-            this.builderMatchingOptionsContainer?.classList.add('hidden');
+                break;
 
-            // Initialize with 4 options if empty
-            if (this.builderOptionsList.children.length === 0) {
-                for (let i = 0; i < 4; i++) {
-                    this.builderAddOption();
+            case 'matching':
+                this.builderMatchingOptionsContainer?.classList.remove('hidden');
+                // Initialize with 3 matching pairs if empty
+                if (this.builderMatchingPairsList.children.length === 0) {
+                    for (let i = 0; i < 3; i++) {
+                        this.builderAddMatchingPair();
+                    }
                 }
-            }
+                break;
+
+            case 'true-false':
+                this.builderTrueFalseContainer?.classList.remove('hidden');
+                break;
+
+            case 'fill-blank':
+                this.builderFillBlankContainer?.classList.remove('hidden');
+                break;
+
+            case 'ordering':
+                this.builderOrderingContainer?.classList.remove('hidden');
+                // Initialize with 4 items if empty
+                if (this.builderOrderingItemsList.children.length === 0) {
+                    for (let i = 0; i < 4; i++) {
+                        this.builderAddOrderingItem();
+                    }
+                }
+                break;
         }
     }
 
@@ -3122,6 +3173,55 @@ class TestSimulator {
     }
 
     /**
+     * Add an ordering item
+     */
+    builderAddOrderingItem(text = '') {
+        const itemElement = document.createElement('div');
+        itemElement.className = 'builder-ordering-item';
+
+        const index = this.builderOrderingItemsList.children.length;
+
+        itemElement.innerHTML = `
+            <div class="ordering-item-number">${index + 1}</div>
+            <input type="text" class="builder-ordering-input" placeholder="Item ${index + 1}" value="${this.escapeHtml(text)}">
+            <button type="button" class="builder-option-delete" title="Remove item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        `;
+
+        // Delete handler
+        itemElement.querySelector('.builder-option-delete').addEventListener('click', () => {
+            if (this.builderOrderingItemsList.children.length > 2) {
+                itemElement.remove();
+                // Re-number items
+                this.builderReindexOrderingItems();
+            } else {
+                alert('You must have at least two items for ordering questions');
+            }
+        });
+
+        this.builderOrderingItemsList.appendChild(itemElement);
+    }
+
+    /**
+     * Re-index ordering items after deletion
+     */
+    builderReindexOrderingItems() {
+        const items = this.builderOrderingItemsList.querySelectorAll('.builder-ordering-item');
+        items.forEach((item, index) => {
+            const numberElement = item.querySelector('.ordering-item-number');
+            const inputElement = item.querySelector('.builder-ordering-input');
+            numberElement.textContent = index + 1;
+            if (inputElement.placeholder === inputElement.value || inputElement.placeholder.startsWith('Item ')) {
+                inputElement.placeholder = `Item ${index + 1}`;
+            }
+        });
+    }
+
+    /**
      * Save the current question
      */
     builderSaveQuestion() {
@@ -3187,6 +3287,46 @@ class TestSimulator {
 
             // Correct answer is the original order (0, 1, 2, ...)
             question.correct = question.leftItems.map((_, i) => i);
+        } else if (questionType === 'true-false') {
+            // Get True/False answer
+            const selectedRadio = document.querySelector('input[name="builder-tf-answer"]:checked');
+            if (!selectedRadio) {
+                alert('Please select True or False');
+                return;
+            }
+            question.correct = selectedRadio.value === 'true';
+        } else if (questionType === 'fill-blank') {
+            // Get accepted answers
+            const answersText = this.builderFillAcceptedAnswersInput.value.trim();
+            if (!answersText) {
+                alert('Please enter at least one accepted answer');
+                return;
+            }
+            question.acceptedAnswers = answersText.split('\n').map(a => a.trim()).filter(a => a);
+            if (question.acceptedAnswers.length === 0) {
+                alert('Please enter at least one accepted answer');
+                return;
+            }
+            // Set first answer as the "correct" value (for backward compatibility)
+            question.correct = question.acceptedAnswers[0];
+            question.caseSensitive = this.builderFillCaseSensitiveCheckbox.checked;
+        } else if (questionType === 'ordering') {
+            // Get ordering items
+            const itemInputs = Array.from(this.builderOrderingItemsList.querySelectorAll('.builder-ordering-input'));
+            question.items = itemInputs.map(input => input.value.trim());
+
+            // Validate items
+            if (question.items.length < 2) {
+                alert('Please add at least 2 items for ordering');
+                return;
+            }
+            if (question.items.some(item => !item)) {
+                alert('Please fill in all ordering items');
+                return;
+            }
+
+            // Correct answer is the original order (0, 1, 2, ...)
+            question.correct = question.items.map((_, i) => i);
         }
 
         // Save question

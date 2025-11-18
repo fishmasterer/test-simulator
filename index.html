@@ -445,6 +445,9 @@ Example format:
                                         <option value="mcq">Multiple Choice (Single Answer)</option>
                                         <option value="multi-select">Multiple Choice (Multi-Select)</option>
                                         <option value="matching">Matching</option>
+                                        <option value="true-false">True/False</option>
+                                        <option value="fill-blank">Fill in the Blank</option>
+                                        <option value="ordering">Ordering/Sequencing</option>
                                     </select>
                                 </div>
 
@@ -489,6 +492,61 @@ Example format:
                                             </button>
                                         </div>
                                         <div id="builder-matching-pairs-list"></div>
+                                    </div>
+                                </div>
+
+                                <!-- True/False Options -->
+                                <div id="builder-true-false-container" class="hidden">
+                                    <div class="form-group">
+                                        <label class="form-label">Correct Answer *</label>
+                                        <div style="display: flex; gap: var(--space-16);">
+                                            <label class="radio-label">
+                                                <input type="radio" name="builder-tf-answer" value="true" checked>
+                                                <span>True</span>
+                                            </label>
+                                            <label class="radio-label">
+                                                <input type="radio" name="builder-tf-answer" value="false">
+                                                <span>False</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Fill-in-the-Blank Options -->
+                                <div id="builder-fill-blank-container" class="hidden">
+                                    <div class="form-group">
+                                        <label for="builder-fill-accepted-answers" class="form-label">Accepted Answers * (one per line)</label>
+                                        <textarea
+                                            id="builder-fill-accepted-answers"
+                                            class="form-control"
+                                            rows="4"
+                                            placeholder="Paris&#10;paris&#10;PARIS"
+                                        ></textarea>
+                                        <p class="hint-text">Add multiple accepted answers (one per line). First answer will be shown in review.</p>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="builder-fill-case-sensitive">
+                                            <span>Case-sensitive matching</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Ordering Options -->
+                                <div id="builder-ordering-container" class="hidden">
+                                    <div class="form-group">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-12);">
+                                            <label class="form-label" style="margin-bottom: 0;">Items in Correct Order *</label>
+                                            <button id="builder-add-ordering-item-btn" class="btn btn--sm btn--outline">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                                </svg>
+                                                Add Item
+                                            </button>
+                                        </div>
+                                        <div id="builder-ordering-items-list"></div>
+                                        <p class="hint-text">Add items in the correct order. They will be shuffled when the test is taken.</p>
                                     </div>
                                 </div>
 
