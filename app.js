@@ -160,6 +160,13 @@ class TestSimulator {
         this.testBuilderExportBtn = document.getElementById('test-builder-export-btn');
         this.testBuilderPreviewBtn = document.getElementById('test-builder-preview-btn');
 
+        // Analytics Dashboard elements
+        this.analyticsSection = document.getElementById('analytics-section');
+        this.openAnalyticsBtn = document.getElementById('open-analytics-btn');
+        this.closeAnalyticsBtn = document.getElementById('close-analytics-btn');
+        this.achievementGallery = document.getElementById('achievement-gallery');
+        this.questionTypeChart = document.getElementById('question-type-chart');
+
         // Initialize gamification system
         this.gamification = new GamificationSystem();
     }
@@ -209,6 +216,15 @@ class TestSimulator {
         this.builderDeleteQuestionBtn?.addEventListener('click', () => this.builderDeleteQuestion());
         this.testBuilderExportBtn?.addEventListener('click', () => this.builderExportJSON());
         this.builderPreviewBtn?.addEventListener('click', () => this.builderPreviewTest());
+
+        // Analytics Dashboard events
+        this.openAnalyticsBtn?.addEventListener('click', () => this.openAnalyticsDashboard());
+        this.closeAnalyticsBtn?.addEventListener('click', () => this.closeAnalyticsDashboard());
+
+        // Achievement filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => this.filterAchievements(e.currentTarget.dataset.filter));
+        });
 
         // Theme menu options
         const themeOptions = document.querySelectorAll('.theme-option');
@@ -2672,6 +2688,190 @@ class TestSimulator {
 
         this.testLibrarySection.classList.add('hidden');
         this.jsonInputSection.classList.remove('hidden');
+    }
+
+    /**
+     * Open analytics dashboard
+     */
+    openAnalyticsDashboard() {
+        if (!this.analyticsSection) return;
+
+        this.jsonInputSection.classList.add('hidden');
+        this.analyticsSection.classList.remove('hidden');
+
+        // Populate dashboard with current data
+        this.populateAnalyticsDashboard();
+    }
+
+    /**
+     * Close analytics dashboard and return to main screen
+     */
+    closeAnalyticsDashboard() {
+        if (!this.analyticsSection) return;
+
+        this.analyticsSection.classList.add('hidden');
+        this.jsonInputSection.classList.remove('hidden');
+    }
+
+    /**
+     * Populate analytics dashboard with gamification data
+     */
+    populateAnalyticsDashboard() {
+        const stats = this.gamification.getStats();
+        const progress = this.gamification.getLevelProgress();
+
+        // Update level and XP
+        document.getElementById('analytics-level').textContent = stats.level;
+        document.getElementById('analytics-xp-text').textContent =
+            `${progress.currentXP} / ${this.gamification.getXPForNextLevel(stats.level)} XP`;
+        document.getElementById('analytics-xp-fill').style.width = `${progress.percentage}%`;
+        document.getElementById('analytics-xp-percent').textContent =
+            `${Math.round(progress.percentage)}% to next level`;
+
+        // Update stats cards
+        document.getElementById('stat-tests-completed').textContent = stats.testsCompleted;
+        document.getElementById('stat-accuracy').textContent = `${stats.accuracy}%`;
+        document.getElementById('stat-study-time').textContent = this.formatStudyTime(stats.totalStudyTime);
+        document.getElementById('stat-streak').textContent =
+            `${stats.streak.current} day${stats.streak.current !== 1 ? 's' : ''}`;
+        document.getElementById('stat-perfect-scores').textContent = stats.perfectScores;
+        document.getElementById('stat-achievements').textContent =
+            `${stats.achievementsUnlocked} / ${stats.totalAchievements}`;
+
+        // Update detailed stats
+        document.getElementById('stat-total-questions').textContent = stats.totalQuestions;
+        document.getElementById('stat-correct-answers').textContent = stats.correctAnswers;
+        document.getElementById('stat-longest-streak').textContent =
+            `${stats.streak.longest} day${stats.streak.longest !== 1 ? 's' : ''}`;
+        document.getElementById('stat-total-xp').textContent = `${stats.xp} XP`;
+
+        // Render achievement gallery
+        this.renderAchievementGallery();
+
+        // Render question type chart
+        this.renderQuestionTypeChart(stats.questionsPerType);
+    }
+
+    /**
+     * Format study time in hours/minutes
+     */
+    formatStudyTime(seconds) {
+        if (seconds < 60) return '< 1m';
+        if (seconds < 3600) {
+            const minutes = Math.floor(seconds / 60);
+            return `${minutes}m`;
+        }
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+    }
+
+    /**
+     * Render achievement gallery
+     */
+    renderAchievementGallery() {
+        const achievements = this.gamification.getAllAchievements();
+        const gallery = this.achievementGallery;
+
+        if (!gallery) return;
+
+        gallery.innerHTML = achievements.map(achievement => `
+            <div class="achievement-card ${achievement.unlocked ? 'unlocked' : 'locked'}"
+                 data-unlocked="${achievement.unlocked}">
+                ${!achievement.unlocked ? `
+                    <svg class="achievement-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                ` : ''}
+                <span class="achievement-icon">${achievement.icon}</span>
+                <div class="achievement-name">${achievement.name}</div>
+                <div class="achievement-description">${achievement.description}</div>
+                <div class="achievement-xp">+${achievement.xpReward} XP</div>
+            </div>
+        `).join('');
+    }
+
+    /**
+     * Filter achievements by unlock status
+     */
+    filterAchievements(filter) {
+        // Update active filter button
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            if (btn.dataset.filter === filter) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+
+        // Filter achievement cards
+        const cards = document.querySelectorAll('.achievement-card');
+        cards.forEach(card => {
+            const isUnlocked = card.dataset.unlocked === 'true';
+
+            if (filter === 'all') {
+                card.style.display = 'block';
+            } else if (filter === 'unlocked' && isUnlocked) {
+                card.style.display = 'block';
+            } else if (filter === 'locked' && !isUnlocked) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+
+    /**
+     * Render question type breakdown chart
+     */
+    renderQuestionTypeChart(questionsPerType) {
+        const chart = this.questionTypeChart;
+        if (!chart) return;
+
+        const typeNames = {
+            'mcq': 'Multiple Choice',
+            'multi-select': 'Multi-Select',
+            'matching': 'Matching',
+            'true-false': 'True/False',
+            'fill-blank': 'Fill in the Blank',
+            'ordering': 'Ordering/Sequencing'
+        };
+
+        const totalQuestions = Object.values(questionsPerType).reduce((sum, count) => sum + count, 0);
+
+        if (totalQuestions === 0) {
+            chart.innerHTML = `
+                <div class="chart-empty-state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 20V10"></path>
+                        <path d="M12 20V4"></path>
+                        <path d="M6 20v-6"></path>
+                    </svg>
+                    <p>No questions answered yet. Complete a test to see your breakdown!</p>
+                </div>
+            `;
+            return;
+        }
+
+        const chartHTML = Object.entries(questionsPerType)
+            .sort((a, b) => b[1] - a[1])
+            .map(([type, count]) => {
+                const percentage = (count / totalQuestions * 100).toFixed(1);
+                return `
+                    <div class="chart-bar">
+                        <div class="chart-bar-header">
+                            <span class="chart-bar-label">${typeNames[type] || type}</span>
+                            <span class="chart-bar-value">${count} (${percentage}%)</span>
+                        </div>
+                        <div class="chart-bar-container">
+                            <div class="chart-bar-fill" style="width: ${percentage}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+        chart.innerHTML = chartHTML;
     }
 
     /**

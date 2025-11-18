@@ -319,6 +319,187 @@ Example format:
                             Focus Timer
                         </button>
                     </div>
+                    <div class="button-group" style="margin-top: var(--space-12);">
+                        <button id="open-analytics-btn" class="btn btn--secondary">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 20V10"></path>
+                                <path d="M12 20V4"></path>
+                                <path d="M6 20v-6"></path>
+                            </svg>
+                            Analytics Dashboard
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Dashboard Section -->
+        <div id="analytics-section" class="section hidden">
+            <div class="library-header">
+                <h1>Analytics Dashboard</h1>
+                <button id="close-analytics-btn" class="btn btn--outline">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                    Back
+                </button>
+            </div>
+
+            <div class="analytics-container">
+                <!-- Level and XP Progress Section -->
+                <div class="analytics-section analytics-hero">
+                    <div class="level-badge">
+                        <div class="level-badge-inner">
+                            <div class="level-badge-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"></path>
+                                </svg>
+                            </div>
+                            <div class="level-badge-text">
+                                <div class="level-label">Level</div>
+                                <div id="analytics-level" class="level-number">1</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="xp-progress-container">
+                        <div class="xp-progress-header">
+                            <span class="xp-label">Experience Points</span>
+                            <span id="analytics-xp-text" class="xp-value">0 / 100 XP</span>
+                        </div>
+                        <div class="xp-progress-bar">
+                            <div id="analytics-xp-fill" class="xp-progress-fill" style="width: 0%"></div>
+                        </div>
+                        <div class="xp-progress-footer">
+                            <span id="analytics-xp-percent" class="xp-percent">0% to next level</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Overview Cards -->
+                <div class="analytics-section">
+                    <h2 class="analytics-heading">Statistics Overview</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon stat-icon--primary">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                </svg>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-label">Tests Completed</div>
+                                <div id="stat-tests-completed" class="stat-value">0</div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon stat-icon--success">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                </svg>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-label">Overall Accuracy</div>
+                                <div id="stat-accuracy" class="stat-value">0%</div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon stat-icon--warning">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polyline points="12 6 12 12 16 14"></polyline>
+                                </svg>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-label">Total Study Time</div>
+                                <div id="stat-study-time" class="stat-value">0h</div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon stat-icon--fire">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path>
+                                    <path d="M8.5 8.5c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5S7 6.17 7 7s.67 1.5 1.5 1.5z"></path>
+                                </svg>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-label">Current Streak</div>
+                                <div id="stat-streak" class="stat-value">0 days</div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon stat-icon--gold">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="8" r="7"></circle>
+                                    <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+                                </svg>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-label">Perfect Scores</div>
+                                <div id="stat-perfect-scores" class="stat-value">0</div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon stat-icon--purple">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"></path>
+                                </svg>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-label">Achievements</div>
+                                <div id="stat-achievements" class="stat-value">0 / 20</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Achievement Gallery -->
+                <div class="analytics-section">
+                    <h2 class="analytics-heading">Achievement Gallery</h2>
+                    <div class="achievement-filters">
+                        <button class="filter-btn active" data-filter="all">All</button>
+                        <button class="filter-btn" data-filter="unlocked">Unlocked</button>
+                        <button class="filter-btn" data-filter="locked">Locked</button>
+                    </div>
+                    <div id="achievement-gallery" class="achievement-gallery">
+                        <!-- Achievement cards will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Question Type Breakdown -->
+                <div class="analytics-section">
+                    <h2 class="analytics-heading">Question Type Breakdown</h2>
+                    <div id="question-type-chart" class="question-type-chart">
+                        <!-- Chart will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Additional Stats -->
+                <div class="analytics-section">
+                    <h2 class="analytics-heading">Detailed Statistics</h2>
+                    <div class="detailed-stats">
+                        <div class="detailed-stat-row">
+                            <span class="detailed-stat-label">Total Questions Answered</span>
+                            <span id="stat-total-questions" class="detailed-stat-value">0</span>
+                        </div>
+                        <div class="detailed-stat-row">
+                            <span class="detailed-stat-label">Correct Answers</span>
+                            <span id="stat-correct-answers" class="detailed-stat-value">0</span>
+                        </div>
+                        <div class="detailed-stat-row">
+                            <span class="detailed-stat-label">Longest Streak</span>
+                            <span id="stat-longest-streak" class="detailed-stat-value">0 days</span>
+                        </div>
+                        <div class="detailed-stat-row">
+                            <span class="detailed-stat-label">Total XP Earned</span>
+                            <span id="stat-total-xp" class="detailed-stat-value">0 XP</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
