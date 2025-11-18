@@ -3,7 +3,7 @@
  * Provides offline functionality and caching
  */
 
-const CACHE_NAME = 'test-simulator-v11';
+const CACHE_NAME = 'test-simulator-v12';
 const urlsToCache = [
   'index.html',
   'app.js',
@@ -12,6 +12,9 @@ const urlsToCache = [
   'soundscape-player.js',
   'notes.js',
   'whiteboard.js',
+  'flashcards.js',
+  'study-planner.js',
+  'habit-tracker.js',
   'style.css',
   'manifest.json',
   'favicon-16x16.png',

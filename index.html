@@ -269,6 +269,13 @@ Example format:
                         <button id="open-notes-btn" class="btn btn--secondary">📝 Notes</button>
                         <button id="open-whiteboard-btn" class="btn btn--secondary">🎨 Whiteboard</button>
                     </div>
+                    <div class="button-group" style="margin-top: var(--space-12);">
+                        <button id="open-flashcards-btn" class="btn btn--secondary">🃏 Flashcards</button>
+                        <button id="open-planner-btn" class="btn btn--secondary">📅 Study Planner</button>
+                    </div>
+                    <div class="button-group" style="margin-top: var(--space-12);">
+                        <button id="open-habits-btn" class="btn btn--secondary">✅ Habit Tracker</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -669,6 +676,195 @@ Example format:
             </div>
         </div>
 
+        <!-- Flashcards Section -->
+        <div id="flashcards-section" class="section hidden">
+            <div class="section-header">
+                <h1>Flashcards</h1>
+                <button id="close-flashcards-btn" class="btn btn--outline">← Back</button>
+            </div>
+
+            <!-- Decks Grid View -->
+            <div class="decks-view">
+                <div class="decks-header">
+                    <input
+                        type="text"
+                        id="deck-search"
+                        class="form-control"
+                        placeholder="🔍 Search decks..."
+                        aria-label="Search decks"
+                    >
+                    <button id="create-deck-btn" class="btn btn--primary">+ Create Deck</button>
+                </div>
+
+                <div id="decks-grid" class="decks-grid">
+                    <!-- Deck cards will be inserted here -->
+                </div>
+
+                <div id="decks-empty-state" class="empty-state hidden">
+                    <p>No flashcard decks yet.</p>
+                    <p>Create your first deck to start studying with spaced repetition!</p>
+                </div>
+            </div>
+
+            <!-- Card Manager View -->
+            <div id="card-manager-view" class="card-manager-view hidden">
+                <div class="card-manager-header">
+                    <button id="back-to-decks-btn" class="btn btn--outline">← Back to Decks</button>
+                    <h2 id="current-deck-title">Deck Name</h2>
+                    <div class="card-manager-actions">
+                        <button id="add-card-btn" class="btn btn--secondary">+ Add Card</button>
+                        <button id="start-study-btn" class="btn btn--primary">Study Now</button>
+                    </div>
+                </div>
+
+                <div id="cards-list-container" class="cards-list-container">
+                    <!-- Cards will be inserted here -->
+                </div>
+            </div>
+
+            <!-- Study Session View -->
+            <div id="study-session-view" class="study-session-view hidden">
+                <div class="study-header">
+                    <button id="exit-study-btn" class="btn btn--outline">← Exit Study</button>
+                    <div class="study-progress-info">
+                        <progress id="study-progress" value="0" max="100"></progress>
+                        <span id="study-progress-text">Card 1 of 10</span>
+                    </div>
+                </div>
+
+                <div class="flashcard-container">
+                    <div id="flashcard" class="flashcard">
+                        <div id="flashcard-inner" class="flashcard-inner">
+                            <div class="flashcard-front">
+                                <div class="flashcard-label">Question</div>
+                                <div id="card-front" class="flashcard-text"></div>
+                            </div>
+                            <div class="flashcard-back">
+                                <div class="flashcard-label">Answer</div>
+                                <div id="card-back" class="flashcard-text"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="card-hint" class="card-hint hidden"></div>
+
+                    <div class="flashcard-controls">
+                        <button id="show-hint-btn" class="btn btn--outline">💡 Show Hint</button>
+                        <button id="flip-card-btn" class="btn btn--primary">Flip Card</button>
+                    </div>
+
+                    <div id="quality-buttons" class="quality-buttons hidden">
+                        <button id="again-btn" class="quality-btn quality-again">
+                            <span class="quality-label">Again</span>
+                            <span class="quality-desc">&lt; 1 day</span>
+                        </button>
+                        <button id="hard-btn" class="quality-btn quality-hard">
+                            <span class="quality-label">Hard</span>
+                            <span class="quality-desc">~3 days</span>
+                        </button>
+                        <button id="good-btn" class="quality-btn quality-good">
+                            <span class="quality-label">Good</span>
+                            <span class="quality-desc">~7 days</span>
+                        </button>
+                        <button id="easy-btn" class="quality-btn quality-easy">
+                            <span class="quality-label">Easy</span>
+                            <span class="quality-desc">~14 days</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="session-stats" class="session-stats hidden">
+                    <!-- Session summary will be shown here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Study Planner Section -->
+        <div id="planner-section" class="section hidden">
+            <div class="planner-layout">
+                <div class="planner-main">
+                    <div class="planner-header">
+                        <h1>Study Planner</h1>
+                        <div class="planner-controls">
+                            <div class="view-toggle">
+                                <button id="view-toggle-week" class="view-toggle-btn active">Week</button>
+                                <button id="view-toggle-month" class="view-toggle-btn">Month</button>
+                            </div>
+                            <div class="period-navigation">
+                                <button id="prev-period-btn" class="btn btn--sm">←</button>
+                                <span id="current-period-label">January 2025</span>
+                                <button id="next-period-btn" class="btn btn--sm">→</button>
+                            </div>
+                            <button id="today-btn" class="btn btn--sm btn--primary">Today</button>
+                            <button id="close-planner-btn" class="btn btn--outline">← Back</button>
+                        </div>
+                    </div>
+
+                    <!-- Week View -->
+                    <div id="week-view" class="calendar-view">
+                        <div id="week-grid" class="week-grid">
+                            <!-- Week grid will be rendered here -->
+                        </div>
+                    </div>
+
+                    <!-- Month View -->
+                    <div id="month-view" class="calendar-view hidden">
+                        <div id="month-grid" class="month-grid-container">
+                            <!-- Month grid will be rendered here -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="planner-sidebar">
+                    <h3>Upcoming Events</h3>
+                    <div id="upcoming-events-list" class="upcoming-events-list">
+                        <!-- Upcoming events will be listed here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Habit Tracker Section -->
+        <div id="habits-section" class="section hidden">
+            <div class="section-header">
+                <h1>Habit Tracker</h1>
+                <button id="close-habits-btn" class="btn btn--outline">← Back</button>
+            </div>
+
+            <!-- Stats Overview -->
+            <div class="habits-stats-overview">
+                <div class="habit-overview-stat">
+                    <span class="habit-overview-value" id="total-habits">0</span>
+                    <span class="habit-overview-label">Total Habits</span>
+                </div>
+                <div class="habit-overview-stat">
+                    <span class="habit-overview-value" id="active-streaks">0</span>
+                    <span class="habit-overview-label">Active Streaks</span>
+                </div>
+                <div class="habit-overview-stat">
+                    <span class="habit-overview-value" id="completion-rate">0%</span>
+                    <span class="habit-overview-label">Avg Rate</span>
+                </div>
+                <div class="habit-overview-stat">
+                    <span class="habit-overview-value" id="longest-streak">0</span>
+                    <span class="habit-overview-label">Best Streak</span>
+                </div>
+            </div>
+
+            <div class="habits-controls">
+                <button id="create-habit-btn" class="btn btn--primary">+ Create Habit</button>
+            </div>
+
+            <div id="habits-container" class="habits-container">
+                <!-- Habit cards will be inserted here -->
+            </div>
+
+            <div id="habits-empty-state" class="empty-state hidden">
+                <p>No habits tracked yet.</p>
+                <p>Create your first habit to start building streaks!</p>
+            </div>
+        </div>
+
         <!-- Test Section -->
         <div id="test-section" class="section hidden">
             <div class="test-header">
@@ -767,6 +963,263 @@ Example format:
                         <button id="restart-btn" class="btn btn--primary">Load New Test</button>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deck Editor Modal -->
+    <div id="deck-editor-modal" class="modal hidden" role="dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create Deck</h3>
+                <button id="close-deck-editor-btn" class="modal-close" aria-label="Close modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="deck-editor-form" onsubmit="return false;">
+                    <div class="form-group">
+                        <label for="deck-name-input" class="form-label">Deck Name *</label>
+                        <input
+                            type="text"
+                            id="deck-name-input"
+                            class="form-control"
+                            placeholder="e.g., Spanish Vocabulary"
+                            required
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label for="deck-subject-input" class="form-label">Subject</label>
+                        <input
+                            type="text"
+                            id="deck-subject-input"
+                            class="form-control"
+                            placeholder="e.g., Languages"
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label for="deck-description-input" class="form-label">Description</label>
+                        <textarea
+                            id="deck-description-input"
+                            class="form-control"
+                            rows="3"
+                            placeholder="Brief description of this deck..."
+                        ></textarea>
+                    </div>
+                    <div class="button-group">
+                        <button id="save-deck-btn" type="button" class="btn btn--primary">Save Deck</button>
+                        <button id="cancel-deck-btn" type="button" class="btn btn--outline">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card Editor Modal -->
+    <div id="card-editor-modal" class="modal hidden" role="dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Card</h3>
+                <button id="close-card-editor-btn" class="modal-close" aria-label="Close modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="card-editor-form" onsubmit="return false;">
+                    <div class="form-group">
+                        <label for="card-front-input" class="form-label">Front (Question) *</label>
+                        <textarea
+                            id="card-front-input"
+                            class="form-control"
+                            rows="3"
+                            placeholder="Enter the question or term..."
+                            required
+                        ></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="card-back-input" class="form-label">Back (Answer) *</label>
+                        <textarea
+                            id="card-back-input"
+                            class="form-control"
+                            rows="3"
+                            placeholder="Enter the answer or definition..."
+                            required
+                        ></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="card-hint-input" class="form-label">Hint (Optional)</label>
+                        <input
+                            type="text"
+                            id="card-hint-input"
+                            class="form-control"
+                            placeholder="A helpful hint..."
+                        >
+                    </div>
+                    <div class="button-group">
+                        <button id="save-card-btn" type="button" class="btn btn--primary">Save Card</button>
+                        <button id="cancel-card-btn" type="button" class="btn btn--outline">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Event Editor Modal -->
+    <div id="event-editor-modal" class="modal hidden" role="dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Event</h3>
+                <button id="close-event-editor-btn" class="modal-close" aria-label="Close modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="event-editor-form" onsubmit="return false;">
+                    <div class="form-group">
+                        <label for="event-title-input" class="form-label">Event Title *</label>
+                        <input
+                            type="text"
+                            id="event-title-input"
+                            class="form-control"
+                            placeholder="e.g., Study Session, Exam"
+                            required
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label for="event-type-select" class="form-label">Event Type</label>
+                        <select id="event-type-select" class="form-control">
+                            <option value="study">📚 Study Session</option>
+                            <option value="exam">📝 Exam</option>
+                            <option value="deadline">⏰ Deadline</option>
+                            <option value="class">🏫 Class</option>
+                            <option value="review">🔍 Review</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="event-date-input" class="form-label">Date *</label>
+                        <input
+                            type="date"
+                            id="event-date-input"
+                            class="form-control"
+                            required
+                        >
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="event-start-time-input" class="form-label">Start Time *</label>
+                            <input
+                                type="time"
+                                id="event-start-time-input"
+                                class="form-control"
+                                required
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label for="event-end-time-input" class="form-label">End Time *</label>
+                            <input
+                                type="time"
+                                id="event-end-time-input"
+                                class="form-control"
+                                required
+                            >
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="event-course-input" class="form-label">Course/Subject</label>
+                        <input
+                            type="text"
+                            id="event-course-input"
+                            class="form-control"
+                            placeholder="e.g., CS101"
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label for="event-notes-input" class="form-label">Notes</label>
+                        <textarea
+                            id="event-notes-input"
+                            class="form-control"
+                            rows="3"
+                            placeholder="Additional details..."
+                        ></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="event-color-input" class="form-label">Color</label>
+                        <input
+                            type="color"
+                            id="event-color-input"
+                            class="form-control"
+                            value="#21808D"
+                        >
+                    </div>
+                    <div class="button-group">
+                        <button id="save-event-btn" type="button" class="btn btn--primary">Save Event</button>
+                        <button id="delete-event-btn" type="button" class="btn btn--danger hidden">Delete Event</button>
+                        <button id="cancel-event-btn" type="button" class="btn btn--outline">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Habit Editor Modal -->
+    <div id="habit-editor-modal" class="modal hidden" role="dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create Habit</h3>
+                <button id="close-habit-editor-btn" class="modal-close" aria-label="Close modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="habit-editor-form" onsubmit="return false;">
+                    <div class="form-group">
+                        <label for="habit-name-input" class="form-label">Habit Name *</label>
+                        <input
+                            type="text"
+                            id="habit-name-input"
+                            class="form-control"
+                            placeholder="e.g., Review flashcards daily"
+                            required
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label for="habit-desc-input" class="form-label">Description</label>
+                        <textarea
+                            id="habit-desc-input"
+                            class="form-control"
+                            rows="2"
+                            placeholder="Brief description..."
+                        ></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="habit-category-select" class="form-label">Category</label>
+                        <select id="habit-category-select" class="form-control">
+                            <option value="study">📚 Study</option>
+                            <option value="exercise">💪 Exercise</option>
+                            <option value="health">🏥 Health</option>
+                            <option value="mindfulness">🧘 Mindfulness</option>
+                            <option value="reading">📖 Reading</option>
+                            <option value="productivity">⚡ Productivity</option>
+                            <option value="other">⭐ Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="habit-goal-input" class="form-label">Goal Streak (days)</label>
+                        <input
+                            type="number"
+                            id="habit-goal-input"
+                            class="form-control"
+                            min="1"
+                            max="365"
+                            value="30"
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label for="habit-color-input" class="form-label">Color</label>
+                        <input
+                            type="color"
+                            id="habit-color-input"
+                            class="form-control"
+                            value="#21808D"
+                        >
+                    </div>
+                    <div class="button-group">
+                        <button id="save-habit-btn" type="button" class="btn btn--primary">Save Habit</button>
+                        <button id="cancel-habit-btn" type="button" class="btn btn--outline">Cancel</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -1370,6 +1823,15 @@ Example format:
 
     <!-- Whiteboard Module -->
     <script src="whiteboard.js"></script>
+
+    <!-- Flashcards Module -->
+    <script src="flashcards.js"></script>
+
+    <!-- Study Planner Module -->
+    <script src="study-planner.js"></script>
+
+    <!-- Habit Tracker Module -->
+    <script src="habit-tracker.js"></script>
 
     <script>
         // Register Service Worker for PWA
