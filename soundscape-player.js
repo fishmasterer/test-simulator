@@ -104,12 +104,12 @@ class SoundscapePlayer {
         const output = buffer.getChannelData(0);
 
         if (type === 'white') {
-            // White noise
+            // White noise - full spectrum random
             for (let i = 0; i < bufferSize; i++) {
                 output[i] = Math.random() * 2 - 1;
             }
         } else if (type === 'pink') {
-            // Pink noise (simplified)
+            // Pink noise (1/f noise) - more natural sounding
             let b0, b1, b2, b3, b4, b5, b6;
             b0 = b1 = b2 = b3 = b4 = b5 = b6 = 0.0;
             for (let i = 0; i < bufferSize; i++) {
@@ -123,6 +123,15 @@ class SoundscapePlayer {
                 output[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
                 output[i] *= 0.11;
                 b6 = white * 0.115926;
+            }
+        } else if (type === 'brown') {
+            // Brown noise (Brownian noise) - deeper, rumbling sound
+            let lastOut = 0.0;
+            for (let i = 0; i < bufferSize; i++) {
+                const white = Math.random() * 2 - 1;
+                output[i] = (lastOut + (0.02 * white)) / 1.02;
+                lastOut = output[i];
+                output[i] *= 3.5; // Compensate for gain loss
             }
         }
 
@@ -138,38 +147,62 @@ class SoundscapePlayer {
         const sound = {
             source: null,
             gainNode: this.audioContext.createGain(),
+            filterNode: this.audioContext.createBiquadFilter(),
             isPlaying: false
         };
 
+        // Connect filter to gain, then to master
+        sound.filterNode.connect(sound.gainNode);
         sound.gainNode.connect(this.masterGainNode);
         sound.gainNode.gain.value = 0.5;
 
-        // Create appropriate sound based on type
+        // Create appropriate sound based on type with specific filtering
         switch(soundName) {
             case 'whitenoise':
                 sound.buffer = this.generateNoiseBuffer('white');
+                sound.filterNode.type = 'highpass';
+                sound.filterNode.frequency.value = 300;
                 break;
             case 'rain':
                 sound.buffer = this.generateNoiseBuffer('pink');
+                sound.filterNode.type = 'bandpass';
+                sound.filterNode.frequency.value = 2000;
+                sound.filterNode.Q.value = 0.5;
                 break;
             case 'thunder':
-                sound.buffer = this.generateNoiseBuffer('pink');
+                sound.buffer = this.generateNoiseBuffer('brown');
+                sound.filterNode.type = 'lowpass';
+                sound.filterNode.frequency.value = 200;
                 sound.gainNode.gain.value = 0.3;
                 break;
             case 'ocean':
                 sound.buffer = this.generateNoiseBuffer('pink');
+                sound.filterNode.type = 'lowpass';
+                sound.filterNode.frequency.value = 800;
+                sound.filterNode.Q.value = 1.0;
                 break;
             case 'forest':
                 sound.buffer = this.generateNoiseBuffer('pink');
+                sound.filterNode.type = 'bandpass';
+                sound.filterNode.frequency.value = 3000;
+                sound.filterNode.Q.value = 0.7;
                 break;
             case 'fireplace':
-                sound.buffer = this.generateNoiseBuffer('pink');
+                sound.buffer = this.generateNoiseBuffer('brown');
+                sound.filterNode.type = 'lowpass';
+                sound.filterNode.frequency.value = 500;
+                sound.filterNode.Q.value = 0.5;
                 break;
             case 'coffeeshop':
                 sound.buffer = this.generateNoiseBuffer('pink');
+                sound.filterNode.type = 'bandpass';
+                sound.filterNode.frequency.value = 1500;
+                sound.filterNode.Q.value = 0.8;
                 break;
             case 'fan':
                 sound.buffer = this.generateNoiseBuffer('white');
+                sound.filterNode.type = 'lowpass';
+                sound.filterNode.frequency.value = 1200;
                 break;
         }
 
@@ -213,7 +246,8 @@ class SoundscapePlayer {
         sound.source = this.audioContext.createBufferSource();
         sound.source.buffer = sound.buffer;
         sound.source.loop = true;
-        sound.source.connect(sound.gainNode);
+        // Connect source -> filter -> gain -> master
+        sound.source.connect(sound.filterNode);
         sound.source.start(0);
         sound.isPlaying = true;
 

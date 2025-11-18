@@ -190,6 +190,9 @@ class TestSimulator {
         this.reviewWrongBtn?.addEventListener('click', () => this.reviewWrongAnswers());
         this.showPromptBtn.addEventListener('click', () => this.showPromptModal());
         this.closeModalBtn.addEventListener('click', () => this.hidePromptModal());
+        this.promptGenerateBtn?.addEventListener('click', () => this.generatePrompt());
+        this.promptCopyBtn?.addEventListener('click', () => this.copyPromptToClipboard());
+        this.promptResetBtn?.addEventListener('click', () => this.resetPromptBuilder());
         this.confirmSubmitBtn.addEventListener('click', () => this.confirmSubmit());
         this.cancelSubmitBtn.addEventListener('click', () => this.hideConfirmModal());
         this.themeToggle.addEventListener('click', () => this.toggleThemeMenu());
