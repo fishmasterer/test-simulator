@@ -172,6 +172,9 @@ class TestSimulator {
         this.closeAnalyticsBtn = document.getElementById('close-analytics-btn');
         this.achievementGallery = document.getElementById('achievement-gallery');
         this.questionTypeChart = document.getElementById('question-type-chart');
+        this.performanceTrendsChart = document.getElementById('performance-trends-chart');
+        this.courseTopicBreakdown = document.getElementById('course-topic-breakdown');
+        this.currentTrendsPeriod = 7; // Default to 7 days
 
         // Initialize gamification system
         this.gamification = new GamificationSystem();
@@ -234,6 +237,11 @@ class TestSimulator {
         // Achievement filter buttons
         document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.addEventListener('click', (e) => this.filterAchievements(e.currentTarget.dataset.filter));
+        });
+
+        // Chart period buttons
+        document.querySelectorAll('.chart-period-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => this.changeTrendsPeriod(e.currentTarget.dataset.period));
         });
 
         // Theme menu options
@@ -3141,6 +3149,12 @@ class TestSimulator {
 
         // Render question type chart
         this.renderQuestionTypeChart(stats.questionsPerType);
+
+        // Render performance trends
+        this.renderPerformanceTrendsChart(this.currentTrendsPeriod);
+
+        // Render course/topic breakdown
+        this.renderCourseTopicBreakdown();
     }
 
     /**
@@ -3263,6 +3277,290 @@ class TestSimulator {
             }).join('');
 
         chart.innerHTML = chartHTML;
+    }
+
+    /**
+     * Change trends chart period
+     */
+    changeTrendsPeriod(period) {
+        // Update active button
+        document.querySelectorAll('.chart-period-btn').forEach(btn => {
+            if (btn.dataset.period === period) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+
+        // Update period and re-render
+        this.currentTrendsPeriod = period;
+        this.renderPerformanceTrendsChart(period);
+    }
+
+    /**
+     * Render performance trends chart showing scores over time
+     */
+    async renderPerformanceTrendsChart(period) {
+        const chart = this.performanceTrendsChart;
+        if (!chart) return;
+
+        // Get test history
+        const tests = await this.getSavedTests();
+        if (!tests || tests.length === 0) {
+            chart.innerHTML = `
+                <div class="chart-empty-state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 3v18h18"></path>
+                        <path d="M18 12l-5-5-3 3-4-4"></path>
+                    </svg>
+                    <p>No test data yet. Complete some tests to see your performance trends!</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Calculate date range
+        const now = new Date();
+        const periodDays = period === 'all' ? 365 * 10 : parseInt(period);
+        const startDate = new Date(now.getTime() - (periodDays * 24 * 60 * 60 * 1000));
+
+        // Collect all test attempts within period
+        const dataPoints = [];
+        tests.forEach(test => {
+            if (test.attempts && Array.isArray(test.attempts)) {
+                test.attempts.forEach(attempt => {
+                    const attemptDate = new Date(attempt.date);
+                    if (attemptDate >= startDate) {
+                        dataPoints.push({
+                            date: attemptDate,
+                            score: attempt.score.percentage,
+                            title: test.title
+                        });
+                    }
+                });
+            }
+        });
+
+        // Sort by date
+        dataPoints.sort((a, b) => a.date - b.date);
+
+        if (dataPoints.length === 0) {
+            chart.innerHTML = `
+                <div class="chart-empty-state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 3v18h18"></path>
+                        <path d="M18 12l-5-5-3 3-4-4"></path>
+                    </svg>
+                    <p>No test data in this time period.</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Calculate stats
+        const avgScore = dataPoints.reduce((sum, dp) => sum + dp.score, 0) / dataPoints.length;
+        const maxScore = Math.max(...dataPoints.map(dp => dp.score));
+        const minScore = Math.min(...dataPoints.map(dp => dp.score));
+
+        // Render chart
+        const chartHeight = 250;
+        const chartWidth = chart.offsetWidth - 60; // Account for padding
+        const pointRadius = 4;
+
+        // Scale data points
+        const xScale = chartWidth / (dataPoints.length - 1 || 1);
+        const yScale = (chartHeight - 40) / 100; // 0-100 scale
+
+        // Build SVG path
+        const points = dataPoints.map((dp, i) => {
+            const x = i * xScale + 30;
+            const y = chartHeight - (dp.score * yScale) - 20;
+            return { x, y, score: dp.score, title: dp.title, date: dp.date };
+        });
+
+        const pathData = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x},${p.y}`).join(' ');
+
+        // Create area fill path
+        const areaPath = `${pathData} L ${points[points.length - 1].x},${chartHeight - 20} L 30,${chartHeight - 20} Z`;
+
+        chart.innerHTML = `
+            <div class="chart-stats">
+                <div class="chart-stat">
+                    <span class="chart-stat-label">Average</span>
+                    <span class="chart-stat-value">${Math.round(avgScore)}%</span>
+                </div>
+                <div class="chart-stat">
+                    <span class="chart-stat-label">Best</span>
+                    <span class="chart-stat-value">${Math.round(maxScore)}%</span>
+                </div>
+                <div class="chart-stat">
+                    <span class="chart-stat-label">Lowest</span>
+                    <span class="chart-stat-value">${Math.round(minScore)}%</span>
+                </div>
+                <div class="chart-stat">
+                    <span class="chart-stat-label">Tests</span>
+                    <span class="chart-stat-value">${dataPoints.length}</span>
+                </div>
+            </div>
+            <svg class="line-chart" viewBox="0 0 ${chartWidth + 60} ${chartHeight}" preserveAspectRatio="none">
+                <!-- Grid lines -->
+                ${[0, 25, 50, 75, 100].map(val => `
+                    <line x1="30" y1="${chartHeight - (val * yScale) - 20}"
+                          x2="${chartWidth + 30}" y2="${chartHeight - (val * yScale) - 20}"
+                          stroke="rgba(0,0,0,0.1)" stroke-width="1" stroke-dasharray="4"/>
+                    <text x="10" y="${chartHeight - (val * yScale) - 16}"
+                          font-size="12" fill="rgba(0,0,0,0.5)">${val}%</text>
+                `).join('')}
+
+                <!-- Area fill -->
+                <path d="${areaPath}" fill="rgba(33, 128, 141, 0.1)" />
+
+                <!-- Line -->
+                <path d="${pathData}" fill="none" stroke="var(--color-primary)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+
+                <!-- Data points -->
+                ${points.map((p, i) => `
+                    <circle cx="${p.x}" cy="${p.y}" r="${pointRadius}"
+                            fill="white" stroke="var(--color-primary)" stroke-width="2"
+                            class="chart-point" data-index="${i}"/>
+                `).join('')}
+            </svg>
+            <div id="chart-tooltip" class="chart-tooltip hidden"></div>
+        `;
+
+        // Add interactivity
+        const tooltip = chart.querySelector('#chart-tooltip');
+        chart.querySelectorAll('.chart-point').forEach((point, i) => {
+            point.addEventListener('mouseenter', () => {
+                const data = dataPoints[i];
+                const dateStr = data.date.toLocaleDateString();
+                tooltip.innerHTML = `
+                    <div class="tooltip-title">${this.escapeHtml(data.title)}</div>
+                    <div class="tooltip-score">${Math.round(data.score)}%</div>
+                    <div class="tooltip-date">${dateStr}</div>
+                `;
+                tooltip.classList.remove('hidden');
+            });
+            point.addEventListener('mouseleave', () => {
+                tooltip.classList.add('hidden');
+            });
+        });
+
+        console.log(`📊 Performance trends rendered: ${dataPoints.length} data points`);
+    }
+
+    /**
+     * Render course and topic breakdown
+     */
+    async renderCourseTopicBreakdown() {
+        const container = this.courseTopicBreakdown;
+        if (!container) return;
+
+        // Get test history
+        const tests = await this.getSavedTests();
+        if (!tests || tests.length === 0) {
+            container.innerHTML = `
+                <div class="chart-empty-state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                    </svg>
+                    <p>No course data yet. Save tests with course information to see your breakdown!</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Aggregate by course
+        const courseStats = {};
+        tests.forEach(test => {
+            const course = test.course || 'Uncategorized';
+            if (!courseStats[course]) {
+                courseStats[course] = {
+                    tests: 0,
+                    totalScore: 0,
+                    topics: {}
+                };
+            }
+
+            courseStats[course].tests++;
+
+            // Average all attempts
+            if (test.attempts && test.attempts.length > 0) {
+                const avgScore = test.attempts.reduce((sum, att) => sum + att.score.percentage, 0) / test.attempts.length;
+                courseStats[course].totalScore += avgScore;
+            }
+
+            // Track topics
+            const topic = test.topic || 'General';
+            if (!courseStats[course].topics[topic]) {
+                courseStats[course].topics[topic] = {
+                    tests: 0,
+                    totalScore: 0
+                };
+            }
+            courseStats[course].topics[topic].tests++;
+            if (test.attempts && test.attempts.length > 0) {
+                const avgScore = test.attempts.reduce((sum, att) => sum + att.score.percentage, 0) / test.attempts.length;
+                courseStats[course].topics[topic].totalScore += avgScore;
+            }
+        });
+
+        // Sort courses by number of tests
+        const sortedCourses = Object.entries(courseStats).sort((a, b) => b[1].tests - a[1].tests);
+
+        if (sortedCourses.length === 0) {
+            container.innerHTML = '<p class="chart-empty-state">No course data available.</p>';
+            return;
+        }
+
+        container.innerHTML = sortedCourses.map(([courseName, data]) => {
+            const avgScore = data.totalScore / data.tests;
+            const topics = Object.entries(data.topics);
+
+            return `
+                <div class="course-breakdown-card">
+                    <div class="course-breakdown-header">
+                        <div class="course-breakdown-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                            </svg>
+                            <span>${this.escapeHtml(courseName)}</span>
+                        </div>
+                        <div class="course-breakdown-stats">
+                            <span class="course-stat">${data.tests} test${data.tests !== 1 ? 's' : ''}</span>
+                            <span class="course-score" style="color: ${avgScore >= 70 ? 'var(--color-success)' : avgScore >= 50 ? 'var(--color-warning)' : 'var(--color-error)'}">
+                                ${Math.round(avgScore)}% avg
+                            </span>
+                        </div>
+                    </div>
+                    ${topics.length > 0 ? `
+                        <div class="topic-breakdown">
+                            ${topics.map(([topicName, topicData]) => {
+                                const topicAvg = topicData.totalScore / topicData.tests;
+                                return `
+                                    <div class="topic-breakdown-item">
+                                        <div class="topic-breakdown-name">${this.escapeHtml(topicName)}</div>
+                                        <div class="topic-breakdown-stats">
+                                            <span class="topic-tests">${topicData.tests} test${topicData.tests !== 1 ? 's' : ''}</span>
+                                            <span class="topic-score" style="color: ${topicAvg >= 70 ? 'var(--color-success)' : topicAvg >= 50 ? 'var(--color-warning)' : 'var(--color-error)'}">
+                                                ${Math.round(topicAvg)}%
+                                            </span>
+                                        </div>
+                                        <div class="topic-breakdown-bar">
+                                            <div class="topic-breakdown-fill" style="width: ${topicAvg}%; background-color: ${topicAvg >= 70 ? 'var(--color-success)' : topicAvg >= 50 ? 'var(--color-warning)' : 'var(--color-error)'}"></div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }).join('');
+
+        console.log(`📚 Course/topic breakdown rendered: ${sortedCourses.length} courses`);
     }
 
     /**
