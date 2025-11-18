@@ -22,8 +22,16 @@ class PomodoroTimer {
             longBreakDuration: 15,
             autoStartBreaks: true,
             autoStartPomodoros: false,
-            notifications: true
+            notifications: true,
+            soundEnabled: true,
+            tickingEnabled: false,
+            soundVolume: 0.5
         };
+
+        // Audio context for sounds
+        this.audioContext = null;
+        this.tickSound = null;
+        this.tickInterval = null;
 
         // Storage keys
         this.settingsKey = 'pomodoroSettings';
@@ -50,6 +58,7 @@ class PomodoroTimer {
         this.pauseBtn = document.getElementById('pomodoro-pause-btn');
         this.resetBtn = document.getElementById('pomodoro-reset-btn');
         this.skipBtn = document.getElementById('pomodoro-skip-btn');
+        this.fullscreenBtn = document.getElementById('pomodoro-fullscreen-btn');
 
         // Display elements
         this.section = document.getElementById('pomodoro-section');
@@ -74,6 +83,9 @@ class PomodoroTimer {
         this.autoStartBreaksCheckbox = document.getElementById('pomodoro-auto-start-breaks');
         this.autoStartPomodorosCheckbox = document.getElementById('pomodoro-auto-start-pomodoros');
         this.notificationsCheckbox = document.getElementById('pomodoro-notifications');
+        this.soundEnabledCheckbox = document.getElementById('pomodoro-sound-enabled');
+        this.tickingEnabledCheckbox = document.getElementById('pomodoro-ticking-enabled');
+        this.soundVolumeSlider = document.getElementById('pomodoro-sound-volume');
 
         // Stats
         this.todaySessionsEl = document.getElementById('pomodoro-today-sessions');
@@ -89,6 +101,7 @@ class PomodoroTimer {
         this.pauseBtn?.addEventListener('click', () => this.pause());
         this.resetBtn?.addEventListener('click', () => this.reset());
         this.skipBtn?.addEventListener('click', () => this.skip());
+        this.fullscreenBtn?.addEventListener('click', () => this.toggleFullscreen());
 
         this.addTaskBtn?.addEventListener('click', () => this.showTaskModal());
         this.saveTaskBtn?.addEventListener('click', () => this.saveTask());
@@ -100,14 +113,78 @@ class PomodoroTimer {
         this.autoStartBreaksCheckbox?.addEventListener('change', () => this.updateSettings());
         this.autoStartPomodorosCheckbox?.addEventListener('change', () => this.updateSettings());
         this.notificationsCheckbox?.addEventListener('change', () => this.updateSettings());
+        this.soundEnabledCheckbox?.addEventListener('change', () => this.updateSettings());
+        this.tickingEnabledCheckbox?.addEventListener('change', () => this.toggleTicking());
+        this.soundVolumeSlider?.addEventListener('input', (e) => {
+            this.settings.soundVolume = e.target.value / 100;
+            this.saveSettings();
+        });
 
         this.viewAnalyticsBtn?.addEventListener('click', () => this.showAnalytics());
         this.closeAnalyticsBtn?.addEventListener('click', () => this.hideAnalytics());
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => this.handleKeyboardShortcut(e));
 
         // Initialize display
         this.updateDisplay();
         this.updateStats();
         this.renderTasks();
+    }
+
+    /**
+     * Handle keyboard shortcuts
+     */
+    handleKeyboardShortcut(e) {
+        // Only handle shortcuts when Pomodoro section is visible
+        if (this.section?.classList.contains('hidden')) return;
+
+        // Don't trigger if user is typing in an input
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key.toLowerCase();
+
+        switch (key) {
+            case ' ': // Space - Start/Pause
+                e.preventDefault();
+                if (this.isRunning) {
+                    this.pause();
+                } else {
+                    this.start();
+                }
+                console.log('⌨️ Keyboard: Start/Pause');
+                break;
+
+            case 'r': // R - Reset
+                e.preventDefault();
+                this.reset();
+                console.log('⌨️ Keyboard: Reset');
+                break;
+
+            case 's': // S - Skip
+                e.preventDefault();
+                this.skip();
+                console.log('⌨️ Keyboard: Skip');
+                break;
+
+            case 'n': // N - Add new task
+                e.preventDefault();
+                this.showTaskModal();
+                console.log('⌨️ Keyboard: New task');
+                break;
+
+            case 'f': // F - Toggle fullscreen
+                e.preventDefault();
+                this.toggleFullscreen();
+                console.log('⌨️ Keyboard: Fullscreen');
+                break;
+
+            case 'escape': // Escape - Exit fullscreen
+                if (document.fullscreenElement) {
+                    this.exitFullscreen();
+                }
+                break;
+        }
     }
 
     /**
@@ -126,6 +203,47 @@ class PomodoroTimer {
     closePomodoro() {
         this.section?.classList.add('hidden');
         document.getElementById('json-input-section')?.classList.remove('hidden');
+    }
+
+    /**
+     * Toggle fullscreen mode
+     */
+    toggleFullscreen() {
+        if (!document.fullscreenElement) {
+            this.enterFullscreen();
+        } else {
+            this.exitFullscreen();
+        }
+    }
+
+    /**
+     * Enter fullscreen mode
+     */
+    async enterFullscreen() {
+        try {
+            if (this.section?.requestFullscreen) {
+                await this.section.requestFullscreen();
+                this.section.classList.add('fullscreen-mode');
+                console.log('🖥️ Entered fullscreen mode');
+            }
+        } catch (error) {
+            console.error('Failed to enter fullscreen:', error);
+        }
+    }
+
+    /**
+     * Exit fullscreen mode
+     */
+    async exitFullscreen() {
+        try {
+            if (document.exitFullscreen) {
+                await document.exitFullscreen();
+                this.section?.classList.remove('fullscreen-mode');
+                console.log('🖥️ Exited fullscreen mode');
+            }
+        } catch (error) {
+            console.error('Failed to exit fullscreen:', error);
+        }
     }
 
     /**
@@ -148,6 +266,11 @@ class PomodoroTimer {
         this.startBtn?.classList.add('hidden');
         this.pauseBtn?.classList.remove('hidden');
 
+        // Start ticking sound if enabled
+        if (this.settings.tickingEnabled) {
+            this.startTickSound();
+        }
+
         this.timerInterval = setInterval(() => {
             if (this.timeRemaining > 0) {
                 this.timeRemaining--;
@@ -169,6 +292,9 @@ class PomodoroTimer {
             clearInterval(this.timerInterval);
             this.timerInterval = null;
         }
+
+        // Stop ticking sound
+        this.stopTickSound();
 
         this.startBtn?.classList.remove('hidden');
         this.pauseBtn?.classList.add('hidden');
@@ -377,28 +503,138 @@ class PomodoroTimer {
     }
 
     /**
+     * Initialize Web Audio API context
+     */
+    initAudioContext() {
+        if (!this.audioContext) {
+            try {
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                console.log('🔊 Audio context initialized');
+            } catch (error) {
+                console.error('Failed to initialize audio context:', error);
+            }
+        }
+    }
+
+    /**
      * Play completion sound
      */
     playSound() {
-        // Create a simple beep using Web Audio API
+        if (!this.settings.soundEnabled) return;
+
+        this.initAudioContext();
+        if (!this.audioContext) return;
+
         try {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
+            // Play a pleasant three-tone bell chime
+            const now = this.audioContext.currentTime;
 
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
+            // First bell (higher)
+            this.playBellTone(880, now, 0.15);
 
-            oscillator.frequency.value = 800;
-            oscillator.type = 'sine';
+            // Second bell (middle)
+            this.playBellTone(660, now + 0.15, 0.15);
 
-            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            // Third bell (lower)
+            this.playBellTone(440, now + 0.30, 0.3);
 
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.5);
+            console.log('🔔 Completion bell played');
         } catch (error) {
-            console.log('Could not play sound:', error);
+            console.error('Could not play sound:', error);
+        }
+    }
+
+    /**
+     * Play a single bell tone
+     */
+    playBellTone(frequency, startTime, duration) {
+        const oscillator = this.audioContext.createOscillator();
+        const gainNode = this.audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(this.audioContext.destination);
+
+        oscillator.frequency.value = frequency;
+        oscillator.type = 'sine';
+
+        // Apply volume setting
+        const volume = this.settings.soundVolume * 0.3;
+        gainNode.gain.setValueAtTime(volume, startTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+
+        oscillator.start(startTime);
+        oscillator.stop(startTime + duration);
+    }
+
+    /**
+     * Toggle ticking sound on/off
+     */
+    toggleTicking() {
+        this.settings.tickingEnabled = this.tickingEnabledCheckbox?.checked || false;
+
+        if (this.settings.tickingEnabled && this.isRunning) {
+            this.startTickSound();
+        } else {
+            this.stopTickSound();
+        }
+
+        this.saveSettings();
+        console.log(`⏱️ Ticking sound ${this.settings.tickingEnabled ? 'enabled' : 'disabled'}`);
+    }
+
+    /**
+     * Start continuous ticking sound
+     */
+    startTickSound() {
+        if (!this.settings.tickingEnabled) return;
+
+        this.initAudioContext();
+        if (!this.audioContext) return;
+
+        // Stop any existing tick sound
+        this.stopTickSound();
+
+        try {
+            // Create a subtle tick sound every second
+            this.tickInterval = setInterval(() => {
+                if (!this.settings.tickingEnabled || !this.isRunning) {
+                    this.stopTickSound();
+                    return;
+                }
+
+                const now = this.audioContext.currentTime;
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+
+                // Subtle high-pitched tick
+                oscillator.frequency.value = 1000;
+                oscillator.type = 'sine';
+
+                const volume = this.settings.soundVolume * 0.05; // Very quiet
+                gainNode.gain.setValueAtTime(volume, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+
+                oscillator.start(now);
+                oscillator.stop(now + 0.05);
+            }, 1000);
+
+            console.log('⏱️ Ticking sound started');
+        } catch (error) {
+            console.error('Could not start ticking sound:', error);
+        }
+    }
+
+    /**
+     * Stop ticking sound
+     */
+    stopTickSound() {
+        if (this.tickInterval) {
+            clearInterval(this.tickInterval);
+            this.tickInterval = null;
+            console.log('⏱️ Ticking sound stopped');
         }
     }
 
@@ -503,6 +739,9 @@ class PomodoroTimer {
             if (this.autoStartBreaksCheckbox) this.autoStartBreaksCheckbox.checked = this.settings.autoStartBreaks;
             if (this.autoStartPomodorosCheckbox) this.autoStartPomodorosCheckbox.checked = this.settings.autoStartPomodoros;
             if (this.notificationsCheckbox) this.notificationsCheckbox.checked = this.settings.notifications;
+            if (this.soundEnabledCheckbox) this.soundEnabledCheckbox.checked = this.settings.soundEnabled;
+            if (this.tickingEnabledCheckbox) this.tickingEnabledCheckbox.checked = this.settings.tickingEnabled;
+            if (this.soundVolumeSlider) this.soundVolumeSlider.value = this.settings.soundVolume * 100;
 
             // Initialize timer with work duration
             this.timeRemaining = this.settings.workDuration * 60;
@@ -521,8 +760,10 @@ class PomodoroTimer {
         this.settings.autoStartBreaks = this.autoStartBreaksCheckbox?.checked || false;
         this.settings.autoStartPomodoros = this.autoStartPomodorosCheckbox?.checked || false;
         this.settings.notifications = this.notificationsCheckbox?.checked || true;
+        this.settings.soundEnabled = this.soundEnabledCheckbox?.checked || true;
+        this.settings.tickingEnabled = this.tickingEnabledCheckbox?.checked || false;
 
-        localStorage.setItem(this.settingsKey, JSON.stringify(this.settings));
+        this.saveSettings();
 
         // Update timer if not running
         if (!this.isRunning) {
@@ -534,6 +775,84 @@ class PomodoroTimer {
                 this.timeRemaining = this.settings.longBreakDuration * 60;
             }
             this.updateDisplay();
+        }
+    }
+
+    /**
+     * Save settings to localStorage
+     */
+    saveSettings() {
+        localStorage.setItem(this.settingsKey, JSON.stringify(this.settings));
+    }
+
+    /**
+     * Apply focus session template
+     */
+    applyTemplate(templateName) {
+        const templates = {
+            quick: {
+                workDuration: 25,
+                breakDuration: 5,
+                longBreakDuration: 15,
+                name: 'Quick Study'
+            },
+            deep: {
+                workDuration: 50,
+                breakDuration: 10,
+                longBreakDuration: 20,
+                name: 'Deep Work'
+            },
+            exam: {
+                workDuration: 45,
+                breakDuration: 15,
+                longBreakDuration: 30,
+                name: 'Exam Prep'
+            },
+            light: {
+                workDuration: 15,
+                breakDuration: 5,
+                longBreakDuration: 10,
+                name: 'Light Review'
+            }
+        };
+
+        const template = templates[templateName];
+        if (!template) return;
+
+        // Update settings
+        this.settings.workDuration = template.workDuration;
+        this.settings.breakDuration = template.breakDuration;
+        this.settings.longBreakDuration = template.longBreakDuration;
+
+        // Update inputs
+        if (this.workDurationInput) this.workDurationInput.value = template.workDuration;
+        if (this.breakDurationInput) this.breakDurationInput.value = template.breakDuration;
+        if (this.longBreakDurationInput) this.longBreakDurationInput.value = template.longBreakDuration;
+
+        // Save settings
+        this.saveSettings();
+
+        // Reset timer if not running
+        if (!this.isRunning) {
+            if (this.currentMode === 'work') {
+                this.timeRemaining = this.settings.workDuration * 60;
+            } else if (this.currentMode === 'break') {
+                this.timeRemaining = this.settings.breakDuration * 60;
+            } else {
+                this.timeRemaining = this.settings.longBreakDuration * 60;
+            }
+            this.updateDisplay();
+        }
+
+        console.log(`📋 Template applied: ${template.name}`);
+
+        // Show feedback
+        const btn = event?.target?.closest('.template-btn');
+        if (btn) {
+            btn.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                btn.style.transform = 'scale(1)';
+            }, 150);
         }
     }
 
@@ -580,23 +899,71 @@ class PomodoroTimer {
             const isActive = task.id === this.currentTaskId;
             const isCompleted = task.completed || false;
             const progress = `${task.completedPomodoros}/${task.estimatedPomodoros}`;
+            const priority = task.priority || 'medium';
+
+            // Priority display
+            const priorityIcons = { high: '🔴', medium: '🟡', low: '🟢' };
+            const priorityLabels = { high: 'High', medium: 'Med', low: 'Low' };
+            const priorityIcon = priorityIcons[priority];
+            const priorityLabel = priorityLabels[priority];
+
+            // Subtasks
+            const subtasks = task.subtasks || [];
+            const completedSubtasks = subtasks.filter(s => s.completed).length;
+            const subtaskProgress = subtasks.length > 0 ? `${completedSubtasks}/${subtasks.length}` : '';
 
             return `
-                <div class="pomodoro-task-item ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}" onclick="pomodoroTimer.selectTask('${task.id}')">
-                    <div class="pomodoro-task-info">
-                        <input type="checkbox"
-                            class="pomodoro-task-checkbox"
-                            ${isCompleted ? 'checked' : ''}
-                            onclick="event.stopPropagation(); pomodoroTimer.toggleTaskComplete('${task.id}')"
-                            aria-label="Mark task as complete">
-                        <div>
-                            <div class="pomodoro-task-name ${isCompleted ? 'task-completed-text' : ''}">${this.escapeHtml(task.name)}</div>
-                            <div class="pomodoro-task-meta">${task.course ? this.escapeHtml(task.course) + ' • ' : ''}${progress} pomodoros</div>
+                <div class="pomodoro-task-item ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}"
+                     draggable="true"
+                     data-task-id="${task.id}">
+                    <div class="task-main-row" onclick="pomodoroTimer.selectTask('${task.id}')">
+                        <div class="pomodoro-task-info">
+                            <span class="task-drag-handle" title="Drag to reorder">⋮⋮</span>
+                            <input type="checkbox"
+                                class="pomodoro-task-checkbox"
+                                ${isCompleted ? 'checked' : ''}
+                                onclick="event.stopPropagation(); pomodoroTimer.toggleTaskComplete('${task.id}')"
+                                aria-label="Mark task as complete">
+                            <div>
+                                <div class="pomodoro-task-name ${isCompleted ? 'task-completed-text' : ''}">
+                                    ${this.escapeHtml(task.name)}
+                                    <span class="task-priority-indicator priority-${priority}">${priorityIcon} ${priorityLabel}</span>
+                                    ${subtaskProgress ? `<span class="subtask-count">${subtaskProgress} ✓</span>` : ''}
+                                </div>
+                                <div class="pomodoro-task-meta">${task.course ? this.escapeHtml(task.course) + ' • ' : ''}${progress} pomodoros</div>
+                            </div>
+                        </div>
+                        <div class="pomodoro-task-actions">
+                            <button class="task-expand-btn ${subtasks.length > 0 ? '' : 'hidden'}"
+                                    onclick="event.stopPropagation(); pomodoroTimer.toggleSubtasks('${task.id}')"
+                                    aria-label="Toggle subtasks">
+                                <span class="expand-icon">▼</span>
+                            </button>
+                            <div class="pomodoro-task-progress">${progress}</div>
+                            <button class="pomodoro-task-delete" onclick="event.stopPropagation(); pomodoroTimer.deleteTask('${task.id}')" aria-label="Delete task">×</button>
                         </div>
                     </div>
-                    <div class="pomodoro-task-actions">
-                        <div class="pomodoro-task-progress">${progress}</div>
-                        <button class="pomodoro-task-delete" onclick="event.stopPropagation(); pomodoroTimer.deleteTask('${task.id}')" aria-label="Delete task">×</button>
+                    <div class="subtasks-container hidden" id="subtasks-${task.id}">
+                        <div class="subtask-list">
+                            ${subtasks.map((subtask, idx) => `
+                                <div class="subtask-item ${subtask.completed ? 'completed' : ''}">
+                                    <input type="checkbox"
+                                           class="subtask-checkbox"
+                                           ${subtask.completed ? 'checked' : ''}
+                                           onclick="pomodoroTimer.toggleSubtask('${task.id}', ${idx})">
+                                    <span class="subtask-text ${subtask.completed ? 'task-completed-text' : ''}">${this.escapeHtml(subtask.text)}</span>
+                                    <button class="subtask-delete" onclick="pomodoroTimer.deleteSubtask('${task.id}', ${idx})" aria-label="Delete subtask">×</button>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="subtask-add">
+                            <input type="text"
+                                   id="subtask-input-${task.id}"
+                                   class="subtask-input"
+                                   placeholder="Add a subtask..."
+                                   onkeypress="if(event.key === 'Enter') pomodoroTimer.addSubtask('${task.id}')">
+                            <button class="btn-small btn--primary" onclick="pomodoroTimer.addSubtask('${task.id}')">Add</button>
+                        </div>
                     </div>
                 </div>
             `;
@@ -604,6 +971,76 @@ class PomodoroTimer {
 
         // Update current task display
         this.updateCurrentTaskDisplay();
+
+        // Setup drag and drop
+        this.setupDragAndDrop();
+    }
+
+    /**
+     * Setup drag and drop for task reordering
+     */
+    setupDragAndDrop() {
+        const taskItems = this.taskList?.querySelectorAll('.pomodoro-task-item');
+        if (!taskItems) return;
+
+        let draggedElement = null;
+        let draggedIndex = null;
+
+        taskItems.forEach((item, index) => {
+            // Drag start
+            item.addEventListener('dragstart', (e) => {
+                draggedElement = item;
+                draggedIndex = index;
+                item.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/html', item.innerHTML);
+            });
+
+            // Drag end
+            item.addEventListener('dragend', (e) => {
+                item.classList.remove('dragging');
+                // Remove all drag-over classes
+                taskItems.forEach(i => i.classList.remove('drag-over'));
+            });
+
+            // Drag over
+            item.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+
+                if (draggedElement === item) return;
+
+                item.classList.add('drag-over');
+            });
+
+            // Drag leave
+            item.addEventListener('dragleave', (e) => {
+                item.classList.remove('drag-over');
+            });
+
+            // Drop
+            item.addEventListener('drop', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                item.classList.remove('drag-over');
+
+                if (draggedElement === item) return;
+
+                const currentIndex = Array.from(taskItems).indexOf(item);
+
+                // Reorder tasks
+                const tasks = this.getTasks();
+                const draggedTask = tasks[draggedIndex];
+                tasks.splice(draggedIndex, 1);
+                tasks.splice(currentIndex, 0, draggedTask);
+
+                this.saveTasks(tasks);
+                this.renderTasks();
+
+                console.log('📋 Task reordered');
+            });
+        });
     }
 
     /**
@@ -623,9 +1060,11 @@ class PomodoroTimer {
         const nameInput = document.getElementById('pomodoro-task-name');
         const estimateInput = document.getElementById('pomodoro-task-estimate');
         const courseInput = document.getElementById('pomodoro-task-course');
+        const priorityMedium = document.querySelector('input[name="task-priority"][value="medium"]');
         if (nameInput) nameInput.value = '';
         if (estimateInput) estimateInput.value = '4';
         if (courseInput) courseInput.value = '';
+        if (priorityMedium) priorityMedium.checked = true;
     }
 
     /**
@@ -635,10 +1074,12 @@ class PomodoroTimer {
         const nameInput = document.getElementById('pomodoro-task-name');
         const estimateInput = document.getElementById('pomodoro-task-estimate');
         const courseInput = document.getElementById('pomodoro-task-course');
+        const priorityInput = document.querySelector('input[name="task-priority"]:checked');
 
         const name = nameInput?.value.trim();
         const estimate = parseInt(estimateInput?.value || 4);
         const course = courseInput?.value.trim();
+        const priority = priorityInput?.value || 'medium';
 
         if (!name) {
             alert('Please enter a task name');
@@ -649,6 +1090,7 @@ class PomodoroTimer {
             id: Date.now().toString(),
             name: name,
             course: course,
+            priority: priority,
             estimatedPomodoros: estimate,
             completedPomodoros: 0,
             completed: false,
@@ -744,6 +1186,120 @@ class PomodoroTimer {
             task.completed = !task.completed;
             this.saveTasks(tasks);
             this.renderTasks();
+        }
+    }
+
+    /**
+     * Toggle subtasks visibility
+     */
+    toggleSubtasks(taskId) {
+        const container = document.getElementById(`subtasks-${taskId}`);
+        const expandBtn = container?.previousElementSibling.querySelector('.task-expand-btn .expand-icon');
+
+        if (container) {
+            container.classList.toggle('hidden');
+            if (expandBtn) {
+                expandBtn.style.transform = container.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
+            }
+        }
+    }
+
+    /**
+     * Add subtask to task
+     */
+    addSubtask(taskId) {
+        const input = document.getElementById(`subtask-input-${taskId}`);
+        const text = input?.value.trim();
+
+        if (!text) return;
+
+        const tasks = this.getTasks();
+        const task = tasks.find(t => t.id === taskId);
+
+        if (task) {
+            if (!task.subtasks) {
+                task.subtasks = [];
+            }
+
+            task.subtasks.push({
+                text: text,
+                completed: false,
+                createdAt: Date.now()
+            });
+
+            this.saveTasks(tasks);
+            this.renderTasks();
+
+            // Reopen the subtasks container
+            setTimeout(() => {
+                const container = document.getElementById(`subtasks-${taskId}`);
+                if (container) {
+                    container.classList.remove('hidden');
+                    const expandBtn = container.previousElementSibling.querySelector('.task-expand-btn .expand-icon');
+                    if (expandBtn) {
+                        expandBtn.style.transform = 'rotate(180deg)';
+                    }
+                    // Focus input again
+                    const newInput = document.getElementById(`subtask-input-${taskId}`);
+                    newInput?.focus();
+                }
+            }, 0);
+
+            console.log('✅ Subtask added');
+        }
+    }
+
+    /**
+     * Toggle subtask completion
+     */
+    toggleSubtask(taskId, subtaskIndex) {
+        const tasks = this.getTasks();
+        const task = tasks.find(t => t.id === taskId);
+
+        if (task && task.subtasks && task.subtasks[subtaskIndex]) {
+            task.subtasks[subtaskIndex].completed = !task.subtasks[subtaskIndex].completed;
+            this.saveTasks(tasks);
+            this.renderTasks();
+
+            // Reopen the subtasks container
+            setTimeout(() => {
+                const container = document.getElementById(`subtasks-${taskId}`);
+                if (container) {
+                    container.classList.remove('hidden');
+                    const expandBtn = container.previousElementSibling.querySelector('.task-expand-btn .expand-icon');
+                    if (expandBtn) {
+                        expandBtn.style.transform = 'rotate(180deg)';
+                    }
+                }
+            }, 0);
+        }
+    }
+
+    /**
+     * Delete subtask
+     */
+    deleteSubtask(taskId, subtaskIndex) {
+        const tasks = this.getTasks();
+        const task = tasks.find(t => t.id === taskId);
+
+        if (task && task.subtasks) {
+            task.subtasks.splice(subtaskIndex, 1);
+            this.saveTasks(tasks);
+            this.renderTasks();
+
+            // Reopen the subtasks container if there are still subtasks
+            if (task.subtasks.length > 0) {
+                setTimeout(() => {
+                    const container = document.getElementById(`subtasks-${taskId}`);
+                    if (container) {
+                        container.classList.remove('hidden');
+                        const expandBtn = container.previousElementSibling.querySelector('.task-expand-btn .expand-icon');
+                        if (expandBtn) {
+                            expandBtn.style.transform = 'rotate(180deg)';
+                        }
+                    }
+                }, 0);
+            }
         }
     }
 
