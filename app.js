@@ -16,6 +16,7 @@ class TestSimulator {
         this.timerInterval = null;
         this.timeRemaining = null;
         this.testDuration = null; // in seconds
+        this.testMode = 'exam'; // 'exam' or 'practice'
         this.storageKey = 'testSimulatorProgress';
         this.themeKey = 'testSimulatorTheme';
         this.testBankKey = 'testSimulatorBank';
@@ -754,6 +755,13 @@ class TestSimulator {
                 this.timeRemaining = this.testDuration;
             }
 
+            // Capture selected test mode
+            const modeExam = document.getElementById('mode-exam');
+            const modePractice = document.getElementById('mode-practice');
+            this.testMode = modePractice?.checked ? 'practice' : 'exam';
+
+            console.log(`🎯 Test mode: ${this.testMode}`);
+
             this.hideError();
             this.startTest();
 
@@ -872,6 +880,21 @@ class TestSimulator {
         this.resultsSection.classList.add('hidden');
 
         this.testTitle.textContent = this.currentTest.title;
+
+        // Show mode badge
+        const modeIndicator = document.getElementById('mode-indicator');
+        if (modeIndicator) {
+            modeIndicator.classList.remove('hidden');
+            modeIndicator.classList.remove('mode-badge--exam', 'mode-badge--practice');
+            if (this.testMode === 'practice') {
+                modeIndicator.classList.add('mode-badge--practice');
+                modeIndicator.textContent = 'Practice Mode';
+            } else {
+                modeIndicator.classList.add('mode-badge--exam');
+                modeIndicator.textContent = 'Exam Mode';
+            }
+        }
+
         this.displayQuestion();
         this.updateQuestionOverview();
 
