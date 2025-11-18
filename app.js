@@ -20,11 +20,23 @@ class TestSimulator {
         this.themeKey = 'testSimulatorTheme';
         this.testBankKey = 'testSimulatorBank';
 
+        // New feature properties
+        this.isStudyMode = false;
+        this.notesKey = 'testSimulatorNotes';
+        this.analyticsKey = 'testSimulatorAnalytics';
+        this.swipeStartX = 0;
+        this.swipeStartY = 0;
+        this.swipeThreshold = 100;
+        this.wrongAnswers = [];
+        this.notesAutoSaveTimeout = null;
+
         this.initializeElements();
         this.bindEvents();
         this.loadSampleTestData();
         this.initializeTheme();
         this.checkForSavedProgress();
+        this.initializeNotes();
+        this.initializeSwipeGestures();
     }
 
     /**
@@ -92,6 +104,18 @@ class TestSimulator {
 
         // Loading overlay
         this.loadingOverlay = document.getElementById('loading-overlay');
+
+        // New feature elements
+        this.studyModeToggle = document.getElementById('study-mode-toggle');
+        this.notesToggleBtn = document.getElementById('notes-toggle-btn');
+        this.notesPanel = document.getElementById('notes-panel');
+        this.notesCloseBtn = document.getElementById('notes-close-btn');
+        this.notesEditor = document.getElementById('notes-editor');
+        this.reviewWrongBtn = document.getElementById('review-wrong-btn');
+        this.viewAnalyticsBtn = document.getElementById('view-analytics-btn');
+        this.analyticsSection = document.getElementById('analytics-section');
+        this.closeAnalyticsBtn = document.getElementById('close-analytics-btn');
+        this.analyticsContent = document.getElementById('analytics-content');
     }
 
     /**
@@ -137,6 +161,30 @@ class TestSimulator {
         this.timerToggle?.addEventListener('change', (e) => {
             this.timerSettings.classList.toggle('hidden', !e.target.checked);
         });
+
+        // New feature event listeners
+        this.studyModeToggle?.addEventListener('change', (e) => {
+            this.isStudyMode = e.target.checked;
+            if (this.currentTest && !this.testSection.classList.contains('hidden')) {
+                this.displayQuestion(); // Refresh display
+            }
+        });
+
+        this.notesToggleBtn?.addEventListener('click', () => this.toggleNotes());
+        this.notesCloseBtn?.addEventListener('click', () => this.toggleNotes());
+        this.notesEditor?.addEventListener('input', () => this.autoSaveNotes());
+
+        // Notes toolbar buttons
+        document.querySelectorAll('.notes-tool-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const action = e.currentTarget.dataset.action;
+                this.handleNotesToolbar(action);
+            });
+        });
+
+        this.reviewWrongBtn?.addEventListener('click', () => this.reviewWrongAnswers());
+        this.viewAnalyticsBtn?.addEventListener('click', () => this.showAnalytics());
+        this.closeAnalyticsBtn?.addEventListener('click', () => this.closeAnalytics());
 
         // Close modals when clicking outside
         this.promptModal.addEventListener('click', (e) => {
@@ -780,7 +828,7 @@ class TestSimulator {
 
         this.questionContainer.innerHTML = `
             <div class="question-header">
-                <div class="question-number">Question ${questionNum}</div>
+                <div class="question-number">Question ${questionNum}${this.isStudyMode ? '<span class="study-mode-indicator">📚 Study Mode</span>' : ''}</div>
                 <h3 class="question-text" id="question-${questionNum}-text">${this.escapeHtml(question.question)}</h3>
             </div>
             <div class="question-options" role="radiogroup" aria-labelledby="question-${questionNum}-text">
@@ -798,6 +846,14 @@ class TestSimulator {
                     </div>
                 `).join('')}
             </div>
+            ${this.isStudyMode ? `
+                <div class="answer-reveal">
+                    <div class="answer-reveal-title">✓ Correct Answer</div>
+                    <div class="answer-reveal-content">
+                        <strong>${this.escapeHtml(question.options[question.correct])}</strong>
+                    </div>
+                </div>
+            ` : ''}
         `;
 
         // Bind change event
@@ -821,7 +877,7 @@ class TestSimulator {
 
         this.questionContainer.innerHTML = `
             <div class="question-header">
-                <div class="question-number">Question ${questionNum}</div>
+                <div class="question-number">Question ${questionNum}${this.isStudyMode ? '<span class="study-mode-indicator">📚 Study Mode</span>' : ''}</div>
                 <h3 class="question-text" id="question-${questionNum}-text">${this.escapeHtml(question.question)}</h3>
                 <div class="multi-select-note">Select all correct answers</div>
             </div>
@@ -840,6 +896,14 @@ class TestSimulator {
                     </div>
                 `).join('')}
             </div>
+            ${this.isStudyMode ? `
+                <div class="answer-reveal">
+                    <div class="answer-reveal-title">✓ Correct Answers</div>
+                    <div class="answer-reveal-content">
+                        ${question.correct.map(idx => `<strong>• ${this.escapeHtml(question.options[idx])}</strong>`).join('<br>')}
+                    </div>
+                </div>
+            ` : ''}
         `;
 
         // Bind change event
@@ -877,7 +941,7 @@ class TestSimulator {
 
         this.questionContainer.innerHTML = `
             <div class="question-header">
-                <div class="question-number">Question ${questionNum}</div>
+                <div class="question-number">Question ${questionNum}${this.isStudyMode ? '<span class="study-mode-indicator">📚 Study Mode</span>' : ''}</div>
                 <h3 class="question-text" id="question-${questionNum}-text">${this.escapeHtml(question.question)}</h3>
             </div>
             <div class="matching-container">
@@ -902,6 +966,16 @@ class TestSimulator {
                     </div>
                 `).join('')}
             </div>
+            ${this.isStudyMode ? `
+                <div class="answer-reveal">
+                    <div class="answer-reveal-title">✓ Correct Matches</div>
+                    <div class="answer-reveal-content">
+                        ${question.leftItems.map((leftItem, index) =>
+                            `<strong>• ${this.escapeHtml(leftItem)}</strong> → ${this.escapeHtml(question.rightItems[question.correct[index]])}`
+                        ).join('<br>')}
+                    </div>
+                </div>
+            ` : ''}
         `;
 
         // Bind change events
@@ -1012,8 +1086,9 @@ class TestSimulator {
     calculateResults() {
         let correctAnswers = 0;
         const totalQuestions = this.currentTest.questions.length;
+        this.wrongAnswers = []; // Reset wrong answers array
 
-        this.currentTest.questions.forEach(question => {
+        this.currentTest.questions.forEach((question, index) => {
             const userAnswer = this.userAnswers[question.id];
             const correctAnswer = question.correct;
             let isCorrect = false;
@@ -1036,7 +1111,11 @@ class TestSimulator {
                     break;
             }
 
-            if (isCorrect) correctAnswers++;
+            if (isCorrect) {
+                correctAnswers++;
+            } else {
+                this.wrongAnswers.push(index); // Track wrong answer index
+            }
         });
 
         this.score = {
@@ -1788,6 +1867,446 @@ class TestSimulator {
 
         alert(`Test History: ${test.title}\n\nAttempts: ${test.attempts.length}\n\nView detailed history in the modal (coming soon)`);
         // TODO: Could add a proper history modal if needed
+    }
+
+    // ============================================
+    // NEW FEATURES - Study Mode, Notes, Analytics
+    // ============================================
+
+    /**
+     * Initialize Notes/Scratch Pad
+     */
+    initializeNotes() {
+        if (!this.notesEditor) return;
+
+        // Load saved notes
+        const savedNotes = localStorage.getItem(this.notesKey);
+        if (savedNotes) {
+            this.notesEditor.innerHTML = savedNotes;
+        }
+
+        console.log('📝 Notes initialized');
+    }
+
+    /**
+     * Toggle Notes panel visibility
+     */
+    toggleNotes() {
+        if (!this.notesPanel) return;
+        this.notesPanel.classList.toggle('hidden');
+    }
+
+    /**
+     * Auto-save notes with debouncing
+     */
+    autoSaveNotes() {
+        if (this.notesAutoSaveTimeout) {
+            clearTimeout(this.notesAutoSaveTimeout);
+        }
+
+        this.notesAutoSaveTimeout = setTimeout(() => {
+            try {
+                localStorage.setItem(this.notesKey, this.notesEditor.innerHTML);
+                console.log('📝 Notes auto-saved');
+            } catch (error) {
+                console.error('Failed to save notes:', error);
+            }
+        }, 500); // 500ms debounce
+    }
+
+    /**
+     * Handle notes toolbar actions
+     * @param {string} action - Toolbar action (bold, italic, underline, clear)
+     */
+    handleNotesToolbar(action) {
+        switch (action) {
+            case 'bold':
+                document.execCommand('bold', false, null);
+                break;
+            case 'italic':
+                document.execCommand('italic', false, null);
+                break;
+            case 'underline':
+                document.execCommand('underline', false, null);
+                break;
+            case 'clear':
+                if (confirm('Clear all notes? This cannot be undone.')) {
+                    this.notesEditor.innerHTML = '';
+                    localStorage.removeItem(this.notesKey);
+                }
+                break;
+        }
+        this.notesEditor.focus();
+    }
+
+    /**
+     * Initialize swipe gestures for question navigation
+     */
+    initializeSwipeGestures() {
+        if (!this.questionContainer) return;
+
+        // Add swipe indicators to DOM
+        const leftIndicator = document.createElement('div');
+        leftIndicator.className = 'swipe-indicator left';
+        leftIndicator.textContent = '←';
+        document.body.appendChild(leftIndicator);
+
+        const rightIndicator = document.createElement('div');
+        rightIndicator.className = 'swipe-indicator right';
+        rightIndicator.textContent = '→';
+        document.body.appendChild(rightIndicator);
+
+        this.leftSwipeIndicator = leftIndicator;
+        this.rightSwipeIndicator = rightIndicator;
+
+        // Touch event listeners
+        this.questionContainer.addEventListener('touchstart', (e) => this.handleTouchStart(e), { passive: true });
+        this.questionContainer.addEventListener('touchmove', (e) => this.handleTouchMove(e), { passive: false });
+        this.questionContainer.addEventListener('touchend', (e) => this.handleTouchEnd(e), { passive: true });
+
+        console.log('👆 Swipe gestures initialized');
+    }
+
+    /**
+     * Handle touch start for swipe gestures
+     * @param {TouchEvent} e - Touch event
+     */
+    handleTouchStart(e) {
+        if (!this.currentTest) return;
+
+        this.swipeStartX = e.touches[0].clientX;
+        this.swipeStartY = e.touches[0].clientY;
+        this.swipeStartTime = Date.now();
+    }
+
+    /**
+     * Handle touch move for swipe gestures
+     * @param {TouchEvent} e - Touch event
+     */
+    handleTouchMove(e) {
+        if (!this.currentTest) return;
+        if (!this.swipeStartX || !this.swipeStartY) return;
+
+        const currentX = e.touches[0].clientX;
+        const currentY = e.touches[0].clientY;
+
+        const diffX = currentX - this.swipeStartX;
+        const diffY = currentY - this.swipeStartY;
+
+        // Show indicators if horizontal swipe is dominant
+        if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 30) {
+            e.preventDefault(); // Prevent scrolling
+
+            if (diffX > 0) {
+                this.leftSwipeIndicator?.classList.add('visible');
+                this.rightSwipeIndicator?.classList.remove('visible');
+            } else {
+                this.rightSwipeIndicator?.classList.add('visible');
+                this.leftSwipeIndicator?.classList.remove('visible');
+            }
+        }
+    }
+
+    /**
+     * Handle touch end for swipe gestures
+     * @param {TouchEvent} e - Touch event
+     */
+    handleTouchEnd(e) {
+        if (!this.currentTest) return;
+        if (!this.swipeStartX || !this.swipeStartY) return;
+
+        const endX = e.changedTouches[0].clientX;
+        const endY = e.changedTouches[0].clientY;
+
+        const diffX = endX - this.swipeStartX;
+        const diffY = endY - this.swipeStartY;
+        const timeDiff = Date.now() - this.swipeStartTime;
+
+        // Hide indicators
+        this.leftSwipeIndicator?.classList.remove('visible');
+        this.rightSwipeIndicator?.classList.remove('visible');
+
+        // Check if it's a valid swipe (horizontal movement > vertical, and above threshold)
+        if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > this.swipeThreshold && timeDiff < 300) {
+            if (diffX > 0) {
+                // Swipe right - previous question
+                this.previousQuestion();
+            } else {
+                // Swipe left - next question
+                this.nextQuestion();
+            }
+        }
+
+        // Reset
+        this.swipeStartX = 0;
+        this.swipeStartY = 0;
+        this.swipeStartTime = 0;
+    }
+
+    /**
+     * Review wrong answers from last test
+     */
+    async reviewWrongAnswers() {
+        if (!this.score || this.wrongAnswers.length === 0) {
+            alert('No wrong answers to review! You either got everything right or haven\'t taken a test yet.');
+            return;
+        }
+
+        // Create a new test with only wrong answers
+        const wrongQuestions = this.wrongAnswers.map(index => this.currentTest.questions[index]);
+
+        const reviewTest = {
+            title: `Review: ${this.currentTest.title} (Wrong Answers)`,
+            questions: wrongQuestions.map((q, i) => ({
+                ...q,
+                id: i + 1
+            }))
+        };
+
+        // Load the review test
+        this.currentTest = reviewTest;
+        this.currentQuestionIndex = 0;
+        this.userAnswers = {};
+        this.testStartTime = Date.now();
+        this.score = null;
+        this.wrongAnswers = [];
+
+        // Hide results, show test
+        this.resultsSection.classList.add('hidden');
+        this.startTest();
+
+        console.log(`🔄 Reviewing ${wrongQuestions.length} wrong answers`);
+    }
+
+    /**
+     * Show analytics dashboard
+     */
+    async showAnalytics() {
+        this.resultsSection.classList.add('hidden');
+        this.analyticsSection.classList.remove('hidden');
+
+        const tests = await this.getSavedTests();
+
+        if (tests.length === 0) {
+            this.analyticsContent.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📊</div>
+                    <div class="empty-state-title">No Analytics Yet</div>
+                    <div class="empty-state-message">
+                        Take some tests and save them to see your performance analytics!
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        // Calculate analytics
+        const analytics = this.calculateAnalytics(tests);
+
+        // Render analytics
+        this.analyticsContent.innerHTML = `
+            <div class="analytics-grid">
+                <div class="analytics-card">
+                    <div class="analytics-card-title">Total Tests</div>
+                    <div class="analytics-card-value">${analytics.totalTests}</div>
+                    <div class="analytics-card-subtitle">${analytics.totalAttempts} attempts</div>
+                </div>
+
+                <div class="analytics-card">
+                    <div class="analytics-card-title">Average Score</div>
+                    <div class="analytics-card-value">${analytics.avgScore}%</div>
+                    <div class="analytics-card-subtitle">${analytics.trend}</div>
+                </div>
+
+                <div class="analytics-card">
+                    <div class="analytics-card-title">Best Performance</div>
+                    <div class="analytics-card-value">${analytics.bestScore}%</div>
+                    <div class="analytics-card-subtitle">${analytics.bestTest}</div>
+                </div>
+
+                <div class="analytics-card">
+                    <div class="analytics-card-title">Study Streak</div>
+                    <div class="analytics-card-value">${analytics.streak}</div>
+                    <div class="analytics-card-subtitle">day${analytics.streak !== 1 ? 's' : ''}</div>
+                </div>
+            </div>
+
+            ${analytics.coursePerformance.length > 0 ? `
+                <div class="analytics-chart">
+                    <div class="analytics-chart-title">📚 Performance by Course</div>
+                    ${analytics.coursePerformance.map(course => `
+                        <div class="chart-bar-container">
+                            <div class="chart-bar-label">
+                                <span class="chart-bar-label-text">${this.escapeHtml(course.name)}</span>
+                                <span class="chart-bar-label-value">${course.avgScore}% (${course.count} test${course.count !== 1 ? 's' : ''})</span>
+                            </div>
+                            <div class="chart-bar">
+                                <div class="chart-bar-fill" style="width: ${course.avgScore}%">
+                                    ${course.avgScore}%
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            ` : ''}
+
+            ${analytics.recentAttempts.length > 0 ? `
+                <div class="analytics-timeline">
+                    <h3 style="margin-bottom: var(--space-16);">🕐 Recent Activity</h3>
+                    ${analytics.recentAttempts.map(attempt => `
+                        <div class="timeline-item">
+                            <div class="timeline-icon">${this.getGradeEmoji(attempt.percentage)}</div>
+                            <div class="timeline-content">
+                                <div class="timeline-title">${this.escapeHtml(attempt.title)}</div>
+                                <div class="timeline-details">
+                                    <span class="timeline-stat">📅 ${attempt.date}</span>
+                                    <span class="timeline-stat">📊 ${attempt.percentage}%</span>
+                                    <span class="timeline-stat">✓ ${attempt.correct}/${attempt.total}</span>
+                                    ${attempt.timeSpent ? `<span class="timeline-stat">⏱️ ${attempt.timeSpent} min</span>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            ` : ''}
+        `;
+
+        console.log('📊 Analytics displayed');
+    }
+
+    /**
+     * Calculate analytics from test data
+     * @param {Array} tests - Array of saved tests
+     * @returns {Object} Analytics data
+     */
+    calculateAnalytics(tests) {
+        const totalTests = tests.length;
+        const totalAttempts = tests.reduce((sum, test) => sum + (test.attempts?.length || 0), 0);
+
+        // Calculate average score
+        let allScores = [];
+        tests.forEach(test => {
+            test.attempts?.forEach(attempt => {
+                allScores.push(attempt.score.percentage);
+            });
+        });
+
+        const avgScore = allScores.length > 0 ? Math.round(allScores.reduce((a, b) => a + b, 0) / allScores.length) : 0;
+
+        // Find best score
+        const bestScore = allScores.length > 0 ? Math.max(...allScores) : 0;
+        let bestTest = 'N/A';
+        if (allScores.length > 0) {
+            for (const test of tests) {
+                for (const attempt of (test.attempts || [])) {
+                    if (attempt.score.percentage === bestScore) {
+                        bestTest = test.title;
+                        break;
+                    }
+                }
+                if (bestTest !== 'N/A') break;
+            }
+        }
+
+        // Calculate trend
+        let trend = 'No data';
+        if (allScores.length >= 2) {
+            const recentAvg = allScores.slice(-3).reduce((a, b) => a + b, 0) / Math.min(3, allScores.length);
+            const oldAvg = allScores.slice(0, -3).reduce((a, b) => a + b, 0) / Math.max(1, allScores.length - 3);
+            if (recentAvg > oldAvg + 5) trend = '📈 Improving';
+            else if (recentAvg < oldAvg - 5) trend = '📉 Declining';
+            else trend = '➡️ Steady';
+        }
+
+        // Calculate streak
+        const dates = tests.flatMap(test =>
+            (test.attempts || []).map(attempt => new Date(attempt.date).toDateString())
+        ).filter((v, i, a) => a.indexOf(v) === i).sort().reverse();
+
+        let streak = 0;
+        const today = new Date().toDateString();
+        if (dates.includes(today)) {
+            streak = 1;
+            for (let i = 1; i < dates.length; i++) {
+                const prevDate = new Date(dates[i - 1]);
+                const currDate = new Date(dates[i]);
+                const diffDays = Math.round((prevDate - currDate) / (1000 * 60 * 60 * 24));
+                if (diffDays === 1) {
+                    streak++;
+                } else {
+                    break;
+                }
+            }
+        }
+
+        // Performance by course
+        const courseMap = new Map();
+        tests.forEach(test => {
+            const course = test.course || 'Uncategorized';
+            if (!courseMap.has(course)) {
+                courseMap.set(course, { scores: [], count: 0 });
+            }
+            const data = courseMap.get(course);
+            test.attempts?.forEach(attempt => {
+                data.scores.push(attempt.score.percentage);
+            });
+            data.count++;
+        });
+
+        const coursePerformance = Array.from(courseMap.entries())
+            .map(([name, data]) => ({
+                name,
+                avgScore: Math.round(data.scores.reduce((a, b) => a + b, 0) / data.scores.length),
+                count: data.count
+            }))
+            .sort((a, b) => b.avgScore - a.avgScore)
+            .slice(0, 5);
+
+        // Recent attempts
+        const recentAttempts = tests
+            .flatMap(test => (test.attempts || []).map(attempt => ({
+                title: test.title,
+                date: new Date(attempt.date).toLocaleDateString(),
+                percentage: attempt.score.percentage,
+                correct: attempt.score.correct,
+                total: attempt.score.total,
+                timeSpent: attempt.timeSpent ? Math.round(attempt.timeSpent / 60) : null
+            })))
+            .sort((a, b) => new Date(b.date) - new Date(a.date))
+            .slice(0, 10);
+
+        return {
+            totalTests,
+            totalAttempts,
+            avgScore,
+            bestScore,
+            bestTest,
+            trend,
+            streak,
+            coursePerformance,
+            recentAttempts
+        };
+    }
+
+    /**
+     * Get emoji for grade
+     * @param {number} percentage - Score percentage
+     * @returns {string} Emoji
+     */
+    getGradeEmoji(percentage) {
+        if (percentage >= 90) return '🏆';
+        if (percentage >= 80) return '🎉';
+        if (percentage >= 70) return '👍';
+        if (percentage >= 60) return '📝';
+        return '📚';
+    }
+
+    /**
+     * Close analytics dashboard
+     */
+    closeAnalytics() {
+        this.analyticsSection.classList.add('hidden');
+        this.resultsSection.classList.remove('hidden');
     }
 }
 

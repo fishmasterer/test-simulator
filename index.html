@@ -169,13 +169,21 @@
                         <button id="back-to-landing-btn" class="btn btn--outline btn--sm" style="flex-shrink: 0;">Back to Welcome</button>
                     </div>
 
-                    <!-- Timer Settings -->
-                    <div class="timer-settings-container">
-                        <div class="form-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="timer-toggle">
-                                <span>Enable timer</span>
-                            </label>
+                    <!-- Test Settings -->
+                    <div class="test-settings-container">
+                        <div class="settings-row">
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="timer-toggle">
+                                    <span>Enable timer</span>
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="study-mode-toggle">
+                                    <span>Study Mode (show answers)</span>
+                                </label>
+                            </div>
                         </div>
                         <div id="timer-settings" class="hidden">
                             <div class="form-group">
@@ -495,6 +503,11 @@ Example format:
 
         <!-- Test Section -->
         <div id="test-section" class="section hidden">
+            <!-- Notes/Scratch Pad Floating Button -->
+            <button id="notes-toggle-btn" class="notes-toggle-btn" aria-label="Toggle notes" title="Notes & Scratch Pad">
+                📝
+            </button>
+
             <div class="test-header">
                 <div class="test-header-left">
                     <h2 id="test-title">Test Title</h2>
@@ -588,8 +601,62 @@ Example format:
                     </div>
 
                     <div class="button-group">
+                        <button id="review-wrong-btn" class="btn btn--secondary">🔄 Review Wrong Answers</button>
+                        <button id="view-analytics-btn" class="btn btn--secondary">📊 View Analytics</button>
                         <button id="restart-btn" class="btn btn--primary">Load New Test</button>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Analytics Section -->
+        <div id="analytics-section" class="section hidden">
+            <div class="card">
+                <div class="card__body">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-16);">
+                        <h2>📊 Performance Analytics</h2>
+                        <button id="close-analytics-btn" class="btn btn--outline btn--sm">← Back</button>
+                    </div>
+
+                    <div id="analytics-content">
+                        <!-- Analytics content will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notes/Scratch Pad Panel -->
+        <div id="notes-panel" class="notes-panel hidden">
+            <div class="notes-header">
+                <h3>📝 Notes & Scratch Pad</h3>
+                <button id="notes-close-btn" class="notes-close-btn" aria-label="Close notes">×</button>
+            </div>
+            <div class="notes-body">
+                <div class="notes-toolbar">
+                    <button class="notes-tool-btn" data-action="bold" title="Bold" aria-label="Bold">
+                        <strong>B</strong>
+                    </button>
+                    <button class="notes-tool-btn" data-action="italic" title="Italic" aria-label="Italic">
+                        <em>I</em>
+                    </button>
+                    <button class="notes-tool-btn" data-action="underline" title="Underline" aria-label="Underline">
+                        <u>U</u>
+                    </button>
+                    <div class="notes-toolbar-divider"></div>
+                    <button class="notes-tool-btn" data-action="clear" title="Clear all notes" aria-label="Clear notes">
+                        🗑️
+                    </button>
+                </div>
+                <div
+                    id="notes-editor"
+                    class="notes-editor"
+                    contenteditable="true"
+                    role="textbox"
+                    aria-label="Notes editor"
+                    data-placeholder="Type your notes here... Perfect for jotting down formulas, key points, or scratch work!"
+                ></div>
+                <div class="notes-footer">
+                    <small class="text-secondary">Notes are automatically saved as you type</small>
                 </div>
             </div>
         </div>

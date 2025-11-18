@@ -43,6 +43,29 @@
       "description": "Load the sample test quickly",
       "url": "?sample=true",
       "icons": []
+    },
+    {
+      "name": "My Test Library",
+      "short_name": "Library",
+      "description": "View saved tests",
+      "url": "?library=true",
+      "icons": []
+    },
+    {
+      "name": "View Analytics",
+      "short_name": "Analytics",
+      "description": "Check your performance",
+      "url": "?analytics=true",
+      "icons": []
+    },
+    {
+      "name": "Focus Timer",
+      "short_name": "Timer",
+      "description": "Start Pomodoro timer",
+      "url": "?pomodoro=true",
+      "icons": []
     }
-  ]
+  ],
+  "prefer_related_applications": false,
+  "related_applications": []
 }
