@@ -53,6 +53,7 @@ class PomodoroTimer {
 
         // Display elements
         this.section = document.getElementById('pomodoro-section');
+        this.timerCard = document.querySelector('.pomodoro-timer-card');
         this.timeDisplay = document.getElementById('pomodoro-time-display');
         this.modeText = document.getElementById('pomodoro-mode-text');
         this.sessionCountText = document.getElementById('pomodoro-session-count');
@@ -321,20 +322,29 @@ class PomodoroTimer {
     updateModeIndicator() {
         let modeLabel = '';
         let sessionText = '';
+        let dataMode = '';
 
         if (this.currentMode === 'work') {
-            modeLabel = 'Work Session';
+            modeLabel = '🔥 Focus Time';
             sessionText = `Session ${(this.sessionCount % this.sessionsBeforeLongBreak) + 1} of ${this.sessionsBeforeLongBreak}`;
+            dataMode = 'work';
         } else if (this.currentMode === 'break') {
-            modeLabel = 'Short Break';
-            sessionText = 'Take a quick break';
+            modeLabel = '☕ Short Break';
+            sessionText = 'Relax for a moment';
+            dataMode = 'break';
         } else {
-            modeLabel = 'Long Break';
-            sessionText = 'Great job! Take a longer break';
+            modeLabel = '🌟 Long Break';
+            sessionText = 'Great work! Enjoy your break';
+            dataMode = 'longBreak';
         }
 
         if (this.modeText) this.modeText.textContent = modeLabel;
         if (this.sessionCountText) this.sessionCountText.textContent = sessionText;
+
+        // Update timer card data-mode for styling
+        if (this.timerCard) {
+            this.timerCard.setAttribute('data-mode', dataMode);
+        }
     }
 
     /**
