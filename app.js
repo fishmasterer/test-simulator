@@ -16,6 +16,7 @@ class TestSimulator {
         this.timerInterval = null;
         this.timeRemaining = null;
         this.testDuration = null; // in seconds
+        this.currentTestId = null; // Track if this is a retake of a saved test
         this.storageKey = 'testSimulatorProgress';
         this.themeKey = 'testSimulatorTheme';
         this.testBankKey = 'testSimulatorBank';
@@ -89,6 +90,7 @@ class TestSimulator {
         // Theme elements
         this.themeToggle = document.getElementById('theme-toggle');
         this.themeMenu = document.getElementById('theme-menu');
+        this.hardRefreshBtn = document.getElementById('hard-refresh-btn');
 
         // Loading overlay
         this.loadingOverlay = document.getElementById('loading-overlay');
@@ -112,6 +114,7 @@ class TestSimulator {
         this.confirmSubmitBtn.addEventListener('click', () => this.confirmSubmit());
         this.cancelSubmitBtn.addEventListener('click', () => this.hideConfirmModal());
         this.themeToggle.addEventListener('click', () => this.toggleThemeMenu());
+        this.hardRefreshBtn?.addEventListener('click', () => this.hardRefreshApp());
         this.exportPdfBtn?.addEventListener('click', () => this.exportAsPDF());
         this.exportCsvBtn?.addEventListener('click', () => this.exportAsCSV());
         this.saveTestBtn?.addEventListener('click', () => this.showSaveTestModal());
@@ -129,7 +132,9 @@ class TestSimulator {
         themeOptions.forEach(option => {
             option.addEventListener('click', (e) => {
                 const theme = e.currentTarget.dataset.theme;
-                this.setTheme(theme);
+                if (theme) { // Only set theme if data-theme exists (skip utility buttons)
+                    this.setTheme(theme);
+                }
             });
         });
 
@@ -267,6 +272,42 @@ class TestSimulator {
     toggleThemeMenu() {
         if (this.themeMenu) {
             this.themeMenu.classList.toggle('hidden');
+        }
+    }
+
+    /**
+     * Hard refresh the app - clears cache and reloads
+     */
+    async hardRefreshApp() {
+        if (!confirm('This will clear the app cache and reload. Any unsaved progress will be lost. Continue?')) {
+            return;
+        }
+
+        console.log('🔄 Performing hard refresh...');
+
+        try {
+            // Clear service worker caches
+            if ('caches' in window) {
+                const cacheNames = await caches.keys();
+                console.log('🗑️ Clearing', cacheNames.length, 'cache(s)...');
+                await Promise.all(cacheNames.map(name => caches.delete(name)));
+                console.log('✅ Cache cleared');
+            }
+
+            // Unregister service workers
+            if ('serviceWorker' in navigator) {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                console.log('🗑️ Unregistering', registrations.length, 'service worker(s)...');
+                await Promise.all(registrations.map(reg => reg.unregister()));
+                console.log('✅ Service workers unregistered');
+            }
+
+            console.log('✅ Hard refresh complete, reloading...');
+            // Force reload from server, bypassing cache
+            window.location.reload(true);
+        } catch (error) {
+            console.error('❌ Error during hard refresh:', error);
+            alert('Failed to clear cache. Try manually clearing your browser cache.');
         }
     }
 
@@ -511,6 +552,7 @@ class TestSimulator {
             this.clearProgress();
 
             this.currentTest = testData;
+            this.currentTestId = null; // Clear since this is a fresh test, not a retake
             this.currentQuestionIndex = 0;
             this.userAnswers = {};
             this.testStartTime = Date.now();
@@ -999,9 +1041,15 @@ class TestSimulator {
     /**
      * Submit the test
      */
-    submitTest() {
+    async submitTest() {
         this.stopTimer();
         this.calculateResults();
+
+        // If this is a retake of a saved test, update the saved test entry
+        if (this.currentTestId) {
+            await this.updateSavedTestAttempt(this.currentTestId);
+        }
+
         this.displayResults();
         this.clearProgress(); // Clear saved progress after submission
     }
@@ -1707,6 +1755,7 @@ class TestSimulator {
 
         // Load the test
         this.currentTest = test.testData;
+        this.currentTestId = testId; // Track that this is a retake
         this.currentQuestionIndex = 0;
         this.userAnswers = {};
         this.testStartTime = Date.now();
@@ -1724,6 +1773,58 @@ class TestSimulator {
         // Close library and start test
         this.closeTestLibrary();
         this.startTest();
+    }
+
+    /**
+     * Update a saved test with a new attempt
+     * @param {string} testId - ID of the test to update
+     */
+    async updateSavedTestAttempt(testId) {
+        console.log(`📊 Updating saved test ${testId} with new attempt...`);
+
+        try {
+            // Get all saved tests
+            const tests = await this.getSavedTests();
+            const testIndex = tests.findIndex(t => t.id === testId);
+
+            if (testIndex === -1) {
+                console.warn('⚠️ Test not found in saved tests, skipping update');
+                return;
+            }
+
+            // Create new attempt record
+            const newAttempt = {
+                date: Date.now(),
+                score: this.score,
+                timeSpent: this.testDuration ? (this.testDuration - (this.timeRemaining || 0)) : 0
+            };
+
+            // Update the test entry
+            tests[testIndex].attempts.push(newAttempt);
+            tests[testIndex].lastAttempt = Date.now();
+            tests[testIndex].updatedAt = Date.now();
+
+            console.log(`✅ Added attempt #${tests[testIndex].attempts.length} to test:`, newAttempt);
+
+            // Save to localStorage
+            await this.saveTestsToBank(tests);
+
+            // Save to Firebase if signed in
+            if (window.firebaseService?.isSignedIn()) {
+                try {
+                    console.log('☁️ Syncing updated test to Firebase...');
+                    firebaseService.updateSyncIndicator('syncing');
+                    await firebaseService.saveTest(tests[testIndex]);
+                    firebaseService.updateSyncIndicator('synced');
+                    console.log('✅ Test update synced to Firebase');
+                } catch (error) {
+                    console.error('❌ Failed to sync test update to Firebase:', error);
+                    firebaseService.updateSyncIndicator('error');
+                }
+            }
+        } catch (error) {
+            console.error('❌ Error updating saved test attempt:', error);
+        }
     }
 
     /**
