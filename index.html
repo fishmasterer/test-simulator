@@ -265,6 +265,10 @@ Example format:
                         <button id="open-library-btn" class="btn btn--secondary">📚 My Saved Tests</button>
                         <button id="open-pomodoro-btn" class="btn btn--secondary">🍅 Focus Timer</button>
                     </div>
+                    <div class="button-group" style="margin-top: var(--space-12);">
+                        <button id="open-notes-btn" class="btn btn--secondary">📝 Notes</button>
+                        <button id="open-whiteboard-btn" class="btn btn--secondary">🎨 Whiteboard</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -469,6 +473,138 @@ Example format:
                         <button id="pomodoro-cancel-task-btn" class="btn btn--outline">Cancel</button>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Notes Section -->
+        <div id="notes-section" class="section hidden">
+            <div class="library-header">
+                <h1>📝 My Notes</h1>
+                <div class="library-header-actions">
+                    <button id="create-note-btn" class="btn btn--primary">+ New Note</button>
+                    <button id="close-notes-btn" class="btn btn--outline">← Back</button>
+                </div>
+            </div>
+
+            <!-- Notes Filter -->
+            <div class="library-filters">
+                <input type="text" id="notes-search" class="form-control" placeholder="🔍 Search notes...">
+                <select id="notes-course-filter" class="form-control">
+                    <option value="">All Courses</option>
+                </select>
+            </div>
+
+            <!-- Notes Grid -->
+            <div id="notes-grid" class="notes-grid">
+                <!-- Notes will be inserted here -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="notes-empty-state" class="empty-state hidden">
+                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                <h3>No Notes Yet</h3>
+                <p>Create your first note to get started!</p>
+                <button class="btn btn--primary" onclick="document.getElementById('create-note-btn').click()">Create Note</button>
+            </div>
+        </div>
+
+        <!-- Note Editor Modal -->
+        <div id="note-editor-modal" class="modal hidden">
+            <div class="modal-content modal-content--large">
+                <div class="modal-header">
+                    <h3 id="note-editor-title">New Note</h3>
+                    <button id="close-note-editor-btn" class="close-btn">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="note-editor-form">
+                        <div class="form-group">
+                            <label for="note-title-input" class="form-label">Title *</label>
+                            <input type="text" id="note-title-input" class="form-control" placeholder="Note title" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="note-course-input" class="form-label">Course</label>
+                            <input type="text" id="note-course-input" class="form-control" placeholder="e.g., Biology 101, Computer Science">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="note-tags-input" class="form-label">Tags (comma-separated)</label>
+                            <input type="text" id="note-tags-input" class="form-control" placeholder="e.g., important, chapter-5, exam">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="note-content-input" class="form-label">Content *</label>
+                            <textarea id="note-content-input" class="form-control" rows="12" placeholder="Write your notes here..." required></textarea>
+                        </div>
+
+                        <div class="button-group">
+                            <button id="save-note-btn" class="btn btn--primary">Save Note</button>
+                            <button id="cancel-note-btn" class="btn btn--outline">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Whiteboard Section -->
+        <div id="whiteboard-section" class="section hidden">
+            <div class="library-header">
+                <h1>🎨 Whiteboard</h1>
+                <div class="library-header-actions">
+                    <button id="save-whiteboard-btn" class="btn btn--primary">💾 Save</button>
+                    <button id="clear-whiteboard-btn" class="btn btn--outline">🗑️ Clear</button>
+                    <button id="close-whiteboard-btn" class="btn btn--outline">← Back</button>
+                </div>
+            </div>
+
+            <!-- Whiteboard Controls -->
+            <div class="whiteboard-controls">
+                <div class="whiteboard-tools">
+                    <button class="tool-btn active" data-tool="pen" title="Pen">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 19l7-7 3 3-7 7-3-3z"></path>
+                            <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path>
+                            <path d="M2 2l7.586 7.586"></path>
+                            <circle cx="11" cy="11" r="2"></circle>
+                        </svg>
+                    </button>
+                    <button class="tool-btn" data-tool="eraser" title="Eraser">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 20H7L3 16c-1-1-1-2.5 0-3.5L10 5.5c1-1 2.5-1 3.5 0l7 7c1 1 1 2.5 0 3.5L16 20"></path>
+                            <path d="M7 20H3.5"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="whiteboard-color-picker">
+                    <label>Color:</label>
+                    <button class="color-btn active" data-color="#000000" style="background: #000000"></button>
+                    <button class="color-btn" data-color="#FF0000" style="background: #FF0000"></button>
+                    <button class="color-btn" data-color="#00FF00" style="background: #00FF00"></button>
+                    <button class="color-btn" data-color="#0000FF" style="background: #0000FF"></button>
+                    <button class="color-btn" data-color="#FFFF00" style="background: #FFFF00"></button>
+                    <button class="color-btn" data-color="#FF00FF" style="background: #FF00FF"></button>
+                    <button class="color-btn" data-color="#00FFFF" style="background: #00FFFF"></button>
+                </div>
+
+                <div class="whiteboard-size-control">
+                    <label>Size:</label>
+                    <input type="range" id="brush-size" min="1" max="20" value="3">
+                    <span id="brush-size-label">3px</span>
+                </div>
+
+                <button id="download-whiteboard-btn" class="btn btn--sm btn--outline">📥 Download PNG</button>
+            </div>
+
+            <!-- Canvas -->
+            <div class="whiteboard-canvas-container">
+                <canvas id="whiteboard-canvas"></canvas>
             </div>
         </div>
 
@@ -969,6 +1105,163 @@ Example format:
         </div>
     </div>
 
+    <!-- Ambient Soundscape Generator -->
+    <div id="soundscape-player" class="soundscape-player" role="region" aria-label="Ambient soundscape generator">
+        <div class="soundscape-header">
+            <button id="soundscape-toggle-btn" class="soundscape-toggle-btn" aria-label="Toggle soundscape player">
+                <svg class="soundscape-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
+                    <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path>
+                </svg>
+                <span class="soundscape-label">Soundscapes</span>
+            </button>
+        </div>
+
+        <div id="soundscape-content" class="soundscape-content hidden">
+            <div class="soundscape-body">
+                <h4 class="soundscape-title">Ambient Soundscape Mixer</h4>
+                <p class="soundscape-subtitle">Mix multiple sounds to create your perfect study environment</p>
+
+                <!-- Sound Controls Grid -->
+                <div class="soundscape-grid">
+                    <!-- White Noise -->
+                    <div class="sound-control">
+                        <div class="sound-header">
+                            <label class="sound-checkbox">
+                                <input type="checkbox" class="sound-toggle" data-sound="whitenoise">
+                                <span class="sound-name">🌫️ White Noise</span>
+                            </label>
+                        </div>
+                        <input type="range" class="sound-volume" data-sound="whitenoise" min="0" max="100" value="50" disabled>
+                        <span class="sound-volume-label">50%</span>
+                    </div>
+
+                    <!-- Rain -->
+                    <div class="sound-control">
+                        <div class="sound-header">
+                            <label class="sound-checkbox">
+                                <input type="checkbox" class="sound-toggle" data-sound="rain">
+                                <span class="sound-name">🌧️ Rain</span>
+                            </label>
+                        </div>
+                        <input type="range" class="sound-volume" data-sound="rain" min="0" max="100" value="50" disabled>
+                        <span class="sound-volume-label">50%</span>
+                    </div>
+
+                    <!-- Thunder -->
+                    <div class="sound-control">
+                        <div class="sound-header">
+                            <label class="sound-checkbox">
+                                <input type="checkbox" class="sound-toggle" data-sound="thunder">
+                                <span class="sound-name">⚡ Thunder</span>
+                            </label>
+                        </div>
+                        <input type="range" class="sound-volume" data-sound="thunder" min="0" max="100" value="30" disabled>
+                        <span class="sound-volume-label">30%</span>
+                    </div>
+
+                    <!-- Ocean Waves -->
+                    <div class="sound-control">
+                        <div class="sound-header">
+                            <label class="sound-checkbox">
+                                <input type="checkbox" class="sound-toggle" data-sound="ocean">
+                                <span class="sound-name">🌊 Ocean Waves</span>
+                            </label>
+                        </div>
+                        <input type="range" class="sound-volume" data-sound="ocean" min="0" max="100" value="50" disabled>
+                        <span class="sound-volume-label">50%</span>
+                    </div>
+
+                    <!-- Forest -->
+                    <div class="sound-control">
+                        <div class="sound-header">
+                            <label class="sound-checkbox">
+                                <input type="checkbox" class="sound-toggle" data-sound="forest">
+                                <span class="sound-name">🌲 Forest</span>
+                            </label>
+                        </div>
+                        <input type="range" class="sound-volume" data-sound="forest" min="0" max="100" value="50" disabled>
+                        <span class="sound-volume-label">50%</span>
+                    </div>
+
+                    <!-- Fireplace -->
+                    <div class="sound-control">
+                        <div class="sound-header">
+                            <label class="sound-checkbox">
+                                <input type="checkbox" class="sound-toggle" data-sound="fireplace">
+                                <span class="sound-name">🔥 Fireplace</span>
+                            </label>
+                        </div>
+                        <input type="range" class="sound-volume" data-sound="fireplace" min="0" max="100" value="50" disabled>
+                        <span class="sound-volume-label">50%</span>
+                    </div>
+
+                    <!-- Coffee Shop -->
+                    <div class="sound-control">
+                        <div class="sound-header">
+                            <label class="sound-checkbox">
+                                <input type="checkbox" class="sound-toggle" data-sound="coffeeshop">
+                                <span class="sound-name">☕ Coffee Shop</span>
+                            </label>
+                        </div>
+                        <input type="range" class="sound-volume" data-sound="coffeeshop" min="0" max="100" value="50" disabled>
+                        <span class="sound-volume-label">50%</span>
+                    </div>
+
+                    <!-- Fan -->
+                    <div class="sound-control">
+                        <div class="sound-header">
+                            <label class="sound-checkbox">
+                                <input type="checkbox" class="sound-toggle" data-sound="fan">
+                                <span class="sound-name">💨 Fan</span>
+                            </label>
+                        </div>
+                        <input type="range" class="sound-volume" data-sound="fan" min="0" max="100" value="50" disabled>
+                        <span class="sound-volume-label">50%</span>
+                    </div>
+                </div>
+
+                <!-- Preset Controls -->
+                <div class="soundscape-presets">
+                    <h5>Presets</h5>
+                    <div class="preset-buttons">
+                        <button class="btn btn--sm btn--outline preset-btn" data-preset="focus">🎯 Deep Focus</button>
+                        <button class="btn btn--sm btn--outline preset-btn" data-preset="relax">😌 Relax</button>
+                        <button class="btn btn--sm btn--outline preset-btn" data-preset="rainy">🌧️ Rainy Day</button>
+                        <button class="btn btn--sm btn--outline preset-btn" data-preset="nature">🌿 Nature</button>
+                    </div>
+                </div>
+
+                <!-- Timer Controls -->
+                <div class="soundscape-timer">
+                    <label class="sound-checkbox">
+                        <input type="checkbox" id="soundscape-timer-toggle">
+                        <span>Auto-stop after:</span>
+                    </label>
+                    <select id="soundscape-timer-duration" class="form-control form-control--sm" disabled>
+                        <option value="15">15 minutes</option>
+                        <option value="30">30 minutes</option>
+                        <option value="45">45 minutes</option>
+                        <option value="60">1 hour</option>
+                        <option value="90">1.5 hours</option>
+                        <option value="120">2 hours</option>
+                    </select>
+                </div>
+
+                <!-- Master Controls -->
+                <div class="soundscape-master-controls">
+                    <button id="soundscape-play-all" class="btn btn--primary btn--sm">▶️ Play</button>
+                    <button id="soundscape-stop-all" class="btn btn--outline btn--sm">⏹️ Stop All</button>
+                    <div class="soundscape-master-volume">
+                        <label>Master Volume:</label>
+                        <input type="range" id="soundscape-master-volume" min="0" max="100" value="100">
+                        <span id="soundscape-master-volume-label">100%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Lofi Music Player -->
     <div id="music-player" class="music-player" role="region" aria-label="Lofi music player">
         <div class="music-player-header">
@@ -1068,6 +1361,15 @@ Example format:
 
     <!-- Music Player Module -->
     <script src="music-player.js"></script>
+
+    <!-- Soundscape Player Module -->
+    <script src="soundscape-player.js"></script>
+
+    <!-- Notes Module -->
+    <script src="notes.js"></script>
+
+    <!-- Whiteboard Module -->
+    <script src="whiteboard.js"></script>
 
     <script>
         // Register Service Worker for PWA
