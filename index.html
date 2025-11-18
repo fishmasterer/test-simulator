@@ -193,6 +193,43 @@
                         </div>
                     </div>
 
+                    <!-- Shuffle Settings -->
+                    <div class="shuffle-settings-container">
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="shuffle-toggle">
+                                <span>🔀 Smart Shuffle</span>
+                            </label>
+                        </div>
+                        <div id="shuffle-settings" class="hidden">
+                            <div class="form-group">
+                                <label for="shuffle-mode" class="form-label">Shuffle Mode</label>
+                                <select id="shuffle-mode" class="form-control" aria-label="Select shuffle mode">
+                                    <option value="both">Shuffle Questions & Options</option>
+                                    <option value="questions">Shuffle Questions Only</option>
+                                    <option value="options">Shuffle Options Only</option>
+                                    <option value="smart">Smart Shuffle (maintain difficulty curve)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="shuffle-seed">
+                                    <span>Use reproducible shuffle (same order each time)</span>
+                                </label>
+                            </div>
+                            <div id="shuffle-seed-input" class="form-group hidden">
+                                <label for="shuffle-seed-value" class="form-label">Shuffle Seed (optional)</label>
+                                <input
+                                    type="number"
+                                    id="shuffle-seed-value"
+                                    class="form-control"
+                                    placeholder="Leave empty for random seed"
+                                    aria-label="Shuffle seed value"
+                                >
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="form-group">
                         <label for="json-input" class="form-label">Test JSON Data</label>
                         <textarea
@@ -228,6 +265,17 @@ Example format:
                         <button id="open-library-btn" class="btn btn--secondary">📚 My Saved Tests</button>
                         <button id="open-pomodoro-btn" class="btn btn--secondary">🍅 Focus Timer</button>
                     </div>
+                    <div class="button-group" style="margin-top: var(--space-12);">
+                        <button id="open-notes-btn" class="btn btn--secondary">📝 Notes</button>
+                        <button id="open-whiteboard-btn" class="btn btn--secondary">🎨 Whiteboard</button>
+                    </div>
+                    <div class="button-group" style="margin-top: var(--space-12);">
+                        <button id="open-flashcards-btn" class="btn btn--secondary">🃏 Flashcards</button>
+                        <button id="open-planner-btn" class="btn btn--secondary">📅 Study Planner</button>
+                    </div>
+                    <div class="button-group" style="margin-top: var(--space-12);">
+                        <button id="open-habits-btn" class="btn btn--secondary">✅ Habit Tracker</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -236,7 +284,10 @@ Example format:
         <div id="test-library-section" class="section hidden">
             <div class="library-header">
                 <h1>My Test Library</h1>
-                <button id="close-library-btn" class="btn btn--outline">← Back</button>
+                <div class="library-header-actions">
+                    <button id="view-insights-btn" class="btn btn--secondary">📊 View Insights</button>
+                    <button id="close-library-btn" class="btn btn--outline">← Back</button>
+                </div>
             </div>
 
             <!-- Sync Status Banner -->
@@ -432,6 +483,138 @@ Example format:
             </div>
         </div>
 
+        <!-- Notes Section -->
+        <div id="notes-section" class="section hidden">
+            <div class="library-header">
+                <h1>📝 My Notes</h1>
+                <div class="library-header-actions">
+                    <button id="create-note-btn" class="btn btn--primary">+ New Note</button>
+                    <button id="close-notes-btn" class="btn btn--outline">← Back</button>
+                </div>
+            </div>
+
+            <!-- Notes Filter -->
+            <div class="library-filters">
+                <input type="text" id="notes-search" class="form-control" placeholder="🔍 Search notes...">
+                <select id="notes-course-filter" class="form-control">
+                    <option value="">All Courses</option>
+                </select>
+            </div>
+
+            <!-- Notes Grid -->
+            <div id="notes-grid" class="notes-grid">
+                <!-- Notes will be inserted here -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="notes-empty-state" class="empty-state hidden">
+                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                <h3>No Notes Yet</h3>
+                <p>Create your first note to get started!</p>
+                <button class="btn btn--primary" onclick="document.getElementById('create-note-btn').click()">Create Note</button>
+            </div>
+        </div>
+
+        <!-- Note Editor Modal -->
+        <div id="note-editor-modal" class="modal hidden">
+            <div class="modal-content modal-content--large">
+                <div class="modal-header">
+                    <h3 id="note-editor-title">New Note</h3>
+                    <button id="close-note-editor-btn" class="close-btn">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="note-editor-form">
+                        <div class="form-group">
+                            <label for="note-title-input" class="form-label">Title *</label>
+                            <input type="text" id="note-title-input" class="form-control" placeholder="Note title" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="note-course-input" class="form-label">Course</label>
+                            <input type="text" id="note-course-input" class="form-control" placeholder="e.g., Biology 101, Computer Science">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="note-tags-input" class="form-label">Tags (comma-separated)</label>
+                            <input type="text" id="note-tags-input" class="form-control" placeholder="e.g., important, chapter-5, exam">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="note-content-input" class="form-label">Content *</label>
+                            <textarea id="note-content-input" class="form-control" rows="12" placeholder="Write your notes here..." required></textarea>
+                        </div>
+
+                        <div class="button-group">
+                            <button id="save-note-btn" class="btn btn--primary">Save Note</button>
+                            <button id="cancel-note-btn" class="btn btn--outline">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Whiteboard Section -->
+        <div id="whiteboard-section" class="section hidden">
+            <div class="library-header">
+                <h1>🎨 Whiteboard</h1>
+                <div class="library-header-actions">
+                    <button id="save-whiteboard-btn" class="btn btn--primary">💾 Save</button>
+                    <button id="clear-whiteboard-btn" class="btn btn--outline">🗑️ Clear</button>
+                    <button id="close-whiteboard-btn" class="btn btn--outline">← Back</button>
+                </div>
+            </div>
+
+            <!-- Whiteboard Controls -->
+            <div class="whiteboard-controls">
+                <div class="whiteboard-tools">
+                    <button class="tool-btn active" data-tool="pen" title="Pen">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 19l7-7 3 3-7 7-3-3z"></path>
+                            <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path>
+                            <path d="M2 2l7.586 7.586"></path>
+                            <circle cx="11" cy="11" r="2"></circle>
+                        </svg>
+                    </button>
+                    <button class="tool-btn" data-tool="eraser" title="Eraser">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 20H7L3 16c-1-1-1-2.5 0-3.5L10 5.5c1-1 2.5-1 3.5 0l7 7c1 1 1 2.5 0 3.5L16 20"></path>
+                            <path d="M7 20H3.5"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="whiteboard-color-picker">
+                    <label>Color:</label>
+                    <button class="color-btn active" data-color="#000000" style="background: #000000"></button>
+                    <button class="color-btn" data-color="#FF0000" style="background: #FF0000"></button>
+                    <button class="color-btn" data-color="#00FF00" style="background: #00FF00"></button>
+                    <button class="color-btn" data-color="#0000FF" style="background: #0000FF"></button>
+                    <button class="color-btn" data-color="#FFFF00" style="background: #FFFF00"></button>
+                    <button class="color-btn" data-color="#FF00FF" style="background: #FF00FF"></button>
+                    <button class="color-btn" data-color="#00FFFF" style="background: #00FFFF"></button>
+                </div>
+
+                <div class="whiteboard-size-control">
+                    <label>Size:</label>
+                    <input type="range" id="brush-size" min="1" max="20" value="3">
+                    <span id="brush-size-label">3px</span>
+                </div>
+
+                <button id="download-whiteboard-btn" class="btn btn--sm btn--outline">📥 Download PNG</button>
+            </div>
+
+            <!-- Canvas -->
+            <div class="whiteboard-canvas-container">
+                <canvas id="whiteboard-canvas"></canvas>
+            </div>
+        </div>
+
         <!-- Pomodoro Analytics Modal -->
         <div id="pomodoro-analytics-modal" class="modal hidden">
             <div class="modal-content modal-content--large">
@@ -490,6 +673,195 @@ Example format:
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Flashcards Section -->
+        <div id="flashcards-section" class="section hidden">
+            <div class="section-header">
+                <h1>Flashcards</h1>
+                <button id="close-flashcards-btn" class="btn btn--outline">← Back</button>
+            </div>
+
+            <!-- Decks Grid View -->
+            <div class="decks-view">
+                <div class="decks-header">
+                    <input
+                        type="text"
+                        id="deck-search"
+                        class="form-control"
+                        placeholder="🔍 Search decks..."
+                        aria-label="Search decks"
+                    >
+                    <button id="create-deck-btn" class="btn btn--primary">+ Create Deck</button>
+                </div>
+
+                <div id="decks-grid" class="decks-grid">
+                    <!-- Deck cards will be inserted here -->
+                </div>
+
+                <div id="decks-empty-state" class="empty-state hidden">
+                    <p>No flashcard decks yet.</p>
+                    <p>Create your first deck to start studying with spaced repetition!</p>
+                </div>
+            </div>
+
+            <!-- Card Manager View -->
+            <div id="card-manager-view" class="card-manager-view hidden">
+                <div class="card-manager-header">
+                    <button id="back-to-decks-btn" class="btn btn--outline">← Back to Decks</button>
+                    <h2 id="current-deck-title">Deck Name</h2>
+                    <div class="card-manager-actions">
+                        <button id="add-card-btn" class="btn btn--secondary">+ Add Card</button>
+                        <button id="start-study-btn" class="btn btn--primary">Study Now</button>
+                    </div>
+                </div>
+
+                <div id="cards-list-container" class="cards-list-container">
+                    <!-- Cards will be inserted here -->
+                </div>
+            </div>
+
+            <!-- Study Session View -->
+            <div id="study-session-view" class="study-session-view hidden">
+                <div class="study-header">
+                    <button id="exit-study-btn" class="btn btn--outline">← Exit Study</button>
+                    <div class="study-progress-info">
+                        <progress id="study-progress" value="0" max="100"></progress>
+                        <span id="study-progress-text">Card 1 of 10</span>
+                    </div>
+                </div>
+
+                <div class="flashcard-container">
+                    <div id="flashcard" class="flashcard">
+                        <div id="flashcard-inner" class="flashcard-inner">
+                            <div class="flashcard-front">
+                                <div class="flashcard-label">Question</div>
+                                <div id="card-front" class="flashcard-text"></div>
+                            </div>
+                            <div class="flashcard-back">
+                                <div class="flashcard-label">Answer</div>
+                                <div id="card-back" class="flashcard-text"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="card-hint" class="card-hint hidden"></div>
+
+                    <div class="flashcard-controls">
+                        <button id="show-hint-btn" class="btn btn--outline">💡 Show Hint</button>
+                        <button id="flip-card-btn" class="btn btn--primary">Flip Card</button>
+                    </div>
+
+                    <div id="quality-buttons" class="quality-buttons hidden">
+                        <button id="again-btn" class="quality-btn quality-again">
+                            <span class="quality-label">Again</span>
+                            <span class="quality-desc">&lt; 1 day</span>
+                        </button>
+                        <button id="hard-btn" class="quality-btn quality-hard">
+                            <span class="quality-label">Hard</span>
+                            <span class="quality-desc">~3 days</span>
+                        </button>
+                        <button id="good-btn" class="quality-btn quality-good">
+                            <span class="quality-label">Good</span>
+                            <span class="quality-desc">~7 days</span>
+                        </button>
+                        <button id="easy-btn" class="quality-btn quality-easy">
+                            <span class="quality-label">Easy</span>
+                            <span class="quality-desc">~14 days</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="session-stats" class="session-stats hidden">
+                    <!-- Session summary will be shown here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Study Planner Section -->
+        <div id="planner-section" class="section hidden">
+            <div class="planner-layout">
+                <div class="planner-main">
+                    <div class="planner-header">
+                        <h1>Study Planner</h1>
+                        <div class="planner-controls">
+                            <div class="view-toggle">
+                                <button id="view-toggle-week" class="view-toggle-btn active">Week</button>
+                                <button id="view-toggle-month" class="view-toggle-btn">Month</button>
+                            </div>
+                            <div class="period-navigation">
+                                <button id="prev-period-btn" class="btn btn--sm">←</button>
+                                <span id="current-period-label">January 2025</span>
+                                <button id="next-period-btn" class="btn btn--sm">→</button>
+                            </div>
+                            <button id="today-btn" class="btn btn--sm btn--primary">Today</button>
+                            <button id="close-planner-btn" class="btn btn--outline">← Back</button>
+                        </div>
+                    </div>
+
+                    <!-- Week View -->
+                    <div id="week-view" class="calendar-view">
+                        <div id="week-grid" class="week-grid">
+                            <!-- Week grid will be rendered here -->
+                        </div>
+                    </div>
+
+                    <!-- Month View -->
+                    <div id="month-view" class="calendar-view hidden">
+                        <div id="month-grid" class="month-grid-container">
+                            <!-- Month grid will be rendered here -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="planner-sidebar">
+                    <h3>Upcoming Events</h3>
+                    <div id="upcoming-events-list" class="upcoming-events-list">
+                        <!-- Upcoming events will be listed here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Habit Tracker Section -->
+        <div id="habits-section" class="section hidden">
+            <div class="section-header">
+                <h1>Habit Tracker</h1>
+                <button id="close-habits-btn" class="btn btn--outline">← Back</button>
+            </div>
+
+            <!-- Stats Overview -->
+            <div class="habits-stats-overview">
+                <div class="habit-overview-stat">
+                    <span class="habit-overview-value" id="total-habits">0</span>
+                    <span class="habit-overview-label">Total Habits</span>
+                </div>
+                <div class="habit-overview-stat">
+                    <span class="habit-overview-value" id="active-streaks">0</span>
+                    <span class="habit-overview-label">Active Streaks</span>
+                </div>
+                <div class="habit-overview-stat">
+                    <span class="habit-overview-value" id="completion-rate">0%</span>
+                    <span class="habit-overview-label">Avg Rate</span>
+                </div>
+                <div class="habit-overview-stat">
+                    <span class="habit-overview-value" id="longest-streak">0</span>
+                    <span class="habit-overview-label">Best Streak</span>
+                </div>
+            </div>
+
+            <div class="habits-controls">
+                <button id="create-habit-btn" class="btn btn--primary">+ Create Habit</button>
+            </div>
+
+            <div id="habits-container" class="habits-container">
+                <!-- Habit cards will be inserted here -->
+            </div>
+
+            <div id="habits-empty-state" class="empty-state hidden">
+                <p>No habits tracked yet.</p>
+                <p>Create your first habit to start building streaks!</p>
             </div>
         </div>
 
@@ -591,6 +963,263 @@ Example format:
                         <button id="restart-btn" class="btn btn--primary">Load New Test</button>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deck Editor Modal -->
+    <div id="deck-editor-modal" class="modal hidden" role="dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create Deck</h3>
+                <button id="close-deck-editor-btn" class="modal-close" aria-label="Close modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="deck-editor-form" onsubmit="return false;">
+                    <div class="form-group">
+                        <label for="deck-name-input" class="form-label">Deck Name *</label>
+                        <input
+                            type="text"
+                            id="deck-name-input"
+                            class="form-control"
+                            placeholder="e.g., Spanish Vocabulary"
+                            required
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label for="deck-subject-input" class="form-label">Subject</label>
+                        <input
+                            type="text"
+                            id="deck-subject-input"
+                            class="form-control"
+                            placeholder="e.g., Languages"
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label for="deck-description-input" class="form-label">Description</label>
+                        <textarea
+                            id="deck-description-input"
+                            class="form-control"
+                            rows="3"
+                            placeholder="Brief description of this deck..."
+                        ></textarea>
+                    </div>
+                    <div class="button-group">
+                        <button id="save-deck-btn" type="button" class="btn btn--primary">Save Deck</button>
+                        <button id="cancel-deck-btn" type="button" class="btn btn--outline">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card Editor Modal -->
+    <div id="card-editor-modal" class="modal hidden" role="dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Card</h3>
+                <button id="close-card-editor-btn" class="modal-close" aria-label="Close modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="card-editor-form" onsubmit="return false;">
+                    <div class="form-group">
+                        <label for="card-front-input" class="form-label">Front (Question) *</label>
+                        <textarea
+                            id="card-front-input"
+                            class="form-control"
+                            rows="3"
+                            placeholder="Enter the question or term..."
+                            required
+                        ></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="card-back-input" class="form-label">Back (Answer) *</label>
+                        <textarea
+                            id="card-back-input"
+                            class="form-control"
+                            rows="3"
+                            placeholder="Enter the answer or definition..."
+                            required
+                        ></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="card-hint-input" class="form-label">Hint (Optional)</label>
+                        <input
+                            type="text"
+                            id="card-hint-input"
+                            class="form-control"
+                            placeholder="A helpful hint..."
+                        >
+                    </div>
+                    <div class="button-group">
+                        <button id="save-card-btn" type="button" class="btn btn--primary">Save Card</button>
+                        <button id="cancel-card-btn" type="button" class="btn btn--outline">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Event Editor Modal -->
+    <div id="event-editor-modal" class="modal hidden" role="dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Event</h3>
+                <button id="close-event-editor-btn" class="modal-close" aria-label="Close modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="event-editor-form" onsubmit="return false;">
+                    <div class="form-group">
+                        <label for="event-title-input" class="form-label">Event Title *</label>
+                        <input
+                            type="text"
+                            id="event-title-input"
+                            class="form-control"
+                            placeholder="e.g., Study Session, Exam"
+                            required
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label for="event-type-select" class="form-label">Event Type</label>
+                        <select id="event-type-select" class="form-control">
+                            <option value="study">📚 Study Session</option>
+                            <option value="exam">📝 Exam</option>
+                            <option value="deadline">⏰ Deadline</option>
+                            <option value="class">🏫 Class</option>
+                            <option value="review">🔍 Review</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="event-date-input" class="form-label">Date *</label>
+                        <input
+                            type="date"
+                            id="event-date-input"
+                            class="form-control"
+                            required
+                        >
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="event-start-time-input" class="form-label">Start Time *</label>
+                            <input
+                                type="time"
+                                id="event-start-time-input"
+                                class="form-control"
+                                required
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label for="event-end-time-input" class="form-label">End Time *</label>
+                            <input
+                                type="time"
+                                id="event-end-time-input"
+                                class="form-control"
+                                required
+                            >
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="event-course-input" class="form-label">Course/Subject</label>
+                        <input
+                            type="text"
+                            id="event-course-input"
+                            class="form-control"
+                            placeholder="e.g., CS101"
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label for="event-notes-input" class="form-label">Notes</label>
+                        <textarea
+                            id="event-notes-input"
+                            class="form-control"
+                            rows="3"
+                            placeholder="Additional details..."
+                        ></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="event-color-input" class="form-label">Color</label>
+                        <input
+                            type="color"
+                            id="event-color-input"
+                            class="form-control"
+                            value="#21808D"
+                        >
+                    </div>
+                    <div class="button-group">
+                        <button id="save-event-btn" type="button" class="btn btn--primary">Save Event</button>
+                        <button id="delete-event-btn" type="button" class="btn btn--danger hidden">Delete Event</button>
+                        <button id="cancel-event-btn" type="button" class="btn btn--outline">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Habit Editor Modal -->
+    <div id="habit-editor-modal" class="modal hidden" role="dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create Habit</h3>
+                <button id="close-habit-editor-btn" class="modal-close" aria-label="Close modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="habit-editor-form" onsubmit="return false;">
+                    <div class="form-group">
+                        <label for="habit-name-input" class="form-label">Habit Name *</label>
+                        <input
+                            type="text"
+                            id="habit-name-input"
+                            class="form-control"
+                            placeholder="e.g., Review flashcards daily"
+                            required
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label for="habit-desc-input" class="form-label">Description</label>
+                        <textarea
+                            id="habit-desc-input"
+                            class="form-control"
+                            rows="2"
+                            placeholder="Brief description..."
+                        ></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="habit-category-select" class="form-label">Category</label>
+                        <select id="habit-category-select" class="form-control">
+                            <option value="study">📚 Study</option>
+                            <option value="exercise">💪 Exercise</option>
+                            <option value="health">🏥 Health</option>
+                            <option value="mindfulness">🧘 Mindfulness</option>
+                            <option value="reading">📖 Reading</option>
+                            <option value="productivity">⚡ Productivity</option>
+                            <option value="other">⭐ Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="habit-goal-input" class="form-label">Goal Streak (days)</label>
+                        <input
+                            type="number"
+                            id="habit-goal-input"
+                            class="form-control"
+                            min="1"
+                            max="365"
+                            value="30"
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label for="habit-color-input" class="form-label">Color</label>
+                        <input
+                            type="color"
+                            id="habit-color-input"
+                            class="form-control"
+                            value="#21808D"
+                        >
+                    </div>
+                    <div class="button-group">
+                        <button id="save-habit-btn" type="button" class="btn btn--primary">Save Habit</button>
+                        <button id="cancel-habit-btn" type="button" class="btn btn--outline">Cancel</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -741,51 +1370,347 @@ Example format:
         </div>
     </div>
 
+    <!-- Test Insights Modal -->
+    <div id="insights-modal" class="modal hidden" role="dialog" aria-labelledby="insights-modal-title" aria-modal="true">
+        <div class="modal-content modal-content--large">
+            <div class="modal-header">
+                <h3 id="insights-modal-title">📊 Test Performance Insights</h3>
+                <button id="close-insights-modal-btn" class="close-btn" aria-label="Close modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Overview Stats -->
+                <div class="insights-overview">
+                    <div class="insight-card">
+                        <div class="insight-icon">🎯</div>
+                        <div class="insight-content">
+                            <div class="insight-label">Average Score</div>
+                            <div class="insight-value" id="insight-avg-score">--%</div>
+                        </div>
+                    </div>
+                    <div class="insight-card">
+                        <div class="insight-icon">📈</div>
+                        <div class="insight-content">
+                            <div class="insight-label">Total Tests Taken</div>
+                            <div class="insight-value" id="insight-total-tests">--</div>
+                        </div>
+                    </div>
+                    <div class="insight-card">
+                        <div class="insight-icon">🔥</div>
+                        <div class="insight-content">
+                            <div class="insight-label">Current Streak</div>
+                            <div class="insight-value" id="insight-streak">-- days</div>
+                        </div>
+                    </div>
+                    <div class="insight-card">
+                        <div class="insight-icon">⭐</div>
+                        <div class="insight-content">
+                            <div class="insight-label">Best Score</div>
+                            <div class="insight-value" id="insight-best-score">--%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Performance Trend -->
+                <div class="insights-section">
+                    <h4>Performance Trend</h4>
+                    <div id="insight-trend" class="insight-trend-display">
+                        <!-- Trend visualization will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Question Type Performance -->
+                <div class="insights-section">
+                    <h4>Performance by Question Type</h4>
+                    <div id="insight-question-types" class="insight-stats-grid">
+                        <!-- Question type stats will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Course Performance -->
+                <div class="insights-section">
+                    <h4>Performance by Course</h4>
+                    <div id="insight-courses" class="insight-courses-list">
+                        <!-- Course performance will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Time Analysis -->
+                <div class="insights-section">
+                    <h4>Time Analysis</h4>
+                    <div id="insight-time-analysis" class="insight-stats-grid">
+                        <!-- Time stats will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Weak Areas & Recommendations -->
+                <div class="insights-section">
+                    <h4>Areas for Improvement</h4>
+                    <div id="insight-weak-areas" class="insight-recommendations">
+                        <!-- Recommendations will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Prompt Instructions Modal -->
     <div id="prompt-modal" class="modal hidden" role="dialog" aria-labelledby="prompt-modal-title" aria-modal="true">
-        <div class="modal-content">
+        <div class="modal-content modal-content--large">
             <div class="modal-header">
-                <h3 id="prompt-modal-title">AI Test Generation Prompt</h3>
+                <h3 id="prompt-modal-title">AI Test Generation Prompt Builder</h3>
                 <button id="close-modal" class="close-btn" aria-label="Close modal">&times;</button>
             </div>
             <div class="modal-body">
-                <p>Use this prompt to generate test JSON data with an AI:</p>
-                <div class="prompt-box">
-                    <code>Generate a test with [NUMBER] questions in JSON format. Include a mix of MCQ (multiple choice), multi-select, and matching questions about [TOPIC]. Use this exact structure:
+                <p>Customize your test generation prompt with advanced options:</p>
 
-{
-  "title": "Test Title Here",
-  "questions": [
-    {
-      "id": 1,
-      "type": "mcq",
-      "question": "Question text here",
-      "options": ["Option A", "Option B", "Option C", "Option D"],
-      "correct": 0
-    },
-    {
-      "id": 2,
-      "type": "multi-select",
-      "question": "Question text here (select all that apply)",
-      "options": ["Option A", "Option B", "Option C", "Option D"],
-      "correct": [0, 2]
-    },
-    {
-      "id": 3,
-      "type": "matching",
-      "question": "Match the following",
-      "leftItems": ["Item 1", "Item 2", "Item 3"],
-      "rightItems": ["Match A", "Match B", "Match C"],
-      "correct": [0, 1, 2]
-    }
-  ]
-}
+                <!-- Prompt Builder Form -->
+                <div class="prompt-builder-form">
+                    <div class="prompt-builder-grid">
+                        <div class="form-group">
+                            <label class="form-label">Subject/Topic *</label>
+                            <input type="text" id="prompt-topic" class="form-control" placeholder="e.g., Biology, JavaScript, World History" value="">
+                        </div>
 
-For MCQ: correct is the index (0-based) of the correct option
-For multi-select: correct is an array of indices of correct options
-For matching: correct is an array where each index corresponds to the rightItems index for each leftItem</code>
+                        <div class="form-group">
+                            <label class="form-label">Number of Questions</label>
+                            <input type="number" id="prompt-count" class="form-control" value="10" min="1" max="100">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Difficulty Level</label>
+                            <select id="prompt-difficulty" class="form-control">
+                                <option value="easy">Easy - Introductory level</option>
+                                <option value="medium" selected>Medium - Standard level</option>
+                                <option value="hard">Hard - Advanced level</option>
+                                <option value="expert">Expert - Professional/Midterm level</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Question Type Distribution</label>
+                            <select id="prompt-distribution" class="form-control">
+                                <option value="balanced" selected>Balanced Mix</option>
+                                <option value="mcq-heavy">Mostly MCQ</option>
+                                <option value="multiselect-heavy">Mostly Multi-Select</option>
+                                <option value="matching-heavy">Mostly Matching</option>
+                                <option value="mcq-only">MCQ Only</option>
+                                <option value="no-matching">No Matching Questions</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Question Style</label>
+                            <select id="prompt-style" class="form-control">
+                                <option value="academic" selected>Academic/Formal</option>
+                                <option value="conversational">Conversational/Friendly</option>
+                                <option value="challenging">Challenging/Tricky</option>
+                                <option value="practical">Practical/Real-world</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Additional Context (Optional)</label>
+                            <input type="text" id="prompt-context" class="form-control" placeholder="e.g., Focus on Chapter 5, Include recent developments">
+                        </div>
+                    </div>
+
+                    <!-- Advanced Options -->
+                    <div class="prompt-advanced-options">
+                        <h4>Advanced Options</h4>
+                        <div class="prompt-checkboxes">
+                            <label class="form-checkbox">
+                                <input type="checkbox" id="prompt-shuffle" checked>
+                                <span>Shuffle answer options</span>
+                            </label>
+                            <label class="form-checkbox">
+                                <input type="checkbox" id="prompt-explanations">
+                                <span>Include explanations (as comments)</span>
+                            </label>
+                            <label class="form-checkbox">
+                                <input type="checkbox" id="prompt-distractors" checked>
+                                <span>Use plausible incorrect options</span>
+                            </label>
+                            <label class="form-checkbox">
+                                <input type="checkbox" id="prompt-creative">
+                                <span>Creative matching questions (beyond definitions)</span>
+                            </label>
+                        </div>
+                    </div>
                 </div>
-                <p><strong>Example:</strong> "Generate a test with 5 questions in JSON format. Include a mix of MCQ, multi-select, and matching questions about web development."</p>
+
+                <!-- Generated Prompt Display -->
+                <div class="prompt-output-section">
+                    <div class="prompt-output-header">
+                        <h4>Generated Prompt</h4>
+                        <button id="prompt-copy-btn" class="btn btn--outline btn--sm">Copy Prompt</button>
+                    </div>
+                    <div class="prompt-box" id="generated-prompt-display">
+                        <code id="generated-prompt-text">Configure options above to generate your custom prompt</code>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="button-group" style="margin-top: var(--space-16);">
+                    <button id="prompt-generate-btn" class="btn btn--primary">Generate Prompt</button>
+                    <button id="prompt-reset-btn" class="btn btn--outline">Reset to Defaults</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ambient Soundscape Generator -->
+    <div id="soundscape-player" class="soundscape-player" role="region" aria-label="Ambient soundscape generator">
+        <div class="soundscape-header">
+            <button id="soundscape-toggle-btn" class="soundscape-toggle-btn" aria-label="Toggle soundscape player">
+                <svg class="soundscape-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
+                    <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path>
+                </svg>
+                <span class="soundscape-label">Soundscapes</span>
+            </button>
+        </div>
+
+        <div id="soundscape-content" class="soundscape-content hidden">
+            <div class="soundscape-body">
+                <h4 class="soundscape-title">Ambient Soundscape Mixer</h4>
+                <p class="soundscape-subtitle">Mix multiple sounds to create your perfect study environment</p>
+
+                <!-- Sound Controls Grid -->
+                <div class="soundscape-grid">
+                    <!-- White Noise -->
+                    <div class="sound-control">
+                        <div class="sound-header">
+                            <label class="sound-checkbox">
+                                <input type="checkbox" class="sound-toggle" data-sound="whitenoise">
+                                <span class="sound-name">🌫️ White Noise</span>
+                            </label>
+                        </div>
+                        <input type="range" class="sound-volume" data-sound="whitenoise" min="0" max="100" value="50" disabled>
+                        <span class="sound-volume-label">50%</span>
+                    </div>
+
+                    <!-- Rain -->
+                    <div class="sound-control">
+                        <div class="sound-header">
+                            <label class="sound-checkbox">
+                                <input type="checkbox" class="sound-toggle" data-sound="rain">
+                                <span class="sound-name">🌧️ Rain</span>
+                            </label>
+                        </div>
+                        <input type="range" class="sound-volume" data-sound="rain" min="0" max="100" value="50" disabled>
+                        <span class="sound-volume-label">50%</span>
+                    </div>
+
+                    <!-- Thunder -->
+                    <div class="sound-control">
+                        <div class="sound-header">
+                            <label class="sound-checkbox">
+                                <input type="checkbox" class="sound-toggle" data-sound="thunder">
+                                <span class="sound-name">⚡ Thunder</span>
+                            </label>
+                        </div>
+                        <input type="range" class="sound-volume" data-sound="thunder" min="0" max="100" value="30" disabled>
+                        <span class="sound-volume-label">30%</span>
+                    </div>
+
+                    <!-- Ocean Waves -->
+                    <div class="sound-control">
+                        <div class="sound-header">
+                            <label class="sound-checkbox">
+                                <input type="checkbox" class="sound-toggle" data-sound="ocean">
+                                <span class="sound-name">🌊 Ocean Waves</span>
+                            </label>
+                        </div>
+                        <input type="range" class="sound-volume" data-sound="ocean" min="0" max="100" value="50" disabled>
+                        <span class="sound-volume-label">50%</span>
+                    </div>
+
+                    <!-- Forest -->
+                    <div class="sound-control">
+                        <div class="sound-header">
+                            <label class="sound-checkbox">
+                                <input type="checkbox" class="sound-toggle" data-sound="forest">
+                                <span class="sound-name">🌲 Forest</span>
+                            </label>
+                        </div>
+                        <input type="range" class="sound-volume" data-sound="forest" min="0" max="100" value="50" disabled>
+                        <span class="sound-volume-label">50%</span>
+                    </div>
+
+                    <!-- Fireplace -->
+                    <div class="sound-control">
+                        <div class="sound-header">
+                            <label class="sound-checkbox">
+                                <input type="checkbox" class="sound-toggle" data-sound="fireplace">
+                                <span class="sound-name">🔥 Fireplace</span>
+                            </label>
+                        </div>
+                        <input type="range" class="sound-volume" data-sound="fireplace" min="0" max="100" value="50" disabled>
+                        <span class="sound-volume-label">50%</span>
+                    </div>
+
+                    <!-- Coffee Shop -->
+                    <div class="sound-control">
+                        <div class="sound-header">
+                            <label class="sound-checkbox">
+                                <input type="checkbox" class="sound-toggle" data-sound="coffeeshop">
+                                <span class="sound-name">☕ Coffee Shop</span>
+                            </label>
+                        </div>
+                        <input type="range" class="sound-volume" data-sound="coffeeshop" min="0" max="100" value="50" disabled>
+                        <span class="sound-volume-label">50%</span>
+                    </div>
+
+                    <!-- Fan -->
+                    <div class="sound-control">
+                        <div class="sound-header">
+                            <label class="sound-checkbox">
+                                <input type="checkbox" class="sound-toggle" data-sound="fan">
+                                <span class="sound-name">💨 Fan</span>
+                            </label>
+                        </div>
+                        <input type="range" class="sound-volume" data-sound="fan" min="0" max="100" value="50" disabled>
+                        <span class="sound-volume-label">50%</span>
+                    </div>
+                </div>
+
+                <!-- Preset Controls -->
+                <div class="soundscape-presets">
+                    <h5>Presets</h5>
+                    <div class="preset-buttons">
+                        <button class="btn btn--sm btn--outline preset-btn" data-preset="focus">🎯 Deep Focus</button>
+                        <button class="btn btn--sm btn--outline preset-btn" data-preset="relax">😌 Relax</button>
+                        <button class="btn btn--sm btn--outline preset-btn" data-preset="rainy">🌧️ Rainy Day</button>
+                        <button class="btn btn--sm btn--outline preset-btn" data-preset="nature">🌿 Nature</button>
+                    </div>
+                </div>
+
+                <!-- Timer Controls -->
+                <div class="soundscape-timer">
+                    <label class="sound-checkbox">
+                        <input type="checkbox" id="soundscape-timer-toggle">
+                        <span>Auto-stop after:</span>
+                    </label>
+                    <select id="soundscape-timer-duration" class="form-control form-control--sm" disabled>
+                        <option value="15">15 minutes</option>
+                        <option value="30">30 minutes</option>
+                        <option value="45">45 minutes</option>
+                        <option value="60">1 hour</option>
+                        <option value="90">1.5 hours</option>
+                        <option value="120">2 hours</option>
+                    </select>
+                </div>
+
+                <!-- Master Controls -->
+                <div class="soundscape-master-controls">
+                    <button id="soundscape-play-all" class="btn btn--primary btn--sm">▶️ Play</button>
+                    <button id="soundscape-stop-all" class="btn btn--outline btn--sm">⏹️ Stop All</button>
+                    <div class="soundscape-master-volume">
+                        <label>Master Volume:</label>
+                        <input type="range" id="soundscape-master-volume" min="0" max="100" value="100">
+                        <span id="soundscape-master-volume-label">100%</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -889,6 +1814,24 @@ For matching: correct is an array where each index corresponds to the rightItems
 
     <!-- Music Player Module -->
     <script src="music-player.js"></script>
+
+    <!-- Soundscape Player Module -->
+    <script src="soundscape-player.js"></script>
+
+    <!-- Notes Module -->
+    <script src="notes.js"></script>
+
+    <!-- Whiteboard Module -->
+    <script src="whiteboard.js"></script>
+
+    <!-- Flashcards Module -->
+    <script src="flashcards.js"></script>
+
+    <!-- Study Planner Module -->
+    <script src="study-planner.js"></script>
+
+    <!-- Habit Tracker Module -->
+    <script src="habit-tracker.js"></script>
 
     <script>
         // Register Service Worker for PWA
