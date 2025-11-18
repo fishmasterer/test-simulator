@@ -1146,6 +1146,68 @@ select.form-control {
   word-break: break-word;
 }
 
+/* Prompt Builder Styles */
+.prompt-builder-form {
+  margin-bottom: var(--space-24);
+}
+
+.prompt-builder-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--space-16);
+  margin-bottom: var(--space-20);
+}
+
+.prompt-advanced-options {
+  background-color: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-base);
+  padding: var(--space-16);
+  margin-top: var(--space-16);
+}
+
+.prompt-advanced-options h4 {
+  margin: 0 0 var(--space-12) 0;
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+}
+
+.prompt-checkboxes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-12);
+}
+
+.prompt-output-section {
+  margin-top: var(--space-24);
+  padding-top: var(--space-20);
+  border-top: 1px solid var(--color-border);
+}
+
+.prompt-output-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-12);
+}
+
+.prompt-output-header h4 {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  color: var(--color-text);
+}
+
+.btn--success {
+  background-color: #22c55e;
+  color: white;
+  border-color: #22c55e;
+}
+
+.btn--success:hover {
+  background-color: #16a34a;
+  border-color: #16a34a;
+}
+
 .floating-help-btn {
   position: fixed;
   bottom: var(--space-32);
@@ -1203,6 +1265,15 @@ select.form-control {
 
 /* Timer Settings */
 .timer-settings-container {
+  margin-bottom: var(--space-20);
+  padding: var(--space-16);
+  background-color: var(--color-bg-5);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+}
+
+/* Shuffle Settings */
+.shuffle-settings-container {
   margin-bottom: var(--space-20);
   padding: var(--space-16);
   background-color: var(--color-bg-5);
@@ -3292,4 +3363,412 @@ select.form-control {
     width: 18px;
     height: 18px;
   }
+}
+
+/* ========================================
+   LANDSCAPE MODE OPTIMIZATIONS
+   ======================================== */
+
+/* Tablet landscape and desktop */
+@media (min-width: 768px) and (orientation: landscape) {
+  /* Better use of horizontal space for test section */
+  .test-content-grid {
+    grid-template-columns: 250px 1fr;
+    gap: var(--space-24);
+    max-height: calc(100vh - 200px);
+  }
+
+  .question-overview-panel {
+    position: sticky;
+    top: var(--space-16);
+    max-height: calc(100vh - 220px);
+  }
+
+  /* Wider modals on landscape */
+  .modal-content {
+    max-width: 700px;
+  }
+
+  .modal-content--large {
+    max-width: 1000px;
+  }
+
+  /* Results section in landscape */
+  .score-summary {
+    display: flex;
+    align-items: center;
+    gap: var(--space-32);
+  }
+
+  .score-number {
+    font-size: 4rem;
+  }
+
+  /* Library grid optimizations */
+  .test-library-grid {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  }
+
+  /* Prompt builder in landscape */
+  .prompt-builder-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Large desktop */
+@media (min-width: 1440px) {
+  .container {
+    max-width: 1400px;
+  }
+
+  /* Test taking - ultra-wide optimization */
+  .test-content-grid {
+    grid-template-columns: 300px 1fr 300px;
+  }
+
+  /* Add a tips/hints panel on the right for ultra-wide */
+  .question-main {
+    padding: 0 var(--space-32);
+  }
+
+  /* Library - more columns on wide screens */
+  .test-library-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+
+  /* Analytics modal wider */
+  .modal-content--large {
+    max-width: 1200px;
+  }
+
+  /* Prompt builder - 3 columns */
+  .prompt-builder-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  /* Pomodoro container better layout */
+  .pomodoro-container {
+    gap: var(--space-48);
+  }
+}
+
+/* Landscape-specific improvements for small screens */
+@media (max-height: 600px) and (orientation: landscape) {
+  /* Compact header on short landscape screens */
+  .landing-hero {
+    padding: var(--space-20) 0;
+  }
+
+  .landing-title {
+    font-size: 2rem;
+  }
+
+  .landing-features {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-12);
+  }
+
+  .feature-card {
+    padding: var(--space-12);
+  }
+
+  /* Compact test header */
+  .test-header {
+    padding: var(--space-12);
+  }
+
+  /* Reduce modal padding */
+  .modal-body {
+    padding: var(--space-16);
+  }
+
+  /* Compact pomodoro */
+  .pomodoro-timer-circle {
+    width: 200px;
+    height: 200px;
+  }
+}
+
+/* Ultra-wide screens (21:9, 32:9) */
+@media (min-width: 1920px) and (min-aspect-ratio: 16/9) {
+  .test-content-grid {
+    grid-template-columns: 350px 1fr 350px;
+    max-width: 1800px;
+    margin: 0 auto;
+  }
+
+  /* Center content with sidebars */
+  .question-main .card {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+}
+
+/* ========================================
+   INSIGHTS & ANALYTICS STYLES
+   ======================================== */
+
+.library-header-actions {
+  display: flex;
+  gap: var(--space-12);
+  align-items: center;
+}
+
+.insights-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-16);
+  margin-bottom: var(--space-32);
+}
+
+.insight-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+  padding: var(--space-20);
+  background-color: var(--color-bg-5);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+}
+
+.insight-icon {
+  font-size: 2.5rem;
+}
+
+.insight-content {
+  flex: 1;
+}
+
+.insight-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-4);
+}
+
+.insight-value {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+}
+
+.insights-section {
+  margin-bottom: var(--space-32);
+  padding-bottom: var(--space-24);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.insights-section:last-child {
+  border-bottom: none;
+}
+
+.insights-section h4 {
+  margin-bottom: var(--space-16);
+  font-size: var(--font-size-lg);
+  color: var(--color-text);
+}
+
+.insight-no-data {
+  color: var(--color-text-secondary);
+  font-style: italic;
+  padding: var(--space-20);
+  text-align: center;
+  background-color: var(--color-bg-5);
+  border-radius: var(--radius-base);
+}
+
+/* Trend Chart */
+.trend-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-8);
+  height: 200px;
+  padding: var(--space-16);
+  background-color: var(--color-bg-5);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-16);
+}
+
+.trend-bar-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.trend-bar {
+  width: 100%;
+  min-height: 20px;
+  background: linear-gradient(to top, var(--color-primary), var(--color-primary-hover));
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: var(--space-4);
+  transition: all var(--duration-normal);
+  cursor: pointer;
+  position: relative;
+}
+
+.trend-bar:hover {
+  opacity: 0.8;
+}
+
+.trend-value {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: white;
+}
+
+.trend-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-4);
+  text-align: center;
+}
+
+.trend-indicator {
+  padding: var(--space-16);
+  background-color: var(--color-bg-5);
+  border-radius: var(--radius-base);
+  border-left: 4px solid var(--color-primary);
+  color: var(--color-text);
+}
+
+/* Stats Grid */
+.insight-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-16);
+}
+
+.insight-stat-card {
+  padding: var(--space-20);
+  background-color: var(--color-bg-5);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  text-align: center;
+}
+
+.insight-stat-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-8);
+}
+
+.insight-stat-value {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+}
+
+.insight-stat-meta {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-4);
+}
+
+/* Course Performance */
+.insight-courses-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.insight-course-item {
+  padding: var(--space-16);
+  background-color: var(--color-bg-5);
+  border-radius: var(--radius-lg);
+  border-left: 4px solid var(--color-border);
+}
+
+.insight-course-item.good {
+  border-left-color: #22c55e;
+}
+
+.insight-course-item.medium {
+  border-left-color: #f59e0b;
+}
+
+.insight-course-item.needs-improvement {
+  border-left-color: #ef4444;
+}
+
+.insight-course-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-8);
+}
+
+.insight-course-name {
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-base);
+}
+
+.insight-course-avg {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+}
+
+.insight-course-details {
+  display: flex;
+  gap: var(--space-16);
+  margin-bottom: var(--space-12);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.insight-course-bar {
+  height: 8px;
+  background-color: var(--color-background);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.insight-course-bar-fill {
+  height: 100%;
+  background: linear-gradient(to right, var(--color-primary), var(--color-primary-hover));
+  border-radius: var(--radius-full);
+  transition: width var(--duration-slow);
+}
+
+/* Recommendations */
+.insight-recommendations {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.insight-recommendation-card {
+  display: flex;
+  gap: var(--space-16);
+  padding: var(--space-20);
+  background-color: var(--color-bg-5);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+}
+
+.insight-rec-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.insight-rec-content {
+  flex: 1;
+}
+
+.insight-rec-title {
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-base);
+  margin-bottom: var(--space-4);
+  color: var(--color-text);
+}
+
+.insight-rec-description {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
 }

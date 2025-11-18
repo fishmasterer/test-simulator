@@ -193,6 +193,43 @@
                         </div>
                     </div>
 
+                    <!-- Shuffle Settings -->
+                    <div class="shuffle-settings-container">
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="shuffle-toggle">
+                                <span>🔀 Smart Shuffle</span>
+                            </label>
+                        </div>
+                        <div id="shuffle-settings" class="hidden">
+                            <div class="form-group">
+                                <label for="shuffle-mode" class="form-label">Shuffle Mode</label>
+                                <select id="shuffle-mode" class="form-control" aria-label="Select shuffle mode">
+                                    <option value="both">Shuffle Questions & Options</option>
+                                    <option value="questions">Shuffle Questions Only</option>
+                                    <option value="options">Shuffle Options Only</option>
+                                    <option value="smart">Smart Shuffle (maintain difficulty curve)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="shuffle-seed">
+                                    <span>Use reproducible shuffle (same order each time)</span>
+                                </label>
+                            </div>
+                            <div id="shuffle-seed-input" class="form-group hidden">
+                                <label for="shuffle-seed-value" class="form-label">Shuffle Seed (optional)</label>
+                                <input
+                                    type="number"
+                                    id="shuffle-seed-value"
+                                    class="form-control"
+                                    placeholder="Leave empty for random seed"
+                                    aria-label="Shuffle seed value"
+                                >
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="form-group">
                         <label for="json-input" class="form-label">Test JSON Data</label>
                         <textarea
@@ -236,7 +273,10 @@ Example format:
         <div id="test-library-section" class="section hidden">
             <div class="library-header">
                 <h1>My Test Library</h1>
-                <button id="close-library-btn" class="btn btn--outline">← Back</button>
+                <div class="library-header-actions">
+                    <button id="view-insights-btn" class="btn btn--secondary">📊 View Insights</button>
+                    <button id="close-library-btn" class="btn btn--outline">← Back</button>
+                </div>
             </div>
 
             <!-- Sync Status Banner -->
@@ -741,51 +781,190 @@ Example format:
         </div>
     </div>
 
+    <!-- Test Insights Modal -->
+    <div id="insights-modal" class="modal hidden" role="dialog" aria-labelledby="insights-modal-title" aria-modal="true">
+        <div class="modal-content modal-content--large">
+            <div class="modal-header">
+                <h3 id="insights-modal-title">📊 Test Performance Insights</h3>
+                <button id="close-insights-modal-btn" class="close-btn" aria-label="Close modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Overview Stats -->
+                <div class="insights-overview">
+                    <div class="insight-card">
+                        <div class="insight-icon">🎯</div>
+                        <div class="insight-content">
+                            <div class="insight-label">Average Score</div>
+                            <div class="insight-value" id="insight-avg-score">--%</div>
+                        </div>
+                    </div>
+                    <div class="insight-card">
+                        <div class="insight-icon">📈</div>
+                        <div class="insight-content">
+                            <div class="insight-label">Total Tests Taken</div>
+                            <div class="insight-value" id="insight-total-tests">--</div>
+                        </div>
+                    </div>
+                    <div class="insight-card">
+                        <div class="insight-icon">🔥</div>
+                        <div class="insight-content">
+                            <div class="insight-label">Current Streak</div>
+                            <div class="insight-value" id="insight-streak">-- days</div>
+                        </div>
+                    </div>
+                    <div class="insight-card">
+                        <div class="insight-icon">⭐</div>
+                        <div class="insight-content">
+                            <div class="insight-label">Best Score</div>
+                            <div class="insight-value" id="insight-best-score">--%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Performance Trend -->
+                <div class="insights-section">
+                    <h4>Performance Trend</h4>
+                    <div id="insight-trend" class="insight-trend-display">
+                        <!-- Trend visualization will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Question Type Performance -->
+                <div class="insights-section">
+                    <h4>Performance by Question Type</h4>
+                    <div id="insight-question-types" class="insight-stats-grid">
+                        <!-- Question type stats will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Course Performance -->
+                <div class="insights-section">
+                    <h4>Performance by Course</h4>
+                    <div id="insight-courses" class="insight-courses-list">
+                        <!-- Course performance will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Time Analysis -->
+                <div class="insights-section">
+                    <h4>Time Analysis</h4>
+                    <div id="insight-time-analysis" class="insight-stats-grid">
+                        <!-- Time stats will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Weak Areas & Recommendations -->
+                <div class="insights-section">
+                    <h4>Areas for Improvement</h4>
+                    <div id="insight-weak-areas" class="insight-recommendations">
+                        <!-- Recommendations will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Prompt Instructions Modal -->
     <div id="prompt-modal" class="modal hidden" role="dialog" aria-labelledby="prompt-modal-title" aria-modal="true">
-        <div class="modal-content">
+        <div class="modal-content modal-content--large">
             <div class="modal-header">
-                <h3 id="prompt-modal-title">AI Test Generation Prompt</h3>
+                <h3 id="prompt-modal-title">AI Test Generation Prompt Builder</h3>
                 <button id="close-modal" class="close-btn" aria-label="Close modal">&times;</button>
             </div>
             <div class="modal-body">
-                <p>Use this prompt to generate test JSON data with an AI:</p>
-                <div class="prompt-box">
-                    <code>Generate a test with [NUMBER] questions in JSON format. Include a mix of MCQ (multiple choice), multi-select, and matching questions about [TOPIC]. Use this exact structure:
+                <p>Customize your test generation prompt with advanced options:</p>
 
-{
-  "title": "Test Title Here",
-  "questions": [
-    {
-      "id": 1,
-      "type": "mcq",
-      "question": "Question text here",
-      "options": ["Option A", "Option B", "Option C", "Option D"],
-      "correct": 0
-    },
-    {
-      "id": 2,
-      "type": "multi-select",
-      "question": "Question text here (select all that apply)",
-      "options": ["Option A", "Option B", "Option C", "Option D"],
-      "correct": [0, 2]
-    },
-    {
-      "id": 3,
-      "type": "matching",
-      "question": "Match the following",
-      "leftItems": ["Item 1", "Item 2", "Item 3"],
-      "rightItems": ["Match A", "Match B", "Match C"],
-      "correct": [0, 1, 2]
-    }
-  ]
-}
+                <!-- Prompt Builder Form -->
+                <div class="prompt-builder-form">
+                    <div class="prompt-builder-grid">
+                        <div class="form-group">
+                            <label class="form-label">Subject/Topic *</label>
+                            <input type="text" id="prompt-topic" class="form-control" placeholder="e.g., Biology, JavaScript, World History" value="">
+                        </div>
 
-For MCQ: correct is the index (0-based) of the correct option
-For multi-select: correct is an array of indices of correct options
-For matching: correct is an array where each index corresponds to the rightItems index for each leftItem</code>
+                        <div class="form-group">
+                            <label class="form-label">Number of Questions</label>
+                            <input type="number" id="prompt-count" class="form-control" value="10" min="1" max="100">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Difficulty Level</label>
+                            <select id="prompt-difficulty" class="form-control">
+                                <option value="easy">Easy - Introductory level</option>
+                                <option value="medium" selected>Medium - Standard level</option>
+                                <option value="hard">Hard - Advanced level</option>
+                                <option value="expert">Expert - Professional/Midterm level</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Question Type Distribution</label>
+                            <select id="prompt-distribution" class="form-control">
+                                <option value="balanced" selected>Balanced Mix</option>
+                                <option value="mcq-heavy">Mostly MCQ</option>
+                                <option value="multiselect-heavy">Mostly Multi-Select</option>
+                                <option value="matching-heavy">Mostly Matching</option>
+                                <option value="mcq-only">MCQ Only</option>
+                                <option value="no-matching">No Matching Questions</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Question Style</label>
+                            <select id="prompt-style" class="form-control">
+                                <option value="academic" selected>Academic/Formal</option>
+                                <option value="conversational">Conversational/Friendly</option>
+                                <option value="challenging">Challenging/Tricky</option>
+                                <option value="practical">Practical/Real-world</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Additional Context (Optional)</label>
+                            <input type="text" id="prompt-context" class="form-control" placeholder="e.g., Focus on Chapter 5, Include recent developments">
+                        </div>
+                    </div>
+
+                    <!-- Advanced Options -->
+                    <div class="prompt-advanced-options">
+                        <h4>Advanced Options</h4>
+                        <div class="prompt-checkboxes">
+                            <label class="form-checkbox">
+                                <input type="checkbox" id="prompt-shuffle" checked>
+                                <span>Shuffle answer options</span>
+                            </label>
+                            <label class="form-checkbox">
+                                <input type="checkbox" id="prompt-explanations">
+                                <span>Include explanations (as comments)</span>
+                            </label>
+                            <label class="form-checkbox">
+                                <input type="checkbox" id="prompt-distractors" checked>
+                                <span>Use plausible incorrect options</span>
+                            </label>
+                            <label class="form-checkbox">
+                                <input type="checkbox" id="prompt-creative">
+                                <span>Creative matching questions (beyond definitions)</span>
+                            </label>
+                        </div>
+                    </div>
                 </div>
-                <p><strong>Example:</strong> "Generate a test with 5 questions in JSON format. Include a mix of MCQ, multi-select, and matching questions about web development."</p>
+
+                <!-- Generated Prompt Display -->
+                <div class="prompt-output-section">
+                    <div class="prompt-output-header">
+                        <h4>Generated Prompt</h4>
+                        <button id="prompt-copy-btn" class="btn btn--outline btn--sm">Copy Prompt</button>
+                    </div>
+                    <div class="prompt-box" id="generated-prompt-display">
+                        <code id="generated-prompt-text">Configure options above to generate your custom prompt</code>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="button-group" style="margin-top: var(--space-16);">
+                    <button id="prompt-generate-btn" class="btn btn--primary">Generate Prompt</button>
+                    <button id="prompt-reset-btn" class="btn btn--outline">Reset to Defaults</button>
+                </div>
             </div>
         </div>
     </div>
