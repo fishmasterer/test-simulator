@@ -760,8 +760,8 @@ class TestSimulator {
                 return false;
             }
 
-            if (!['mcq', 'multi-select', 'matching'].includes(question.type)) {
-                this.showError(`Question ${i + 1} has invalid type. Must be 'mcq', 'multi-select', or 'matching'.`);
+            if (!['mcq', 'multi-select', 'matching', 'true-false', 'fill-blank', 'ordering'].includes(question.type)) {
+                this.showError(`Question ${i + 1} has invalid type. Must be 'mcq', 'multi-select', 'matching', 'true-false', 'fill-blank', or 'ordering'.`);
                 return false;
             }
 
@@ -799,6 +799,35 @@ class TestSimulator {
 
                 if (question.correct.some(index => index < 0 || index >= question.rightItems.length)) {
                     this.showError(`Question ${i + 1} has invalid matching indices.`);
+                    return false;
+                }
+            }
+
+            if (question.type === 'true-false') {
+                if (typeof question.correct !== 'boolean' && question.correct !== 0 && question.correct !== 1) {
+                    this.showError(`Question ${i + 1} must have a boolean correct answer (true/false or 0/1).`);
+                    return false;
+                }
+            }
+
+            if (question.type === 'fill-blank') {
+                if (!question.acceptedAnswers || !Array.isArray(question.acceptedAnswers)) {
+                    this.showError(`Question ${i + 1} must have an acceptedAnswers array.`);
+                    return false;
+                }
+                if (question.acceptedAnswers.length === 0) {
+                    this.showError(`Question ${i + 1} must have at least one accepted answer.`);
+                    return false;
+                }
+            }
+
+            if (question.type === 'ordering') {
+                if (!question.items || !Array.isArray(question.items)) {
+                    this.showError(`Question ${i + 1} must have an items array.`);
+                    return false;
+                }
+                if (!Array.isArray(question.correct) || question.correct.length !== question.items.length) {
+                    this.showError(`Question ${i + 1} correct array must match items length.`);
                     return false;
                 }
             }
@@ -966,6 +995,15 @@ class TestSimulator {
             case 'matching':
                 this.displayMatchingQuestion(question, questionNum);
                 break;
+            case 'true-false':
+                this.displayTrueFalseQuestion(question, questionNum);
+                break;
+            case 'fill-blank':
+                this.displayFillBlankQuestion(question, questionNum);
+                break;
+            case 'ordering':
+                this.displayOrderingQuestion(question, questionNum);
+                break;
         }
 
         // Focus management
@@ -1123,6 +1161,192 @@ class TestSimulator {
                 this.userAnswers[question.id][leftIndex] = rightIndex;
                 this.updateQuestionOverview();
                 this.saveProgress();
+            });
+        });
+    }
+
+    /**
+     * Display True/False question
+     * @param {Object} question - Question data
+     * @param {number} questionNum - Question number
+     */
+    displayTrueFalseQuestion(question, questionNum) {
+        const savedAnswer = this.userAnswers[question.id];
+        const isTrue = savedAnswer === true || savedAnswer === 1 || savedAnswer === 'true';
+        const isFalse = savedAnswer === false || savedAnswer === 0 || savedAnswer === 'false';
+
+        this.questionContainer.innerHTML = `
+            <div class="question-header">
+                <div class="question-number">Question ${questionNum}</div>
+                <h3 class="question-text" id="question-${questionNum}-text">${this.escapeHtml(question.question)}</h3>
+            </div>
+            <div class="question-options true-false-options" role="radiogroup" aria-labelledby="question-${questionNum}-text">
+                <div class="option-item true-false-option">
+                    <input
+                        type="radio"
+                        id="option-true"
+                        name="true-false-answer"
+                        value="true"
+                        ${isTrue ? 'checked' : ''}
+                        aria-label="True"
+                    >
+                    <label for="option-true" class="option-label true-false-label">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 24px; height: 24px; margin-right: 8px;">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        True
+                    </label>
+                </div>
+                <div class="option-item true-false-option">
+                    <input
+                        type="radio"
+                        id="option-false"
+                        name="true-false-answer"
+                        value="false"
+                        ${isFalse ? 'checked' : ''}
+                        aria-label="False"
+                    >
+                    <label for="option-false" class="option-label true-false-label">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 24px; height: 24px; margin-right: 8px;">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                        False
+                    </label>
+                </div>
+            </div>
+        `;
+
+        // Bind change event
+        const radioInputs = this.questionContainer.querySelectorAll('input[type="radio"]');
+        radioInputs.forEach(input => {
+            input.addEventListener('change', () => {
+                this.userAnswers[question.id] = input.value === 'true';
+                this.updateQuestionOverview();
+                this.saveProgress();
+            });
+        });
+    }
+
+    /**
+     * Display Fill-in-the-Blank question
+     * @param {Object} question - Question data
+     * @param {number} questionNum - Question number
+     */
+    displayFillBlankQuestion(question, questionNum) {
+        const savedAnswer = this.userAnswers[question.id] || '';
+
+        this.questionContainer.innerHTML = `
+            <div class="question-header">
+                <div class="question-number">Question ${questionNum}</div>
+                <h3 class="question-text" id="question-${questionNum}-text">${this.escapeHtml(question.question)}</h3>
+            </div>
+            <div class="fill-blank-container">
+                <input
+                    type="text"
+                    id="fill-blank-input"
+                    class="form-control fill-blank-input"
+                    placeholder="Type your answer here..."
+                    value="${this.escapeHtml(savedAnswer)}"
+                    aria-labelledby="question-${questionNum}-text"
+                >
+                ${question.caseSensitive === false ? '<p class="hint-text">Note: Answer is not case-sensitive</p>' : ''}
+            </div>
+        `;
+
+        // Bind input event
+        const input = this.questionContainer.querySelector('#fill-blank-input');
+        input.addEventListener('input', () => {
+            this.userAnswers[question.id] = input.value.trim();
+            this.updateQuestionOverview();
+            this.saveProgress();
+        });
+    }
+
+    /**
+     * Display Ordering/Sequencing question
+     * @param {Object} question - Question data
+     * @param {number} questionNum - Question number
+     */
+    displayOrderingQuestion(question, questionNum) {
+        let savedOrder = this.userAnswers[question.id];
+
+        // If no saved order, shuffle the items for initial display
+        if (!savedOrder || savedOrder.length !== question.items.length) {
+            savedOrder = question.items.map((_, index) => index);
+            // Shuffle
+            for (let i = savedOrder.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [savedOrder[i], savedOrder[j]] = [savedOrder[j], savedOrder[i]];
+            }
+            this.userAnswers[question.id] = savedOrder;
+        }
+
+        this.questionContainer.innerHTML = `
+            <div class="question-header">
+                <div class="question-number">Question ${questionNum}</div>
+                <h3 class="question-text" id="question-${questionNum}-text">${this.escapeHtml(question.question)}</h3>
+                <p class="hint-text">Drag items to reorder them, or use the arrows to move items up and down.</p>
+            </div>
+            <div class="ordering-container" id="ordering-container">
+                ${savedOrder.map((itemIndex, position) => `
+                    <div class="ordering-item" data-position="${position}" data-item-index="${itemIndex}">
+                        <div class="ordering-handle" aria-label="Drag to reorder">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="5" y1="9" x2="19" y2="9"></line>
+                                <line x1="5" y1="15" x2="19" y2="15"></line>
+                            </svg>
+                        </div>
+                        <div class="ordering-number">${position + 1}</div>
+                        <div class="ordering-text">${this.escapeHtml(question.items[itemIndex])}</div>
+                        <div class="ordering-controls">
+                            <button class="btn-icon ordering-up" data-position="${position}" aria-label="Move up" ${position === 0 ? 'disabled' : ''}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="18 15 12 9 6 15"></polyline>
+                                </svg>
+                            </button>
+                            <button class="btn-icon ordering-down" data-position="${position}" aria-label="Move down" ${position === savedOrder.length - 1 ? 'disabled' : ''}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+
+        // Bind arrow button events
+        const upButtons = this.questionContainer.querySelectorAll('.ordering-up');
+        const downButtons = this.questionContainer.querySelectorAll('.ordering-down');
+
+        upButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const position = parseInt(btn.dataset.position);
+                if (position > 0) {
+                    const currentOrder = this.userAnswers[question.id];
+                    [currentOrder[position], currentOrder[position - 1]] =
+                    [currentOrder[position - 1], currentOrder[position]];
+                    this.userAnswers[question.id] = currentOrder;
+                    this.displayQuestion();
+                    this.updateQuestionOverview();
+                    this.saveProgress();
+                }
+            });
+        });
+
+        downButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const position = parseInt(btn.dataset.position);
+                const currentOrder = this.userAnswers[question.id];
+                if (position < currentOrder.length - 1) {
+                    [currentOrder[position], currentOrder[position + 1]] =
+                    [currentOrder[position + 1], currentOrder[position]];
+                    this.userAnswers[question.id] = currentOrder;
+                    this.displayQuestion();
+                    this.updateQuestionOverview();
+                    this.saveProgress();
+                }
             });
         });
     }
@@ -1317,6 +1541,30 @@ class TestSimulator {
                            userAnswer.every((answer, index) => answer === correctAnswer[index]);
                 }
                 return false;
+            case 'true-false':
+                // Handle both boolean and 0/1 formats
+                const userBool = userAnswer === true || userAnswer === 1 || userAnswer === 'true';
+                const correctBool = correctAnswer === true || correctAnswer === 1;
+                return userBool === correctBool;
+            case 'fill-blank':
+                if (!userAnswer) return false;
+                // Get accepted answers array
+                const acceptedAnswers = question.acceptedAnswers || [correctAnswer];
+                const caseSensitive = question.caseSensitive !== false; // Default to case-sensitive
+
+                return acceptedAnswers.some(accepted => {
+                    if (caseSensitive) {
+                        return userAnswer.trim() === accepted.trim();
+                    } else {
+                        return userAnswer.trim().toLowerCase() === accepted.trim().toLowerCase();
+                    }
+                });
+            case 'ordering':
+                if (Array.isArray(userAnswer) && Array.isArray(correctAnswer)) {
+                    return userAnswer.length === correctAnswer.length &&
+                           userAnswer.every((answer, index) => answer === correctAnswer[index]);
+                }
+                return false;
         }
     }
 
@@ -1381,6 +1629,51 @@ class TestSimulator {
                         </div>
                     </div>
                 `;
+            case 'true-false':
+                const userTFAnswer = userAnswer === true || userAnswer === 1 || userAnswer === 'true' ? 'True' :
+                                     userAnswer === false || userAnswer === 0 || userAnswer === 'false' ? 'False' : 'No answer';
+                const correctTFAnswer = correctAnswer === true || correctAnswer === 1 ? 'True' : 'False';
+
+                return `
+                    <div class="answer-section">
+                        <span class="answer-label">Your answer:</span>
+                        <div class="answer-text user-answer">${userTFAnswer}</div>
+                        <span class="answer-label">Correct answer:</span>
+                        <div class="answer-text correct-answer">${correctTFAnswer}</div>
+                    </div>
+                `;
+            case 'fill-blank':
+                const acceptedAnswers = question.acceptedAnswers || [correctAnswer];
+
+                return `
+                    <div class="answer-section">
+                        <span class="answer-label">Your answer:</span>
+                        <div class="answer-text user-answer">
+                            ${userAnswer ? this.escapeHtml(userAnswer) : 'No answer'}
+                        </div>
+                        <span class="answer-label">Accepted answer${acceptedAnswers.length > 1 ? 's' : ''}:</span>
+                        <div class="answer-text correct-answer">
+                            ${acceptedAnswers.map(ans => this.escapeHtml(ans)).join(', ')}
+                        </div>
+                        ${question.caseSensitive === false ? '<p class="hint-text" style="margin-top: 8px;">Note: Answer was not case-sensitive</p>' : ''}
+                    </div>
+                `;
+            case 'ordering':
+                const userOrder = Array.isArray(userAnswer) ?
+                    userAnswer.map((itemIdx, pos) => `${pos + 1}. ${this.escapeHtml(question.items[itemIdx])}`).join('<br>') :
+                    'No answer';
+                const correctOrder = correctAnswer.map((itemIdx, pos) =>
+                    `${pos + 1}. ${this.escapeHtml(question.items[itemIdx])}`
+                ).join('<br>');
+
+                return `
+                    <div class="answer-section">
+                        <span class="answer-label">Your order:</span>
+                        <div class="answer-text user-answer">${userOrder}</div>
+                        <span class="answer-label">Correct order:</span>
+                        <div class="answer-text correct-answer">${correctOrder}</div>
+                    </div>
+                `;
         }
     }
 
@@ -1419,6 +1712,18 @@ class TestSimulator {
                 correctAnswerText = question.leftItems.map((item, i) =>
                     `${item}→${question.rightItems[correctAnswer[i]]}`
                 ).join('; ');
+            } else if (question.type === 'true-false') {
+                userAnswerText = userAnswer === true || userAnswer === 1 || userAnswer === 'true' ? 'True' :
+                                 userAnswer === false || userAnswer === 0 || userAnswer === 'false' ? 'False' : 'No answer';
+                correctAnswerText = correctAnswer === true || correctAnswer === 1 ? 'True' : 'False';
+            } else if (question.type === 'fill-blank') {
+                userAnswerText = userAnswer || 'No answer';
+                const acceptedAnswers = question.acceptedAnswers || [correctAnswer];
+                correctAnswerText = acceptedAnswers.join(' / ');
+            } else if (question.type === 'ordering') {
+                userAnswerText = Array.isArray(userAnswer) ?
+                    userAnswer.map((idx, pos) => `${pos + 1}. ${question.items[idx]}`).join('; ') : 'No answer';
+                correctAnswerText = correctAnswer.map((idx, pos) => `${pos + 1}. ${question.items[idx]}`).join('; ');
             }
 
             // Escape quotes in CSV
