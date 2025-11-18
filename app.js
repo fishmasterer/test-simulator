@@ -1978,9 +1978,30 @@ class TestSimulator {
      * @returns {string} HTML string
      */
     getAnswerReview(question, userAnswer, correctAnswer) {
+        // Helper function to add explanation if available
+        const addExplanation = (html) => {
+            if (question.explanation || question._explanation) {
+                const explanation = question.explanation || question._explanation;
+                return html + `
+                    <div class="explanation-section">
+                        <div class="explanation-header">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
+                            <span class="explanation-label">Explanation</span>
+                        </div>
+                        <div class="explanation-text">${this.escapeHtml(explanation)}</div>
+                    </div>
+                `;
+            }
+            return html;
+        };
+
         switch (question.type) {
             case 'mcq':
-                return `
+                return addExplanation(`
                     <div class="answer-section">
                         <span class="answer-label">Your answer:</span>
                         <div class="answer-text user-answer">
@@ -1991,20 +2012,20 @@ class TestSimulator {
                             ${this.escapeHtml(question.options[correctAnswer])}
                         </div>
                     </div>
-                `;
+                `);
             case 'multi-select':
                 const userAnswerText = Array.isArray(userAnswer) && userAnswer.length > 0 ?
                     userAnswer.map(index => this.escapeHtml(question.options[index])).join(', ') : 'No answers selected';
                 const correctAnswerText = correctAnswer.map(index => this.escapeHtml(question.options[index])).join(', ');
 
-                return `
+                return addExplanation(`
                     <div class="answer-section">
                         <span class="answer-label">Your answers:</span>
                         <div class="answer-text user-answer">${userAnswerText}</div>
                         <span class="answer-label">Correct answers:</span>
                         <div class="answer-text correct-answer">${correctAnswerText}</div>
                     </div>
-                `;
+                `);
             case 'matching':
                 const userMatches = question.leftItems.map((leftItem, index) => {
                     const userRightIndex = Array.isArray(userAnswer) ? userAnswer[index] : null;
@@ -2019,7 +2040,7 @@ class TestSimulator {
                     return `${this.escapeHtml(leftItem)} → ${this.escapeHtml(rightItem)}`;
                 });
 
-                return `
+                return addExplanation(`
                     <div class="answer-section">
                         <span class="answer-label">Your matches:</span>
                         <div class="answer-text user-answer">
@@ -2030,24 +2051,24 @@ class TestSimulator {
                             ${correctMatches.map(match => `<div class="matching-review-item">${match}</div>`).join('')}
                         </div>
                     </div>
-                `;
+                `);
             case 'true-false':
                 const userTFAnswer = userAnswer === true || userAnswer === 1 || userAnswer === 'true' ? 'True' :
                                      userAnswer === false || userAnswer === 0 || userAnswer === 'false' ? 'False' : 'No answer';
                 const correctTFAnswer = correctAnswer === true || correctAnswer === 1 ? 'True' : 'False';
 
-                return `
+                return addExplanation(`
                     <div class="answer-section">
                         <span class="answer-label">Your answer:</span>
                         <div class="answer-text user-answer">${userTFAnswer}</div>
                         <span class="answer-label">Correct answer:</span>
                         <div class="answer-text correct-answer">${correctTFAnswer}</div>
                     </div>
-                `;
+                `);
             case 'fill-blank':
                 const acceptedAnswers = question.acceptedAnswers || [correctAnswer];
 
-                return `
+                return addExplanation(`
                     <div class="answer-section">
                         <span class="answer-label">Your answer:</span>
                         <div class="answer-text user-answer">
@@ -2059,7 +2080,7 @@ class TestSimulator {
                         </div>
                         ${question.caseSensitive === false ? '<p class="hint-text" style="margin-top: 8px;">Note: Answer was not case-sensitive</p>' : ''}
                     </div>
-                `;
+                `);
             case 'ordering':
                 const userOrder = Array.isArray(userAnswer) ?
                     userAnswer.map((itemIdx, pos) => `${pos + 1}. ${this.escapeHtml(question.items[itemIdx])}`).join('<br>') :
@@ -2068,14 +2089,14 @@ class TestSimulator {
                     `${pos + 1}. ${this.escapeHtml(question.items[itemIdx])}`
                 ).join('<br>');
 
-                return `
+                return addExplanation(`
                     <div class="answer-section">
                         <span class="answer-label">Your order:</span>
                         <div class="answer-text user-answer">${userOrder}</div>
                         <span class="answer-label">Correct order:</span>
                         <div class="answer-text correct-answer">${correctOrder}</div>
                     </div>
-                `;
+                `);
         }
     }
 
