@@ -16,6 +16,8 @@ class TestSimulator {
         this.timerInterval = null;
         this.timeRemaining = null;
         this.testDuration = null; // in seconds
+        this.testMode = 'exam'; // 'exam' or 'practice'
+        this.isReviewSession = false; // true when reviewing wrong answers
         this.storageKey = 'testSimulatorProgress';
         this.themeKey = 'testSimulatorTheme';
         this.testBankKey = 'testSimulatorBank';
@@ -78,6 +80,7 @@ class TestSimulator {
         this.scoreSummary = document.getElementById('score-summary');
         this.resultsReview = document.getElementById('results-review');
         this.restartBtn = document.getElementById('restart-btn');
+        this.reviewWrongBtn = document.getElementById('review-wrong-btn');
         this.exportPdfBtn = document.getElementById('export-pdf-btn');
         this.exportCsvBtn = document.getElementById('export-csv-btn');
         this.saveTestBtn = document.getElementById('save-test-btn');
@@ -184,6 +187,7 @@ class TestSimulator {
         this.nextBtn.addEventListener('click', () => this.nextQuestion());
         this.submitBtn.addEventListener('click', () => this.showConfirmModal());
         this.restartBtn.addEventListener('click', () => this.restart());
+        this.reviewWrongBtn?.addEventListener('click', () => this.reviewWrongAnswers());
         this.showPromptBtn.addEventListener('click', () => this.showPromptModal());
         this.closeModalBtn.addEventListener('click', () => this.hidePromptModal());
         this.confirmSubmitBtn.addEventListener('click', () => this.confirmSubmit());
@@ -754,6 +758,14 @@ class TestSimulator {
                 this.timeRemaining = this.testDuration;
             }
 
+            // Capture selected test mode
+            const modeExam = document.getElementById('mode-exam');
+            const modePractice = document.getElementById('mode-practice');
+            this.testMode = modePractice?.checked ? 'practice' : 'exam';
+            this.isReviewSession = false; // Reset review flag for new tests
+
+            console.log(`🎯 Test mode: ${this.testMode}`);
+
             this.hideError();
             this.startTest();
 
@@ -872,6 +884,31 @@ class TestSimulator {
         this.resultsSection.classList.add('hidden');
 
         this.testTitle.textContent = this.currentTest.title;
+
+        // Show mode badge
+        const modeIndicator = document.getElementById('mode-indicator');
+        if (modeIndicator) {
+            modeIndicator.classList.remove('hidden');
+            modeIndicator.classList.remove('mode-badge--exam', 'mode-badge--practice');
+            if (this.testMode === 'practice') {
+                modeIndicator.classList.add('mode-badge--practice');
+                modeIndicator.textContent = 'Practice Mode';
+            } else {
+                modeIndicator.classList.add('mode-badge--exam');
+                modeIndicator.textContent = 'Exam Mode';
+            }
+        }
+
+        // Show/hide review badge
+        const reviewIndicator = document.getElementById('review-indicator');
+        if (reviewIndicator) {
+            if (this.isReviewSession) {
+                reviewIndicator.classList.remove('hidden');
+            } else {
+                reviewIndicator.classList.add('hidden');
+            }
+        }
+
         this.displayQuestion();
         this.updateQuestionOverview();
 
@@ -1011,6 +1048,9 @@ class TestSimulator {
         this.nextBtn.classList.toggle('hidden', this.currentQuestionIndex === totalQuestions - 1);
         this.submitBtn.classList.toggle('hidden', this.currentQuestionIndex !== totalQuestions - 1);
 
+        // Hide practice feedback when changing questions
+        this.hidePracticeFeedback();
+
         // Display question based on type
         switch (question.type) {
             case 'mcq':
@@ -1074,9 +1114,17 @@ class TestSimulator {
         const radioInputs = this.questionContainer.querySelectorAll('input[type="radio"]');
         radioInputs.forEach(input => {
             input.addEventListener('change', () => {
-                this.userAnswers[question.id] = parseInt(input.value);
+                const selectedIndex = parseInt(input.value);
+                this.userAnswers[question.id] = selectedIndex;
                 this.updateQuestionOverview();
                 this.saveProgress();
+
+                // Show practice feedback
+                if (this.testMode === 'practice') {
+                    const isCorrect = selectedIndex === question.correct;
+                    const correctAnswerText = question.options[question.correct];
+                    this.showPracticeFeedback(isCorrect, correctAnswerText);
+                }
             });
         });
     }
@@ -1133,6 +1181,15 @@ class TestSimulator {
                 this.userAnswers[question.id] = currentAnswers.sort((a, b) => a - b);
                 this.updateQuestionOverview();
                 this.saveProgress();
+
+                // Show practice feedback
+                if (this.testMode === 'practice' && currentAnswers.length > 0) {
+                    const correctAnswers = Array.isArray(question.correct) ? question.correct : [question.correct];
+                    const isCorrect = currentAnswers.length === correctAnswers.length &&
+                                     currentAnswers.every(ans => correctAnswers.includes(ans));
+                    const correctAnswerText = correctAnswers.map(idx => question.options[idx]).join(', ');
+                    this.showPracticeFeedback(isCorrect, correctAnswerText);
+                }
             });
         });
     }
@@ -1188,6 +1245,22 @@ class TestSimulator {
                 this.userAnswers[question.id][leftIndex] = rightIndex;
                 this.updateQuestionOverview();
                 this.saveProgress();
+
+                // Show practice feedback when all matches are complete
+                if (this.testMode === 'practice') {
+                    const userMatches = this.userAnswers[question.id];
+                    const allAnswered = userMatches && userMatches.length === question.leftItems.length &&
+                                       userMatches.every(val => val !== null && val !== undefined);
+
+                    if (allAnswered) {
+                        const correctMatches = question.correct;
+                        const isCorrect = userMatches.every((val, idx) => val === correctMatches[idx]);
+                        const correctAnswerText = question.leftItems.map((item, idx) =>
+                            `${item} → ${question.rightItems[correctMatches[idx]]}`
+                        ).join('; ');
+                        this.showPracticeFeedback(isCorrect, correctAnswerText);
+                    }
+                }
             });
         });
     }
@@ -1248,9 +1321,18 @@ class TestSimulator {
         const radioInputs = this.questionContainer.querySelectorAll('input[type="radio"]');
         radioInputs.forEach(input => {
             input.addEventListener('change', () => {
-                this.userAnswers[question.id] = input.value === 'true';
+                const selectedAnswer = input.value === 'true';
+                this.userAnswers[question.id] = selectedAnswer;
                 this.updateQuestionOverview();
                 this.saveProgress();
+
+                // Show practice feedback
+                if (this.testMode === 'practice') {
+                    const correctAnswer = question.correct === true || question.correct === 1;
+                    const isCorrect = selectedAnswer === correctAnswer;
+                    const correctAnswerText = correctAnswer ? 'True' : 'False';
+                    this.showPracticeFeedback(isCorrect, correctAnswerText);
+                }
             });
         });
     }
@@ -1287,6 +1369,26 @@ class TestSimulator {
             this.userAnswers[question.id] = input.value.trim();
             this.updateQuestionOverview();
             this.saveProgress();
+        });
+
+        // Show practice feedback on blur
+        input.addEventListener('blur', () => {
+            if (this.testMode === 'practice' && input.value.trim()) {
+                const userAnswer = input.value.trim();
+                const acceptedAnswers = question.acceptedAnswers || [question.correct];
+                const caseSensitive = question.caseSensitive !== false;
+
+                const isCorrect = acceptedAnswers.some(accepted => {
+                    if (caseSensitive) {
+                        return userAnswer === accepted.trim();
+                    } else {
+                        return userAnswer.toLowerCase() === accepted.trim().toLowerCase();
+                    }
+                });
+
+                const correctAnswerText = acceptedAnswers.join(' or ');
+                this.showPracticeFeedback(isCorrect, correctAnswerText);
+            }
         });
     }
 
@@ -1358,6 +1460,11 @@ class TestSimulator {
                     this.displayQuestion();
                     this.updateQuestionOverview();
                     this.saveProgress();
+
+                    // Show practice feedback
+                    if (this.testMode === 'practice') {
+                        this.checkOrderingFeedback(question, currentOrder);
+                    }
                 }
             });
         });
@@ -1373,9 +1480,25 @@ class TestSimulator {
                     this.displayQuestion();
                     this.updateQuestionOverview();
                     this.saveProgress();
+
+                    // Show practice feedback
+                    if (this.testMode === 'practice') {
+                        this.checkOrderingFeedback(question, currentOrder);
+                    }
                 }
             });
         });
+    }
+
+    /**
+     * Check ordering feedback for practice mode
+     */
+    checkOrderingFeedback(question, currentOrder) {
+        const correctOrder = question.correct;
+        const isCorrect = currentOrder.length === correctOrder.length &&
+                         currentOrder.every((val, idx) => val === correctOrder[idx]);
+        const correctAnswerText = correctOrder.map(idx => question.items[idx]).join(', ');
+        this.showPracticeFeedback(isCorrect, correctAnswerText);
     }
 
     /**
@@ -1567,11 +1690,76 @@ class TestSimulator {
 
         this.resultsReview.innerHTML = reviewHTML;
 
+        // Show/hide review wrong answers button
+        const wrongCount = this.score.total - this.score.correct;
+        if (this.reviewWrongBtn) {
+            if (wrongCount > 0) {
+                this.reviewWrongBtn.classList.remove('hidden');
+                this.reviewWrongBtn.textContent = `Review ${wrongCount} Wrong Answer${wrongCount !== 1 ? 's' : ''}`;
+                // Re-add the icon
+                const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                icon.setAttribute('viewBox', '0 0 24 24');
+                icon.setAttribute('fill', 'none');
+                icon.setAttribute('stroke', 'currentColor');
+                icon.setAttribute('stroke-width', '2');
+                icon.style.cssText = 'width: 20px; height: 20px; margin-right: 8px;';
+                icon.innerHTML = '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line>';
+                this.reviewWrongBtn.insertBefore(icon, this.reviewWrongBtn.firstChild);
+            } else {
+                this.reviewWrongBtn.classList.add('hidden');
+            }
+        }
+
         // Focus on score
         setTimeout(() => {
             const scoreNumber = this.scoreSummary.querySelector('.score-number');
             if (scoreNumber) scoreNumber.focus();
         }, 100);
+    }
+
+    /**
+     * Review wrong answers - restart test with only incorrect questions in practice mode
+     */
+    reviewWrongAnswers() {
+        // Filter questions to only those answered incorrectly
+        const wrongQuestions = this.currentTest.questions.filter(question => {
+            const userAnswer = this.userAnswers[question.id];
+            const correctAnswer = question.correct;
+            return !this.isAnswerCorrect(question, userAnswer, correctAnswer);
+        });
+
+        if (wrongQuestions.length === 0) {
+            alert('No wrong answers to review!');
+            return;
+        }
+
+        console.log(`📝 Starting review of ${wrongQuestions.length} wrong answer${wrongQuestions.length !== 1 ? 's' : ''}`);
+
+        // Create new test with only wrong questions
+        const reviewTest = {
+            ...this.currentTest,
+            title: `Review: ${this.currentTest.title}`,
+            questions: wrongQuestions
+        };
+
+        // Clear state and load review test
+        this.currentTest = reviewTest;
+        this.currentQuestionIndex = 0;
+        this.userAnswers = {};
+        this.testStartTime = Date.now();
+        this.testMode = 'practice'; // Always use practice mode for review
+        this.isReviewSession = true; // Mark as review session
+
+        // Clear timer for review
+        this.testDuration = null;
+        this.timeRemaining = null;
+        if (this.timerInterval) {
+            clearInterval(this.timerInterval);
+            this.timerInterval = null;
+        }
+
+        // Start the review session
+        this.startTest();
     }
 
     /**
@@ -1882,6 +2070,59 @@ class TestSimulator {
     hideError() {
         this.errorMessage.classList.add('hidden');
         this.errorMessage.removeAttribute('role');
+    }
+
+    /**
+     * Show practice mode feedback
+     * @param {boolean} isCorrect - Whether the answer is correct
+     * @param {string} correctAnswerText - Text of the correct answer
+     */
+    showPracticeFeedback(isCorrect, correctAnswerText) {
+        if (this.testMode !== 'practice') return;
+
+        const feedback = document.getElementById('practice-feedback');
+        if (!feedback) return;
+
+        const icon = feedback.querySelector('.feedback-icon');
+        const title = feedback.querySelector('.feedback-title');
+        const message = feedback.querySelector('.feedback-message');
+
+        // Reset classes
+        feedback.classList.remove('hidden', 'feedback--correct', 'feedback--incorrect');
+
+        if (isCorrect) {
+            feedback.classList.add('feedback--correct');
+            icon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>`;
+            title.textContent = 'Correct!';
+            message.textContent = 'Great job! You got it right.';
+        } else {
+            feedback.classList.add('feedback--incorrect');
+            icon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>`;
+            title.textContent = 'Not quite right';
+            message.innerHTML = `The correct answer is: <strong>${this.escapeHtml(correctAnswerText)}</strong>`;
+        }
+
+        feedback.classList.remove('hidden');
+
+        // Scroll feedback into view smoothly
+        setTimeout(() => {
+            feedback.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 100);
+    }
+
+    /**
+     * Hide practice mode feedback
+     */
+    hidePracticeFeedback() {
+        const feedback = document.getElementById('practice-feedback');
+        if (feedback) {
+            feedback.classList.add('hidden');
+        }
     }
 
     /**
