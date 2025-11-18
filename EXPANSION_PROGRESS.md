@@ -389,16 +389,102 @@
 
 ---
 
+#### Checkpoint 7: Practice vs Exam Mode (COMPLETE) 📚
+**Started:** 2025-11-18 | **Completed:** 2025-11-18
+**Commits:** `6317442`, `80e4ca7`, `e45dd98`
+
+**NEW FEATURE: Two distinct study modes with instant feedback in Practice Mode!**
+
+**Part 1: Mode Selector UI** (Commit `6317442`)
+- [x] Beautiful card-based mode selector on JSON input screen
+- [x] Two modes: Exam Mode & Practice Mode
+- [x] Radio selection with visual card UI
+- [x] SVG icons (document for Exam, book for Practice)
+- [x] Descriptive text explaining each mode
+- [x] Hover effects and selected state styling
+- [x] Mobile responsive (stacks vertically)
+
+**Part 2: Feedback Alert Components** (Commit `80e4ca7`)
+- [x] Practice feedback alert container
+- [x] Correct/incorrect visual states (green/red)
+- [x] Circular icon badges with checkmark/X SVG
+- [x] Slide-in animation from top
+- [x] Dark theme color overrides
+
+**Part 3: Instant Feedback Logic** (Commit `e45dd98`)
+- [x] `showPracticeFeedback()` method with icons and messages
+- [x] `hidePracticeFeedback()` method
+- [x] Feedback for MCQ (instant on selection)
+- [x] Feedback for Multi-Select (after selections made)
+- [x] Feedback for Matching (when all pairs complete)
+- [x] Feedback for True/False (instant)
+- [x] Feedback for Fill-in-the-Blank (on blur)
+- [x] Feedback for Ordering (after each reorder)
+
+**Exam Mode Features:**
+- Traditional timed test experience
+- Final scoring at end
+- No hints or feedback during test
+- Current behavior maintained
+
+**Practice Mode Features:**
+- Instant feedback on answer selection
+- Shows correct answer when wrong
+- Green checkmark for correct answers
+- Red X for incorrect answers
+- Learns as you go experience
+- No time pressure
+
+**Mode Badge:**
+- Shows in progress indicator during test
+- Color-coded (teal for Exam, green for Practice)
+- Uppercase badge style
+- Always visible during test
+
+**Implementation Breakdown:**
+- **HTML**: +50 lines
+  - Mode selector cards
+  - Practice feedback alert
+  - Mode badge indicator
+
+- **CSS**: ~200 lines
+  - Mode card styling (90 lines)
+  - Feedback alert styling (85 lines)
+  - Mode badge styling (25 lines)
+  - Animations and hover effects
+
+- **JavaScript**: ~156 lines
+  - Mode capture on load (10 lines)
+  - Mode badge display (15 lines)
+  - Feedback methods (52 lines)
+  - Feedback integration for all 6 types (79 lines)
+
+**Files Modified:**
+- index.html: +50 lines
+- style.css: +200 lines
+- app.js: +156 lines
+
+**User Experience:**
+- Select mode before loading test
+- Mode badge shows current mode during test
+- In Practice Mode, get instant feedback
+- Correct answers shown when wrong
+- Smooth animations and visual feedback
+- Auto-scrolls feedback into view
+
+**Total Lines:** ~406 lines added for complete feature
+
+---
+
 ### 🔄 In Progress
 
 #### Phase 3: Additional Enhancements
 **Next Steps:**
 - Essay/Short Answer question type
-- Practice vs Exam mode selection
-- Advanced study modes
-- Performance insights
+- Advanced study modes (flashcards, review wrong answers)
+- Performance insights & recommendations
 
-**Commit & Push:** TBD
+**Commit & Push:** Network issues - will retry
 
 ---
 
