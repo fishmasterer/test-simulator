@@ -8004,3 +8004,291 @@ select.form-control {
   line-height: 1.6;
   white-space: pre-line;
 }
+
+/* ========================================
+   SPACED REPETITION SYSTEM (SRS)
+   ======================================== */
+
+/* SRS Container */
+.srs-container {
+  padding: var(--space-24);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.srs-section {
+  margin-bottom: var(--space-32);
+}
+
+.srs-heading {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  margin-bottom: var(--space-20);
+}
+
+.srs-description {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-16);
+}
+
+/* SRS Stats Grid */
+.srs-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-16);
+  margin-bottom: var(--space-32);
+}
+
+.srs-stat-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+  padding: var(--space-20);
+  background: white;
+  border-radius: var(--radius-md);
+  border: 1.5px solid rgba(0, 0, 0, 0.1);
+  transition: all var(--duration-fast) var(--ease-standard);
+}
+
+.srs-stat-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.srs-stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.srs-stat-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.srs-stat-icon--primary {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  color: #1e40af;
+}
+
+.srs-stat-icon--primary svg {
+  stroke: #1e40af;
+}
+
+.srs-stat-icon--success {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  color: #065f46;
+}
+
+.srs-stat-icon--success svg {
+  stroke: #065f46;
+}
+
+.srs-stat-icon--warning {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  color: #92400e;
+}
+
+.srs-stat-icon--warning svg {
+  stroke: #92400e;
+}
+
+.srs-stat-icon--fire {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  color: #991b1b;
+}
+
+.srs-stat-icon--fire svg {
+  stroke: #991b1b;
+}
+
+.srs-stat-content {
+  flex: 1;
+}
+
+.srs-stat-label {
+  display: block;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: var(--font-weight-medium);
+  margin-bottom: var(--space-4);
+}
+
+.srs-stat-value {
+  display: block;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+}
+
+/* Due Cards List */
+.due-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+
+.due-card {
+  background: white;
+  border: 1.5px solid rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-md);
+  padding: var(--space-16);
+  transition: all var(--duration-fast) var(--ease-standard);
+  cursor: pointer;
+}
+
+.due-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateX(4px);
+}
+
+.due-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-12);
+}
+
+.due-card-state {
+  padding: var(--space-4) var(--space-12);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.due-card-retention {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+}
+
+.due-card-question {
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+  margin-bottom: var(--space-12);
+  line-height: 1.5;
+}
+
+.due-card-meta {
+  display: flex;
+  gap: var(--space-16);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+/* Upcoming Reviews */
+.upcoming-reviews {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+
+.upcoming-day {
+  background: white;
+  border: 1.5px solid rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-md);
+  padding: var(--space-16);
+  transition: all var(--duration-fast) var(--ease-standard);
+}
+
+.upcoming-day--today {
+  border-color: var(--color-primary);
+  background: linear-gradient(135deg, rgba(33, 128, 141, 0.05) 0%, white 100%);
+}
+
+.upcoming-day:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.upcoming-day-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-8);
+}
+
+.upcoming-day-date {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text);
+}
+
+.upcoming-day-count {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.upcoming-day-bar {
+  height: 6px;
+  background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  border-radius: 3px;
+  transition: width var(--duration-standard) var(--ease-smooth);
+}
+
+/* Retention Prediction Chart */
+.retention-prediction-chart {
+  background: white;
+  border: 1.5px solid rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-md);
+  padding: var(--space-20);
+}
+
+.retention-info {
+  margin-bottom: var(--space-20);
+  padding: var(--space-16);
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border-radius: var(--radius-sm);
+  border-left: 4px solid #3b82f6;
+}
+
+.retention-info p {
+  margin-bottom: var(--space-8);
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+}
+
+.retention-info p:last-child {
+  margin-bottom: 0;
+}
+
+.retention-chart {
+  width: 100%;
+  height: 200px;
+}
+
+/* Empty States */
+.empty-state {
+  text-align: center;
+  padding: var(--space-32);
+  color: var(--color-text-secondary);
+}
+
+.empty-state svg {
+  width: 64px;
+  height: 64px;
+  margin-bottom: var(--space-16);
+  stroke: var(--color-text-secondary);
+  opacity: 0.5;
+}
+
+.empty-state p {
+  font-size: var(--font-size-base);
+  margin-bottom: var(--space-8);
+}
+
+.empty-state .hint-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}

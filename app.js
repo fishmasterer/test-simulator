@@ -176,6 +176,14 @@ class TestSimulator {
         this.courseTopicBreakdown = document.getElementById('course-topic-breakdown');
         this.currentTrendsPeriod = 7; // Default to 7 days
 
+        // Study Queue (SRS) elements
+        this.studyQueueSection = document.getElementById('study-queue-section');
+        this.openStudyQueueBtn = document.getElementById('open-study-queue-btn');
+        this.closeStudyQueueBtn = document.getElementById('close-study-queue-btn');
+        this.dueCardsList = document.getElementById('due-cards-list');
+        this.upcomingReviews = document.getElementById('upcoming-reviews');
+        this.retentionPredictionChart = document.getElementById('retention-prediction-chart');
+
         // Initialize gamification system
         this.gamification = new GamificationSystem();
 
@@ -236,6 +244,10 @@ class TestSimulator {
         // Analytics Dashboard events
         this.openAnalyticsBtn?.addEventListener('click', () => this.openAnalyticsDashboard());
         this.closeAnalyticsBtn?.addEventListener('click', () => this.closeAnalyticsDashboard());
+
+        // Study Queue events
+        this.openStudyQueueBtn?.addEventListener('click', () => this.openStudyQueue());
+        this.closeStudyQueueBtn?.addEventListener('click', () => this.closeStudyQueue());
 
         // Achievement filter buttons
         document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -3134,6 +3146,227 @@ class TestSimulator {
 
         this.analyticsSection.classList.add('hidden');
         this.jsonInputSection.classList.remove('hidden');
+    }
+
+    /**
+     * Open study queue (spaced repetition)
+     */
+    openStudyQueue() {
+        if (!this.studyQueueSection) return;
+
+        this.jsonInputSection.classList.add('hidden');
+        this.studyQueueSection.classList.remove('hidden');
+
+        // Populate study queue with current data
+        this.populateStudyQueue();
+    }
+
+    /**
+     * Close study queue and return to main screen
+     */
+    closeStudyQueue() {
+        if (!this.studyQueueSection) return;
+
+        this.studyQueueSection.classList.add('hidden');
+        this.jsonInputSection.classList.remove('hidden');
+    }
+
+    /**
+     * Populate study queue with SRS data
+     */
+    populateStudyQueue() {
+        const stats = this.srs.getStats();
+
+        // Update SRS stats
+        document.getElementById('srs-due-today').textContent = stats.dueToday;
+        document.getElementById('srs-avg-retention').textContent = `${stats.averageRetention}%`;
+        document.getElementById('srs-total-cards').textContent = stats.totalCards;
+        document.getElementById('srs-reviews-today').textContent = stats.totalReviews;
+
+        // Render due cards
+        this.renderDueCards();
+
+        // Render upcoming reviews
+        this.renderUpcomingReviews();
+
+        // Render retention prediction
+        this.renderRetentionPrediction();
+
+        console.log('🧠 Study queue populated:', stats);
+    }
+
+    /**
+     * Render due cards list
+     */
+    renderDueCards() {
+        const dueCards = this.srs.getDueCards(20);
+        const container = this.dueCardsList;
+
+        if (!container) return;
+
+        if (dueCards.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                    <p>🎉 No cards due right now! Great work!</p>
+                    <p class="hint-text">Complete some tests to add cards to your study queue.</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = dueCards.map(card => {
+            const retention = Math.round(this.srs.predictRetention(card) * 100);
+            const stateColors = {
+                new: '#3b82f6',
+                learning: '#f59e0b',
+                review: '#10b981',
+                relearning: '#ef4444'
+            };
+
+            return `
+                <div class="due-card">
+                    <div class="due-card-header">
+                        <span class="due-card-state" style="background-color: ${stateColors[card.state] || '#gray'}">
+                            ${card.state}
+                        </span>
+                        <span class="due-card-retention" style="color: ${retention >= 70 ? '#10b981' : retention >= 40 ? '#f59e0b' : '#ef4444'}">
+                            ${retention}% retention
+                        </span>
+                    </div>
+                    <div class="due-card-question">${this.escapeHtml(card.questionText)}</div>
+                    <div class="due-card-meta">
+                        <span>📊 Reviews: ${card.reviewHistory.length}</span>
+                        <span>🔄 Interval: ${card.interval}d</span>
+                        <span>⚡ Ease: ${card.easeFactor.toFixed(2)}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    /**
+     * Render upcoming reviews calendar
+     */
+    renderUpcomingReviews() {
+        const upcoming = this.srs.getUpcomingReviews(7);
+        const container = this.upcomingReviews;
+
+        if (!container) return;
+
+        const dates = Object.keys(upcoming).sort((a, b) => new Date(a) - new Date(b));
+
+        if (dates.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <p>No reviews scheduled for the next 7 days.</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = dates.map(dateStr => {
+            const cards = upcoming[dateStr];
+            const date = new Date(dateStr);
+            const isToday = date.toDateString() === new Date().toDateString();
+
+            return `
+                <div class="upcoming-day ${isToday ? 'upcoming-day--today' : ''}">
+                    <div class="upcoming-day-header">
+                        <span class="upcoming-day-date">${isToday ? 'Today' : date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+                        <span class="upcoming-day-count">${cards.length} card${cards.length !== 1 ? 's' : ''}</span>
+                    </div>
+                    <div class="upcoming-day-bar" style="width: ${Math.min(100, cards.length * 10)}%"></div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    /**
+     * Render retention prediction chart
+     */
+    renderRetentionPrediction() {
+        const container = this.retentionPredictionChart;
+        if (!container) return;
+
+        // Get a sample card for visualization
+        const cards = Object.values(this.srs.data.cards);
+        if (cards.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <p>Complete some reviews to see memory retention predictions.</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Use the most recently reviewed card
+        const sampleCard = cards
+            .filter(c => c.lastReviewDate)
+            .sort((a, b) => b.lastReviewDate - a.lastReviewDate)[0];
+
+        if (!sampleCard) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <p>Complete some reviews to see memory retention predictions.</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Get retention curve data
+        const curveData = this.srs.getRetentionCurve(sampleCard, 30);
+
+        // Find next review point
+        const nextReviewHours = (sampleCard.nextReviewDate - Date.now()) / (1000 * 60 * 60);
+
+        // Render simple visualization
+        const chartHeight = 200;
+        const chartWidth = container.offsetWidth - 40;
+
+        const points = curveData.map((point, i) => {
+            const x = (point.days / 30) * chartWidth + 20;
+            const y = chartHeight - (point.retention * (chartHeight - 40)) - 20;
+            return { x, y, retention: point.retention, days: point.days };
+        });
+
+        const pathData = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x},${p.y}`).join(' ');
+
+        container.innerHTML = `
+            <div class="retention-info">
+                <p><strong>Sample Card:</strong> ${this.escapeHtml(sampleCard.questionText.substring(0, 60))}${sampleCard.questionText.length > 60 ? '...' : ''}</p>
+                <p><strong>Current Retention:</strong> ${Math.round(this.srs.predictRetention(sampleCard) * 100)}%</p>
+                <p><strong>Next Review:</strong> ${nextReviewHours > 0 ? `in ${Math.round(nextReviewHours / 24)} days` : 'due now'}</p>
+            </div>
+            <svg class="retention-chart" viewBox="0 0 ${chartWidth + 40} ${chartHeight}" preserveAspectRatio="xMidYMid meet">
+                <!-- Grid lines -->
+                ${[0, 25, 50, 75, 100].map(val => `
+                    <line x1="20" y1="${chartHeight - (val / 100 * (chartHeight - 40)) - 20}"
+                          x2="${chartWidth + 20}" y2="${chartHeight - (val / 100 * (chartHeight - 40)) - 20}"
+                          stroke="rgba(0,0,0,0.1)" stroke-width="1" stroke-dasharray="4"/>
+                    <text x="5" y="${chartHeight - (val / 100 * (chartHeight - 40)) - 16}"
+                          font-size="10" fill="rgba(0,0,0,0.5)">${val}%</text>
+                `).join('')}
+
+                <!-- Forgetting curve -->
+                <path d="${pathData}" fill="none" stroke="#ef4444" stroke-width="2" />
+
+                <!-- Current time marker -->
+                <line x1="20" y1="20" x2="20" y2="${chartHeight - 20}" stroke="#10b981" stroke-width="2" stroke-dasharray="4" />
+                <text x="25" y="15" font-size="10" fill="#10b981">Now</text>
+
+                <!-- Next review marker -->
+                ${nextReviewHours > 0 ? `
+                    <line x1="${20 + (nextReviewHours / 24 / 30) * chartWidth}" y1="20"
+                          x2="${20 + (nextReviewHours / 24 / 30) * chartWidth}" y2="${chartHeight - 20}"
+                          stroke="#3b82f6" stroke-width="2" stroke-dasharray="4" />
+                    <text x="${25 + (nextReviewHours / 24 / 30) * chartWidth}" y="15" font-size="10" fill="#3b82f6">Review</text>
+                ` : ''}
+            </svg>
+        `;
     }
 
     /**
