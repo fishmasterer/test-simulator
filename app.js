@@ -183,6 +183,10 @@ class TestSimulator {
         this.dueCardsList = document.getElementById('due-cards-list');
         this.upcomingReviews = document.getElementById('upcoming-reviews');
         this.retentionPredictionChart = document.getElementById('retention-prediction-chart');
+        this.studyDueCardsBtn = document.getElementById('study-due-cards-btn');
+        this.exportSRSBtn = document.getElementById('export-srs-btn');
+        this.importSRSBtn = document.getElementById('import-srs-btn');
+        this.importSRSFile = document.getElementById('import-srs-file');
 
         // Initialize gamification system
         this.gamification = new GamificationSystem();
@@ -248,6 +252,10 @@ class TestSimulator {
         // Study Queue events
         this.openStudyQueueBtn?.addEventListener('click', () => this.openStudyQueue());
         this.closeStudyQueueBtn?.addEventListener('click', () => this.closeStudyQueue());
+        this.studyDueCardsBtn?.addEventListener('click', () => this.studyDueCards());
+        this.exportSRSBtn?.addEventListener('click', () => this.exportSRSData());
+        this.importSRSBtn?.addEventListener('click', () => this.importSRSFile?.click());
+        this.importSRSFile?.addEventListener('change', (e) => this.importSRSData(e));
 
         // Achievement filter buttons
         document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -1781,10 +1789,79 @@ class TestSimulator {
             this.showLevelUpToast(stats.level);
         }
 
+        // Create/update SRS cards from test questions
+        this.createSRSCardsFromTest();
+
         this.displayResults();
         this.clearProgress(); // Clear saved progress after submission
 
         console.log(`🎮 Gamification: +${gamificationResult.xpEarned} XP, ${gamificationResult.newAchievements.length} new achievements`);
+    }
+
+    /**
+     * Create or update SRS cards from test questions
+     */
+    createSRSCardsFromTest() {
+        if (!this.currentTest || !this.score) return;
+
+        let cardsCreated = 0;
+        let cardsUpdated = 0;
+
+        this.currentTest.questions.forEach(question => {
+            // Create unique ID for the question
+            const questionId = `${this.currentTest.title || 'test'}_q${question.id}_${question.type}`;
+
+            // Get or create card
+            const card = this.srs.getOrCreateCard(questionId, question);
+            const wasNew = card.state === 'new' && card.repetitions === 0;
+
+            // Determine if answer was correct
+            const userAnswer = this.userAnswers[question.id];
+            const isCorrect = this.isAnswerCorrect(question, userAnswer, question.correct);
+
+            // Auto-rate based on correctness and confidence
+            const confidence = this.questionConfidence[question.id] || null;
+            let quality;
+
+            if (isCorrect) {
+                // Correct answer
+                if (confidence === 'high') {
+                    quality = 5; // Perfect response
+                } else if (confidence === 'medium') {
+                    quality = 4; // After some hesitation
+                } else if (confidence === 'low' || confidence === 'guess') {
+                    quality = 3; // With difficulty
+                } else {
+                    quality = 4; // Default to hesitation
+                }
+            } else {
+                // Incorrect answer
+                if (confidence === 'high') {
+                    quality = 1; // Recognized answer upon seeing it
+                } else if (confidence === 'medium') {
+                    quality = 1; // Incorrect but seemed familiar
+                } else {
+                    quality = 0; // Complete blackout
+                }
+            }
+
+            // Review the card
+            this.srs.reviewCard(card, quality);
+
+            if (wasNew) {
+                cardsCreated++;
+            } else {
+                cardsUpdated++;
+            }
+        });
+
+        if (cardsCreated > 0 || cardsUpdated > 0) {
+            this.showToast(
+                `🧠 SRS Updated: ${cardsCreated} new cards, ${cardsUpdated} reviewed`,
+                'info'
+            );
+            console.log(`🧠 SRS: ${cardsCreated} created, ${cardsUpdated} updated`);
+        }
     }
 
     /**
@@ -3192,6 +3269,12 @@ class TestSimulator {
         // Render retention prediction
         this.renderRetentionPrediction();
 
+        // Render review activity heatmap
+        this.renderReviewActivityHeatmap();
+
+        // Render success rate chart
+        this.renderSuccessRateChart();
+
         console.log('🧠 Study queue populated:', stats);
     }
 
@@ -3367,6 +3450,337 @@ class TestSimulator {
                 ` : ''}
             </svg>
         `;
+    }
+
+    /**
+     * Render review activity heatmap (GitHub-style contribution graph)
+     */
+    renderReviewActivityHeatmap() {
+        const container = document.getElementById('review-activity-heatmap');
+        if (!container) return;
+
+        // Get all reviews from the past 12 weeks
+        const weeks = 12;
+        const days = weeks * 7;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        // Create date map with review counts
+        const reviewsByDate = {};
+        const allReviews = Object.values(this.srs.data.cards)
+            .flatMap(card => card.reviewHistory.map(r => ({...r, cardId: card.id})));
+
+        allReviews.forEach(review => {
+            const date = new Date(review.date);
+            date.setHours(0, 0, 0, 0);
+            const dateStr = date.toISOString().split('T')[0];
+            reviewsByDate[dateStr] = (reviewsByDate[dateStr] || 0) + 1;
+        });
+
+        // Generate heatmap data
+        const heatmapData = [];
+        for (let i = days - 1; i >= 0; i--) {
+            const date = new Date(today);
+            date.setDate(date.getDate() - i);
+            const dateStr = date.toISOString().split('T')[0];
+            const count = reviewsByDate[dateStr] || 0;
+
+            heatmapData.push({
+                date: dateStr,
+                count: count,
+                day: date.getDay(),
+                weekIndex: Math.floor((days - 1 - i) / 7)
+            });
+        }
+
+        // Calculate max count for scaling
+        const maxCount = Math.max(...heatmapData.map(d => d.count), 1);
+
+        // Get color based on review count
+        const getColor = (count) => {
+            if (count === 0) return '#ebedf0';
+            const intensity = Math.min(count / maxCount, 1);
+            if (intensity < 0.25) return '#c6e48b';
+            if (intensity < 0.5) return '#7bc96f';
+            if (intensity < 0.75) return '#239a3b';
+            return '#196127';
+        };
+
+        // Render heatmap
+        const cellSize = 12;
+        const cellGap = 3;
+        const labelWidth = 30;
+        const totalWidth = (weeks * (cellSize + cellGap)) + labelWidth;
+        const totalHeight = (7 * (cellSize + cellGap)) + 20;
+
+        const dayLabels = ['', 'M', '', 'W', '', 'F', ''];
+
+        container.innerHTML = `
+            <div class="heatmap-wrapper">
+                <svg class="heatmap-svg" viewBox="0 0 ${totalWidth} ${totalHeight}" preserveAspectRatio="xMidYMid meet">
+                    <!-- Day labels -->
+                    ${dayLabels.map((label, i) => `
+                        <text x="5" y="${(i * (cellSize + cellGap)) + cellSize - 2}"
+                              font-size="10" fill="rgba(0,0,0,0.5)">${label}</text>
+                    `).join('')}
+
+                    <!-- Heatmap cells -->
+                    ${heatmapData.map(d => `
+                        <rect
+                            x="${labelWidth + (d.weekIndex * (cellSize + cellGap))}"
+                            y="${d.day * (cellSize + cellGap)}"
+                            width="${cellSize}"
+                            height="${cellSize}"
+                            rx="2"
+                            fill="${getColor(d.count)}"
+                            data-date="${d.date}"
+                            data-count="${d.count}">
+                            <title>${d.date}: ${d.count} review${d.count !== 1 ? 's' : ''}</title>
+                        </rect>
+                    `).join('')}
+                </svg>
+                <div class="heatmap-legend">
+                    <span style="color: var(--color-text-secondary); font-size: var(--font-size-xs);">Less</span>
+                    ${[0, 1, 2, 3, 4].map(i => `
+                        <div style="width: 12px; height: 12px; background: ${getColor(i * maxCount / 4)}; border-radius: 2px;"></div>
+                    `).join('')}
+                    <span style="color: var(--color-text-secondary); font-size: var(--font-size-xs);">More</span>
+                </div>
+                <p class="heatmap-summary" style="margin-top: var(--space-12); font-size: var(--font-size-sm); color: var(--color-text-secondary);">
+                    <strong>${allReviews.length}</strong> reviews in the last ${weeks} weeks
+                </p>
+            </div>
+        `;
+    }
+
+    /**
+     * Render success rate tracking chart
+     */
+    renderSuccessRateChart() {
+        const container = document.getElementById('success-rate-chart');
+        if (!container) return;
+
+        // Get all reviews from past 30 days, grouped by day
+        const days = 30;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const reviewsByDay = {};
+        const allReviews = Object.values(this.srs.data.cards)
+            .flatMap(card => card.reviewHistory);
+
+        allReviews.forEach(review => {
+            const date = new Date(review.date);
+            date.setHours(0, 0, 0, 0);
+            const dateStr = date.toISOString().split('T')[0];
+
+            if (!reviewsByDay[dateStr]) {
+                reviewsByDay[dateStr] = { total: 0, correct: 0 };
+            }
+
+            reviewsByDay[dateStr].total++;
+            if (review.quality >= 3) {
+                reviewsByDay[dateStr].correct++;
+            }
+        });
+
+        // Generate chart data for past 30 days
+        const chartData = [];
+        for (let i = days - 1; i >= 0; i--) {
+            const date = new Date(today);
+            date.setDate(date.getDate() - i);
+            const dateStr = date.toISOString().split('T')[0];
+
+            const dayData = reviewsByDay[dateStr] || { total: 0, correct: 0 };
+            const successRate = dayData.total > 0 ? (dayData.correct / dayData.total) * 100 : null;
+
+            chartData.push({
+                date: dateStr,
+                dateLabel: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                successRate: successRate,
+                total: dayData.total,
+                correct: dayData.correct
+            });
+        }
+
+        // Filter out days with no reviews for cleaner visualization
+        const dataPoints = chartData.filter(d => d.successRate !== null);
+
+        if (dataPoints.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <p>Complete some reviews to see success rate trends.</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Calculate average success rate
+        const avgSuccessRate = dataPoints.reduce((sum, d) => sum + d.successRate, 0) / dataPoints.length;
+
+        // Chart dimensions
+        const chartHeight = 200;
+        const chartWidth = container.offsetWidth - 40;
+        const barWidth = Math.max(2, Math.min(chartWidth / days - 2, 8));
+
+        container.innerHTML = `
+            <div class="success-rate-info">
+                <div class="success-rate-stat">
+                    <div class="success-rate-stat-label">Average Success Rate</div>
+                    <div class="success-rate-stat-value">${Math.round(avgSuccessRate)}%</div>
+                </div>
+                <div class="success-rate-stat">
+                    <div class="success-rate-stat-label">Total Reviews</div>
+                    <div class="success-rate-stat-value">${dataPoints.reduce((sum, d) => sum + d.total, 0)}</div>
+                </div>
+                <div class="success-rate-stat">
+                    <div class="success-rate-stat-label">Active Days</div>
+                    <div class="success-rate-stat-value">${dataPoints.length}/${days}</div>
+                </div>
+            </div>
+            <svg class="success-rate-svg" viewBox="0 0 ${chartWidth + 40} ${chartHeight + 40}" preserveAspectRatio="xMidYMid meet">
+                <!-- Grid lines -->
+                ${[0, 25, 50, 75, 100].map(val => `
+                    <line x1="20" y1="${chartHeight - (val / 100 * (chartHeight - 40)) - 20 + 20}"
+                          x2="${chartWidth + 20}" y2="${chartHeight - (val / 100 * (chartHeight - 40)) - 20 + 20}"
+                          stroke="rgba(0,0,0,0.1)" stroke-width="1" stroke-dasharray="4"/>
+                    <text x="5" y="${chartHeight - (val / 100 * (chartHeight - 40)) - 16 + 20}"
+                          font-size="10" fill="rgba(0,0,0,0.5)">${val}%</text>
+                `).join('')}
+
+                <!-- Average line -->
+                <line x1="20" y1="${chartHeight - (avgSuccessRate / 100 * (chartHeight - 40)) - 20 + 20}"
+                      x2="${chartWidth + 20}" y2="${chartHeight - (avgSuccessRate / 100 * (chartHeight - 40)) - 20 + 20}"
+                      stroke="#3b82f6" stroke-width="2" stroke-dasharray="8 4" opacity="0.5"/>
+
+                <!-- Bars -->
+                ${chartData.map((d, i) => {
+                    if (d.successRate === null) return '';
+                    const x = 20 + (i / days) * chartWidth;
+                    const barHeight = (d.successRate / 100) * (chartHeight - 40);
+                    const y = chartHeight - barHeight - 20 + 20;
+                    const color = d.successRate >= 75 ? '#10b981' : d.successRate >= 50 ? '#f59e0b' : '#ef4444';
+
+                    return `
+                        <rect x="${x}" y="${y}" width="${barWidth}" height="${barHeight}"
+                              fill="${color}" opacity="0.8" rx="2">
+                            <title>${d.dateLabel}: ${Math.round(d.successRate)}% (${d.correct}/${d.total})</title>
+                        </rect>
+                    `;
+                }).join('')}
+
+                <!-- X-axis labels (every 5 days) -->
+                ${chartData.filter((d, i) => i % 5 === 0).map((d, idx) => {
+                    const i = chartData.indexOf(d);
+                    const x = 20 + (i / days) * chartWidth;
+                    return `
+                        <text x="${x}" y="${chartHeight + 35}" font-size="9" fill="rgba(0,0,0,0.5)"
+                              transform="rotate(-45, ${x}, ${chartHeight + 35})">${d.dateLabel}</text>
+                    `;
+                }).join('')}
+            </svg>
+        `;
+    }
+
+    /**
+     * Generate and start a test from due SRS cards
+     */
+    studyDueCards() {
+        const dueCards = this.srs.getDueCards(20);
+
+        if (dueCards.length === 0) {
+            alert('🎉 No cards due right now! Great work!');
+            return;
+        }
+
+        // Generate test from due cards
+        const testQuestions = dueCards.map((card, index) => {
+            // Reconstruct the question from card data
+            const questionData = this.srs.data.cards[card.id];
+
+            return {
+                id: index + 1,
+                type: card.questionType,
+                question: card.questionText,
+                // Note: We don't have full question data (options, answers) stored in cards yet
+                // This is a limitation - in a full implementation, you'd store complete question data
+                ...questionData
+            };
+        });
+
+        // Create test object
+        const srsTest = {
+            title: `SRS Study Session - ${dueCards.length} Cards`,
+            questions: testQuestions
+        };
+
+        // Load the test
+        this.currentTest = srsTest;
+        this.currentQuestionIndex = 0;
+        this.userAnswers = {};
+        this.flaggedQuestions = new Set();
+        this.questionConfidence = {};
+        this.testMode = 'practice'; // Always practice mode for SRS
+        this.testStartTime = Date.now();
+        this.testDuration = null; // No timer for SRS study
+        this.timeRemaining = null;
+
+        // Close study queue and start test
+        this.closeStudyQueue();
+        this.startTest();
+
+        console.log(`🧠 SRS Study Session started: ${dueCards.length} cards`);
+    }
+
+    /**
+     * Export SRS data as JSON
+     */
+    exportSRSData() {
+        const data = this.srs.exportData();
+        const blob = new Blob([data], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `srs-data-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        this.showToast('📥 SRS data exported successfully', 'success');
+        console.log('📥 SRS data exported');
+    }
+
+    /**
+     * Import SRS data from JSON file
+     */
+    importSRSData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const jsonData = e.target.result;
+                const success = this.srs.importData(jsonData);
+
+                if (success) {
+                    this.showToast('📤 SRS data imported successfully', 'success');
+                    // Refresh the study queue display
+                    this.populateStudyQueue();
+                } else {
+                    this.showToast('❌ Failed to import SRS data', 'error');
+                }
+            } catch (error) {
+                console.error('Import error:', error);
+                this.showToast('❌ Invalid SRS data file', 'error');
+            }
+        };
+        reader.readAsText(file);
+
+        // Reset file input
+        event.target.value = '';
     }
 
     /**
