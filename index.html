@@ -366,6 +366,12 @@ Example format:
                             </svg>
                             Analytics Dashboard
                         </button>
+                        <button id="open-study-queue-btn" class="btn btn--secondary">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                            </svg>
+                            Study Queue (SRS)
+                        </button>
                     </div>
                 </div>
             </div>
@@ -559,6 +565,103 @@ Example format:
                             <span class="detailed-stat-label">Total XP Earned</span>
                             <span id="stat-total-xp" class="detailed-stat-value">0 XP</span>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Study Queue (Spaced Repetition) Section -->
+        <div id="study-queue-section" class="section hidden">
+            <div class="library-header">
+                <h1>Study Queue - Spaced Repetition</h1>
+                <button id="close-study-queue-btn" class="btn btn--outline">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                    Back
+                </button>
+            </div>
+
+            <div class="srs-container">
+                <!-- SRS Stats Overview -->
+                <div class="srs-stats-section">
+                    <h2 class="srs-heading">Today's Review Statistics</h2>
+                    <div class="srs-stats-grid">
+                        <div class="srs-stat-card">
+                            <div class="srs-stat-icon srs-stat-icon--primary">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polyline points="12 6 12 12 16 14"></polyline>
+                                </svg>
+                            </div>
+                            <div class="srs-stat-content">
+                                <div class="srs-stat-label">Due Today</div>
+                                <div id="srs-due-today" class="srs-stat-value">0</div>
+                            </div>
+                        </div>
+
+                        <div class="srs-stat-card">
+                            <div class="srs-stat-icon srs-stat-icon--success">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                </svg>
+                            </div>
+                            <div class="srs-stat-content">
+                                <div class="srs-stat-label">Avg Retention</div>
+                                <div id="srs-avg-retention" class="srs-stat-value">0%</div>
+                            </div>
+                        </div>
+
+                        <div class="srs-stat-card">
+                            <div class="srs-stat-icon srs-stat-icon--warning">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                </svg>
+                            </div>
+                            <div class="srs-stat-content">
+                                <div class="srs-stat-label">Total Cards</div>
+                                <div id="srs-total-cards" class="srs-stat-value">0</div>
+                            </div>
+                        </div>
+
+                        <div class="srs-stat-card">
+                            <div class="srs-stat-icon srs-stat-icon--fire">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path>
+                                </svg>
+                            </div>
+                            <div class="srs-stat-content">
+                                <div class="srs-stat-label">Reviews Today</div>
+                                <div id="srs-reviews-today" class="srs-stat-value">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Due Cards List -->
+                <div class="srs-section">
+                    <h2 class="srs-heading">Cards Due for Review</h2>
+                    <div id="due-cards-list" class="due-cards-list">
+                        <!-- Cards will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Upcoming Reviews Calendar -->
+                <div class="srs-section">
+                    <h2 class="srs-heading">Upcoming Reviews (7 Days)</h2>
+                    <div id="upcoming-reviews" class="upcoming-reviews">
+                        <!-- Calendar will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Retention Prediction Graph -->
+                <div class="srs-section">
+                    <h2 class="srs-heading">Memory Retention Prediction</h2>
+                    <p class="srs-description">Based on spaced repetition algorithm and your review history</p>
+                    <div id="retention-prediction-chart" class="retention-prediction-chart">
+                        <!-- Chart will be inserted here -->
                     </div>
                 </div>
             </div>
@@ -2456,6 +2559,9 @@ Example format:
 
     <!-- Gamification System -->
     <script src="gamification.js"></script>
+
+    <!-- Spaced Repetition System -->
+    <script src="spaced-repetition.js"></script>
 
     <script src="app.js"></script>
 

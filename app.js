@@ -178,6 +178,9 @@ class TestSimulator {
 
         // Initialize gamification system
         this.gamification = new GamificationSystem();
+
+        // Initialize spaced repetition system
+        this.srs = new SpacedRepetitionSystem();
     }
 
     /**
