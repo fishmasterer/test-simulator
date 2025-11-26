@@ -4534,8 +4534,51 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
         testSimulator = new TestSimulator();
         console.log('Test Simulator initialized successfully');
+
+        // Show iOS install prompt if applicable
+        showIOSInstallPrompt();
     } catch (error) {
         console.error('Failed to initialize Test Simulator:', error);
         alert('Failed to load the app. Please check the console for errors.');
     }
 });
+
+// iOS Install Prompt Handler
+function showIOSInstallPrompt() {
+    // Check if already dismissed
+    if (localStorage.getItem('iosInstallPromptDismissed') === 'true') {
+        return;
+    }
+
+    // Check if running in standalone mode (already installed)
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
+                        window.navigator.standalone === true;
+
+    if (isStandalone) {
+        return;
+    }
+
+    // Check if iOS Safari
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+    if (isIOS && isSafari) {
+        const prompt = document.getElementById('ios-install-prompt');
+        const dismissBtn = document.getElementById('ios-install-dismiss');
+
+        if (prompt && dismissBtn) {
+            // Show prompt after a short delay
+            setTimeout(() => {
+                prompt.classList.remove('hidden');
+                console.log('📱 Showing iOS install prompt');
+            }, 2000);
+
+            // Handle dismiss
+            dismissBtn.addEventListener('click', () => {
+                prompt.classList.add('hidden');
+                localStorage.setItem('iosInstallPromptDismissed', 'true');
+                console.log('📱 iOS install prompt dismissed');
+            });
+        }
+    }
+}

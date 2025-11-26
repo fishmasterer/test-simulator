@@ -389,12 +389,26 @@ html {
   color: var(--color-text);
   background-color: var(--color-background);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   box-sizing: border-box;
+  /* Smooth scrolling for iOS and better performance */
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 }
 
 body {
   margin: 0;
   padding: 0;
+  /* iOS safe area support for notch and home indicator */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  /* Prevent iOS bounce/overscroll */
+  overscroll-behavior-y: none;
+  /* Optimize touch performance */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 *,
@@ -8003,4 +8017,341 @@ select.form-control {
   color: var(--color-text);
   line-height: 1.6;
   white-space: pre-line;
+}
+
+/* ========================================
+   iOS Install Prompt
+   ======================================== */
+
+.ios-install-prompt {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+  color: white;
+  padding: var(--space-16);
+  padding-bottom: max(var(--space-16), env(safe-area-inset-bottom));
+  box-shadow: var(--shadow-xl);
+  z-index: 9999;
+  transform: translateY(0);
+  transition: transform var(--duration-normal) var(--ease-standard);
+  animation: slideUp var(--duration-normal) var(--ease-standard);
+}
+
+.ios-install-prompt.hidden {
+  transform: translateY(100%);
+  pointer-events: none;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.ios-install-content {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  max-width: var(--container-lg);
+  margin: 0 auto;
+  position: relative;
+}
+
+.ios-install-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-base);
+  backdrop-filter: blur(10px);
+}
+
+.ios-install-icon svg {
+  stroke: white;
+}
+
+.ios-install-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  font-size: var(--font-size-sm);
+}
+
+.ios-install-text strong {
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-base);
+}
+
+.ios-install-text span {
+  opacity: 0.95;
+  line-height: 1.4;
+}
+
+.ios-install-dismiss {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-standard);
+  padding: 0;
+}
+
+.ios-install-dismiss:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.05);
+}
+
+.ios-install-dismiss:active {
+  transform: scale(0.95);
+}
+
+.ios-install-dismiss svg {
+  stroke: white;
+}
+
+/* ========================================
+   iOS & Mac Optimizations
+   ======================================== */
+
+/* iOS: Optimize button and interactive element touch */
+button,
+.btn,
+input[type="button"],
+input[type="submit"],
+input[type="checkbox"],
+input[type="radio"],
+select {
+  /* Better touch targets on iOS */
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  -webkit-touch-callout: none;
+  /* Prevent text selection on double-tap */
+  -webkit-user-select: none;
+  user-select: none;
+  /* Improve touch responsiveness */
+  touch-action: manipulation;
+  cursor: pointer;
+}
+
+/* Allow text selection in text inputs and textareas */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+textarea {
+  -webkit-user-select: text;
+  user-select: text;
+  /* Prevent zoom on focus for iOS */
+  font-size: 16px;
+}
+
+/* iOS: Prevent automatic zoom on input focus */
+@supports (-webkit-touch-callout: none) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
+/* iOS: Fix fixed positioning for modals */
+.modal {
+  position: fixed;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* iOS: Better scrolling for scrollable containers */
+.test-library-container,
+.question-container,
+.modal-body,
+.pomodoro-container {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* iOS: Active state feedback for buttons */
+button:active,
+.btn:active {
+  opacity: 0.8;
+  transform: scale(0.98);
+  transition: all var(--duration-instant) var(--ease-standard);
+}
+
+/* Mac: Better hover states (don't apply on touch devices) */
+@media (hover: hover) and (pointer: fine) {
+  button:hover,
+  .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+    transition: all var(--duration-fast) var(--ease-standard);
+  }
+
+  .test-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .question-number-btn:hover {
+    transform: scale(1.05);
+  }
+}
+
+/* Mac: Smooth scrollbar styling for webkit browsers */
+@media (min-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-secondary);
+    border-radius: var(--radius-base);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: var(--radius-base);
+    transition: background var(--duration-fast);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-primary);
+  }
+}
+
+/* iOS: Optimize keyboard avoidance */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .container,
+  .test-section {
+    padding-bottom: calc(var(--space-24) + env(safe-area-inset-bottom));
+  }
+
+  /* Ensure auth header respects safe area */
+  .auth-header {
+    padding-left: max(var(--space-16), env(safe-area-inset-left));
+    padding-right: max(var(--space-16), env(safe-area-inset-right));
+  }
+
+  /* Theme toggle button safe area */
+  .theme-toggle-btn {
+    top: max(var(--space-16), env(safe-area-inset-top));
+    right: max(var(--space-16), env(safe-area-inset-right));
+  }
+
+  /* Modal safe area support */
+  .modal-content {
+    margin-top: env(safe-area-inset-top);
+    margin-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* iOS: Better textarea resize handling */
+textarea {
+  resize: vertical;
+  /* Prevent iOS from adding default styling */
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Mac: Better focus states for keyboard navigation */
+@media (min-width: 768px) {
+  *:focus-visible {
+    outline: var(--focus-outline);
+    outline-offset: 2px;
+  }
+}
+
+/* iOS: Improve performance with GPU acceleration */
+.modal,
+.theme-menu,
+.test-card,
+.btn {
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+/* iOS PWA: Hide elements when in standalone mode */
+@media (display-mode: standalone) {
+  /* You can hide specific elements when running as installed app */
+  /* Example: .install-prompt { display: none; } */
+}
+
+/* iOS: Improve text rendering on Retina displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+}
+
+/* Mac: Optimize for larger screens */
+@media (min-width: 1440px) {
+  .container {
+    max-width: 1400px;
+  }
+
+  .test-content-grid {
+    gap: var(--space-32);
+  }
+}
+
+/* iOS: Prevent landscape zoom issues */
+@media (orientation: landscape) and (max-height: 500px) {
+  .modal-content {
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+}
+
+/* iOS: Better handling of notch/Dynamic Island in landscape */
+@supports (padding: max(0px)) {
+  .auth-header,
+  .test-header {
+    padding-left: max(var(--space-16), env(safe-area-inset-left));
+    padding-right: max(var(--space-16), env(safe-area-inset-right));
+  }
+}
+
+/* Improve touch target sizes for accessibility (iOS) */
+@media (max-width: 768px) {
+  button,
+  .btn,
+  .question-number-btn,
+  input[type="checkbox"],
+  input[type="radio"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Mac: Better print styles */
+@media print {
+  body {
+    padding: 0;
+    background: white;
+    color: black;
+  }
+
+  .theme-toggle-btn,
+  .theme-menu,
+  .auth-header,
+  .btn--secondary {
+    display: none;
+  }
 }
