@@ -31,35 +31,32 @@ Think of: Late afternoon sunlight through autumn leaves
 
 ### Primary Colors
 
-#### Teal Green (Primary Action)
-The calming forest green - trustworthy and focused.
+#### Burnt Orange (Primary Action)
+The warm hearth - energizing yet comforting. The signature color of our autumnal palette.
 
-| Token | Value | Usage |
-|-------|-------|-------|
-| `--color-teal-300` | `rgba(50, 184, 198, 1)` | Dark mode primary |
-| `--color-teal-400` | `rgba(45, 166, 178, 1)` | Hover states |
-| `--color-teal-500` | `rgba(33, 128, 141, 1)` | **Light mode primary** |
-| `--color-teal-600` | `rgba(29, 116, 128, 1)` | Pressed states |
-| `--color-teal-700` | `rgba(26, 104, 115, 1)` | Active/selected |
-| `--color-teal-800` | `rgba(41, 150, 161, 1)` | Accent highlights |
+| Token | Value | Hex | Usage |
+|-------|-------|-----|-------|
+| `--color-claude-orange` | `rgba(204, 93, 52, 1)` | `#CC5D34` | **Light mode primary** |
+| `--color-claude-orange-light` | `rgba(217, 119, 81, 1)` | `#D97751` | Hover state |
+| `--color-claude-orange-dark` | `rgba(181, 72, 33, 1)` | `#B54821` | Pressed state |
+| `--color-orange-400` | `rgba(230, 129, 97, 1)` | `#E68161` | **Dark mode primary** |
+| `--color-orange-500` | `rgba(168, 75, 47, 1)` | `#A84B2F` | Deep accent |
 
 ```css
 /* Usage */
 .btn--primary {
-  background: var(--color-primary); /* Maps to teal-500 in light mode */
+  background: var(--color-primary); /* Maps to claude-orange */
 }
 ```
 
-#### Burnt Orange (Claude Theme / Accent)
-The warm hearth - energizing yet comforting.
+#### Soft Green (Success & Accent)
+A muted sage green that complements the warm oranges - like moss on autumn bark.
 
-| Token | Value | Usage |
-|-------|-------|-------|
-| `--color-orange-400` | `rgba(230, 129, 97, 1)` | Soft warnings, accents |
-| `--color-orange-500` | `rgba(168, 75, 47, 1)` | Warning states |
-| `--color-claude-orange` | `rgba(204, 93, 52, 1)` | Claude theme primary |
-| `--color-claude-orange-light` | `rgba(217, 119, 81, 1)` | Hover |
-| `--color-claude-orange-dark` | `rgba(181, 72, 33, 1)` | Pressed |
+| Token | Value | Hex | Usage |
+|-------|-------|-----|-------|
+| `--color-teal-500` | `rgba(33, 128, 141, 1)` | `#21808D` | Success states |
+| `--color-teal-300` | `rgba(50, 184, 198, 1)` | `#32B8C6` | Dark mode success |
+| `--color-teal-600` | `rgba(29, 116, 128, 1)` | `#1D7480` | Hover accent |
 
 ### Background Colors
 
@@ -113,27 +110,33 @@ The warm hearth - energizing yet comforting.
 ### Color Palette Visualization
 
 ```
-LIGHT MODE                          DARK MODE
+CLAUDE LIGHT                        CLAUDE DARK
 
 Backgrounds                         Backgrounds
 ┌─────────────────────────┐        ┌─────────────────────────┐
-│  #FCFCF9  cream-50      │        │  #1F2121  charcoal-700  │
-│  Soft cream paper       │        │  Deep evening shadow    │
+│  #F5F0EB  claude-beige  │        │  #1C1917  claude-bg     │
+│  Warm parchment         │        │  Rich earth             │
 ├─────────────────────────┤        ├─────────────────────────┤
-│  #FFFFFD  cream-100     │        │  #262828  charcoal-800  │
-│  Fresh white card       │        │  Warm surface card      │
+│  #FFFBF7  claude-cream  │        │  #292521  claude-surface│
+│  Soft candlelight       │        │  Worn leather           │
 └─────────────────────────┘        └─────────────────────────┘
 
-Primary                             Primary
-┌─────────────────────────┐        ┌─────────────────────────┐
-│  #21808D  teal-500      │        │  #32B8C6  teal-300      │
-│  Forest teal            │        │  Bright teal            │
-└─────────────────────────┘        └─────────────────────────┘
-
-Accent (Claude Theme)               Accent (Claude Theme)
+Primary (Burnt Orange)              Primary (Amber)
 ┌─────────────────────────┐        ┌─────────────────────────┐
 │  #CC5D34  claude-orange │        │  #EA7B52  claude-orange │
-│  Burnt autumn orange    │        │  Warm amber glow        │
+│  Autumn hearth          │        │  Warm amber glow        │
+└─────────────────────────┘        └─────────────────────────┘
+
+Success (Soft Green)                Success (Soft Green)
+┌─────────────────────────┐        ┌─────────────────────────┐
+│  #21808D  teal-500      │        │  #32B8C6  teal-300      │
+│  Forest moss            │        │  Bright sage            │
+└─────────────────────────┘        └─────────────────────────┘
+
+Text                                Text
+┌─────────────────────────┐        ┌─────────────────────────┐
+│  #2A2521  warm brown    │        │  #FAF5F0  warm cream    │
+│  Rich espresso          │        │  Soft parchment         │
 └─────────────────────────┘        └─────────────────────────┘
 ```
 
@@ -385,7 +388,7 @@ Soft, warm shadows that suggest depth without harshness.
 ### Buttons
 
 #### Primary Button
-The main call-to-action. Teal green with white text.
+The main call-to-action. Warm burnt orange with white text.
 
 ```css
 .btn--primary {
@@ -520,28 +523,38 @@ input:focus, textarea:focus, select:focus {
 
 ### Available Themes
 
-1. **Perplexity Light** (`data-theme="light"`)
-   - Cream backgrounds, teal primary
-   - Brown-tinted borders and shadows
+#### Claude Light (`data-theme="claude-light"`)
+The default theme - warm and inviting like a sunlit study.
 
-2. **Perplexity Dark** (`data-theme="dark"`)
-   - Charcoal backgrounds, bright teal primary
-   - Subtle gray borders
+| Property | Value | Description |
+|----------|-------|-------------|
+| Background | `#F5F0EB` | Warm beige parchment |
+| Surface | `#FFFBF7` | Soft cream cards |
+| Primary | `#CC5D34` | Burnt orange |
+| Text | `#2A2521` | Rich espresso brown |
+| Text Secondary | `#735546` | Warm brown |
 
-3. **Claude Light** (`data-theme="claude-light"`)
-   - Warm beige backgrounds, burnt orange primary
-   - Brown text and accents
+#### Claude Dark (`data-theme="claude-dark"`)
+For late-night study sessions - cozy and easy on the eyes.
 
-4. **Claude Dark** (`data-theme="claude-dark"`)
-   - Rich earth backgrounds, amber orange primary
-   - Warm, cozy feeling
+| Property | Value | Description |
+|----------|-------|-------------|
+| Background | `#1C1917` | Rich earth |
+| Surface | `#292521` | Worn leather |
+| Primary | `#EA7B52` | Warm amber |
+| Text | `#FAF5F0` | Soft parchment |
+| Text Secondary | `#917364` | Muted brown |
 
 ### Theme Switching
 
 ```javascript
-// Set theme
+// Set light theme
 document.documentElement.setAttribute('data-theme', 'claude-light');
 document.documentElement.setAttribute('data-color-scheme', 'light');
+
+// Set dark theme
+document.documentElement.setAttribute('data-theme', 'claude-dark');
+document.documentElement.setAttribute('data-color-scheme', 'dark');
 
 // Store preference
 localStorage.setItem('testSimulatorTheme', 'claude-light');
@@ -550,17 +563,25 @@ localStorage.setItem('testSimulatorTheme', 'claude-light');
 ### Theme-Aware CSS
 
 ```css
-/* Base styles use semantic tokens */
+/* Base styles use semantic tokens - automatically adapt to theme */
 .element {
-  background: var(--color-surface);    /* Adapts to theme */
-  color: var(--color-text);            /* Adapts to theme */
-  border: 1px solid var(--color-border); /* Adapts to theme */
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
 }
 
 /* Theme-specific overrides when needed */
-[data-theme="claude-light"] .special-element {
-  /* Claude-specific styling */
+[data-theme="claude-dark"] .special-element {
+  /* Dark mode specific styling */
 }
+```
+
+### Respecting System Preference
+
+```javascript
+// Check system preference
+const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+const defaultTheme = prefersDark ? 'claude-dark' : 'claude-light';
 ```
 
 ---
@@ -605,8 +626,8 @@ All interactive elements must have visible focus indicators.
   box-shadow: var(--focus-ring);
 }
 
-/* Focus ring color */
---color-focus-ring: rgba(var(--color-teal-500-rgb), 0.4);
+/* Focus ring color - warm orange glow */
+--color-focus-ring: rgba(var(--color-claude-orange-rgb), 0.4);
 ```
 
 ### Color Contrast
@@ -668,7 +689,7 @@ All interactive elements must have visible focus indicators.
 - Don't use hard-coded colors - always use CSS variables
 - Don't skip focus states for accessibility
 - Don't use shadows that are too dark or harsh
-- Don't mix theme tokens (e.g., Claude orange in non-Claude theme)
+- Don't use light mode colors in dark mode or vice versa
 - Don't forget transition effects on state changes
 
 ---
@@ -733,6 +754,7 @@ All interactive elements must have visible focus indicators.
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 1.1 | Dec 2025 | Simplified to Claude Light/Dark themes only |
 | 1.0 | Dec 2025 | Initial style guide |
 
 ---
