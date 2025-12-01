@@ -290,11 +290,15 @@
 
         <!-- JSON Input Section -->
         <div id="json-input-section" class="section hidden">
-            <div class="card">
+            <!-- Ambient Background Blobs -->
+            <div class="ambient-blob ambient-blob-1" style="top: 5%; right: 10%;"></div>
+            <div class="ambient-blob ambient-blob-2" style="bottom: 20%; left: 5%;"></div>
+
+            <div class="card glass hover-lift">
                 <div class="card__body">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-12);">
                         <div>
-                            <h1 style="margin-bottom: var(--space-8);">Test Simulator</h1>
+                            <h1 class="gradient-text" style="margin-bottom: var(--space-8);">Test Simulator</h1>
                             <p class="text-secondary">Paste your test JSON data below to load a test</p>
                         </div>
                         <button id="back-to-landing-btn" class="btn btn--outline btn--sm" style="flex-shrink: 0;">Back to Welcome</button>
@@ -426,7 +430,7 @@ Example format:
                     <div id="error-message" class="error-message hidden" aria-live="assertive"></div>
 
                     <div class="button-group">
-                        <button id="load-test-btn" class="btn btn--primary">Load Test</button>
+                        <button id="load-test-btn" class="btn btn-gradient shadow-orange-glow">Load Test</button>
                         <button id="load-sample-btn" class="btn btn--outline">Load Sample Test</button>
                     </div>
 
@@ -469,8 +473,13 @@ Example format:
 
         <!-- Analytics Dashboard Section -->
         <div id="analytics-section" class="section hidden">
+            <!-- Ambient Background Blobs -->
+            <div class="ambient-blob ambient-blob-1" style="top: 8%; left: 5%;"></div>
+            <div class="ambient-blob ambient-blob-2" style="bottom: 15%; right: 8%;"></div>
+            <div class="ambient-blob ambient-blob-3" style="top: 40%; right: 20%;"></div>
+
             <div class="library-header">
-                <h1>Analytics Dashboard</h1>
+                <h1 class="gradient-text">Analytics Dashboard</h1>
                 <button id="close-analytics-btn" class="btn btn--outline">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="15 18 9 12 15 6"></polyline>
@@ -481,7 +490,7 @@ Example format:
 
             <div class="analytics-container">
                 <!-- Level and XP Progress Section -->
-                <div class="analytics-section analytics-hero">
+                <div class="analytics-section analytics-hero glass">
                     <div class="level-badge">
                         <div class="level-badge-inner">
                             <div class="level-badge-icon">
@@ -513,7 +522,7 @@ Example format:
                 <div class="analytics-section">
                     <h2 class="analytics-heading">Statistics Overview</h2>
                     <div class="stats-grid">
-                        <div class="stat-card">
+                        <div class="stat-card glass hover-lift">
                             <div class="stat-icon stat-icon--primary">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -526,7 +535,7 @@ Example format:
                             </div>
                         </div>
 
-                        <div class="stat-card">
+                        <div class="stat-card glass hover-lift">
                             <div class="stat-icon stat-icon--success">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
@@ -539,7 +548,7 @@ Example format:
                             </div>
                         </div>
 
-                        <div class="stat-card">
+                        <div class="stat-card glass hover-lift">
                             <div class="stat-icon stat-icon--warning">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <circle cx="12" cy="12" r="10"></circle>
@@ -552,7 +561,7 @@ Example format:
                             </div>
                         </div>
 
-                        <div class="stat-card">
+                        <div class="stat-card glass hover-lift">
                             <div class="stat-icon stat-icon--fire">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path>
@@ -565,7 +574,7 @@ Example format:
                             </div>
                         </div>
 
-                        <div class="stat-card">
+                        <div class="stat-card glass hover-lift">
                             <div class="stat-icon stat-icon--gold">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <circle cx="12" cy="8" r="7"></circle>
@@ -578,7 +587,7 @@ Example format:
                             </div>
                         </div>
 
-                        <div class="stat-card">
+                        <div class="stat-card glass hover-lift">
                             <div class="stat-icon stat-icon--purple">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"></path>
@@ -662,8 +671,12 @@ Example format:
 
         <!-- Visual Test Builder Section -->
         <div id="test-builder-section" class="section hidden">
+            <!-- Ambient Background Blobs -->
+            <div class="ambient-blob ambient-blob-1" style="top: 10%; right: 5%;"></div>
+            <div class="ambient-blob ambient-blob-2" style="bottom: 10%; left: 10%;"></div>
+
             <div class="library-header">
-                <h1>Test Builder</h1>
+                <h1 class="gradient-text">Test Builder</h1>
                 <div style="display: flex; gap: var(--space-12);">
                     <button id="test-builder-preview-btn" class="btn btn--outline">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -694,9 +707,9 @@ Example format:
                 <!-- Left Sidebar: Test Metadata & Question List -->
                 <div class="test-builder-sidebar">
                     <!-- Test Metadata -->
-                    <div class="card" style="margin-bottom: var(--space-16);">
+                    <div class="card glass" style="margin-bottom: var(--space-16);">
                         <div class="card__body">
-                            <h3 style="margin-bottom: var(--space-16);">Test Details</h3>
+                            <h3 class="gradient-text" style="margin-bottom: var(--space-16);">Test Details</h3>
                             <div class="form-group">
                                 <label for="builder-test-title" class="form-label">Test Title *</label>
                                 <input
@@ -729,10 +742,10 @@ Example format:
                     </div>
 
                     <!-- Question List -->
-                    <div class="card">
+                    <div class="card glass">
                         <div class="card__body">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-16);">
-                                <h3 style="margin: 0;">Questions</h3>
+                                <h3 class="gradient-text" style="margin: 0;">Questions</h3>
                                 <span class="badge" id="builder-question-count">0</span>
                             </div>
 
@@ -761,7 +774,7 @@ Example format:
 
                 <!-- Right Panel: Question Editor -->
                 <div class="test-builder-editor">
-                    <div class="card">
+                    <div class="card glass">
                         <div class="card__body">
                             <div id="builder-editor-empty" class="empty-state">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 64px; height: 64px; color: var(--color-text-secondary); margin-bottom: var(--space-16);">
@@ -924,8 +937,13 @@ Example format:
 
         <!-- Test Library Section -->
         <div id="test-library-section" class="section hidden">
+            <!-- Ambient Background Blobs -->
+            <div class="ambient-blob ambient-blob-1" style="top: 5%; left: 8%;"></div>
+            <div class="ambient-blob ambient-blob-2" style="bottom: 20%; right: 5%;"></div>
+            <div class="ambient-blob ambient-blob-3" style="top: 60%; left: 30%;"></div>
+
             <div class="library-header">
-                <h1>My Test Library</h1>
+                <h1 class="gradient-text">My Test Library</h1>
                 <button id="close-library-btn" class="btn btn--outline">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="15 18 9 12 15 6"></polyline>
@@ -969,8 +987,13 @@ Example format:
 
         <!-- Pomodoro Timer Section -->
         <div id="pomodoro-section" class="section hidden">
+            <!-- Ambient Background Blobs -->
+            <div class="ambient-blob ambient-blob-1" style="top: 10%; right: 10%;"></div>
+            <div class="ambient-blob ambient-blob-2" style="bottom: 15%; left: 5%;"></div>
+            <div class="ambient-blob ambient-blob-3" style="top: 50%; left: 50%;"></div>
+
             <div class="library-header">
-                <h1>Focus Timer</h1>
+                <h1 class="gradient-text">Focus Timer</h1>
                 <button id="close-pomodoro-btn" class="btn btn--outline">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="15 18 9 12 15 6"></polyline>
@@ -981,7 +1004,7 @@ Example format:
 
             <div class="pomodoro-container">
                 <!-- Timer Display -->
-                <div class="pomodoro-timer-card">
+                <div class="pomodoro-timer-card glass">
                     <div class="pomodoro-mode-indicator">
                         <span id="pomodoro-mode-text">Work Session</span>
                         <span id="pomodoro-session-count">Session 1 of 4</span>
@@ -1046,8 +1069,8 @@ Example format:
                 <!-- Sidebar with Tasks and Settings -->
                 <div class="pomodoro-sidebar">
                     <!-- Quick Tasks -->
-                    <div class="pomodoro-panel">
-                        <h3>Today's Tasks</h3>
+                    <div class="pomodoro-panel glass">
+                        <h3 class="gradient-text">Today's Tasks</h3>
                         <div id="pomodoro-task-list" class="pomodoro-task-list">
                             <!-- Tasks will be inserted here -->
                         </div>
@@ -1055,8 +1078,8 @@ Example format:
                     </div>
 
                     <!-- Quick Stats -->
-                    <div class="pomodoro-panel">
-                        <h3>Today's Progress</h3>
+                    <div class="pomodoro-panel glass">
+                        <h3 class="gradient-text">Today's Progress</h3>
                         <div class="pomodoro-stats">
                             <div class="pomodoro-stat-item">
                                 <span class="pomodoro-stat-value" id="pomodoro-today-sessions">0</span>
@@ -1073,8 +1096,8 @@ Example format:
                     </div>
 
                     <!-- Settings -->
-                    <div class="pomodoro-panel">
-                        <h3>Settings</h3>
+                    <div class="pomodoro-panel glass">
+                        <h3 class="gradient-text">Settings</h3>
 
                         <!-- Templates -->
                         <div class="form-group">
@@ -1202,8 +1225,12 @@ Example format:
 
         <!-- Notes Section -->
         <div id="notes-section" class="section hidden">
+            <!-- Ambient Background Blobs -->
+            <div class="ambient-blob ambient-blob-1" style="top: 8%; right: 15%;"></div>
+            <div class="ambient-blob ambient-blob-2" style="bottom: 20%; left: 10%;"></div>
+
             <div class="library-header">
-                <h1>📝 My Notes</h1>
+                <h1 class="gradient-text">My Notes</h1>
                 <div class="library-header-actions">
                     <button id="create-note-btn" class="btn btn--primary">+ New Note</button>
                     <button id="close-notes-btn" class="btn btn--outline">← Back</button>
@@ -1278,8 +1305,12 @@ Example format:
 
         <!-- Whiteboard Section -->
         <div id="whiteboard-section" class="section hidden">
+            <!-- Ambient Background Blobs -->
+            <div class="ambient-blob ambient-blob-1" style="top: 10%; left: 5%;"></div>
+            <div class="ambient-blob ambient-blob-2" style="bottom: 10%; right: 10%;"></div>
+
             <div class="library-header">
-                <h1>🎨 Whiteboard</h1>
+                <h1 class="gradient-text">Whiteboard</h1>
                 <div class="library-header-actions">
                     <button id="save-whiteboard-btn" class="btn btn--primary">💾 Save</button>
                     <button id="clear-whiteboard-btn" class="btn btn--outline">🗑️ Clear</button>
@@ -1395,8 +1426,13 @@ Example format:
 
         <!-- Flashcards Section -->
         <div id="flashcards-section" class="section hidden">
+            <!-- Ambient Background Blobs -->
+            <div class="ambient-blob ambient-blob-1" style="top: 5%; right: 8%;"></div>
+            <div class="ambient-blob ambient-blob-2" style="bottom: 15%; left: 5%;"></div>
+            <div class="ambient-blob ambient-blob-3" style="top: 45%; left: 60%;"></div>
+
             <div class="section-header">
-                <h1>Flashcards</h1>
+                <h1 class="gradient-text">Flashcards</h1>
                 <button id="close-flashcards-btn" class="btn btn--outline">← Back</button>
             </div>
 
@@ -1498,10 +1534,14 @@ Example format:
 
         <!-- Study Planner Section -->
         <div id="planner-section" class="section hidden">
+            <!-- Ambient Background Blobs -->
+            <div class="ambient-blob ambient-blob-1" style="top: 8%; left: 10%;"></div>
+            <div class="ambient-blob ambient-blob-2" style="bottom: 20%; right: 5%;"></div>
+
             <div class="planner-layout">
                 <div class="planner-main">
                     <div class="planner-header">
-                        <h1>Study Planner</h1>
+                        <h1 class="gradient-text">Study Planner</h1>
                         <div class="planner-controls">
                             <div class="view-toggle">
                                 <button id="view-toggle-week" class="view-toggle-btn active">Week</button>
@@ -1543,13 +1583,18 @@ Example format:
 
         <!-- Habit Tracker Section -->
         <div id="habits-section" class="section hidden">
+            <!-- Ambient Background Blobs -->
+            <div class="ambient-blob ambient-blob-1" style="top: 10%; right: 12%;"></div>
+            <div class="ambient-blob ambient-blob-2" style="bottom: 15%; left: 8%;"></div>
+            <div class="ambient-blob ambient-blob-3" style="top: 50%; left: 40%;"></div>
+
             <div class="section-header">
-                <h1>Habit Tracker</h1>
+                <h1 class="gradient-text">Habit Tracker</h1>
                 <button id="close-habits-btn" class="btn btn--outline">← Back</button>
             </div>
 
             <!-- Stats Overview -->
-            <div class="habits-stats-overview">
+            <div class="habits-stats-overview glass">
                 <div class="habit-overview-stat">
                     <span class="habit-overview-value" id="total-habits">0</span>
                     <span class="habit-overview-label">Total Habits</span>
@@ -1584,9 +1629,13 @@ Example format:
 
         <!-- Test Section -->
         <div id="test-section" class="section hidden">
-            <div class="test-header">
+            <!-- Ambient Background Blobs -->
+            <div class="ambient-blob ambient-blob-1" style="top: 5%; right: 5%;"></div>
+            <div class="ambient-blob ambient-blob-2" style="bottom: 10%; left: 10%;"></div>
+
+            <div class="test-header glass">
                 <div class="test-header-left">
-                    <h2 id="test-title">Test Title</h2>
+                    <h2 id="test-title" class="gradient-text">Test Title</h2>
                     <div class="progress-indicator">
                         <span id="question-counter">Question 1 of 10</span>
                         <span id="mode-indicator" class="mode-badge mode-badge--exam hidden">Exam Mode</span>
@@ -1670,9 +1719,14 @@ Example format:
 
         <!-- Results Section -->
         <div id="results-section" class="section hidden">
-            <div class="card">
+            <!-- Ambient Background Blobs -->
+            <div class="ambient-blob ambient-blob-1" style="top: 10%; left: 8%;"></div>
+            <div class="ambient-blob ambient-blob-2" style="bottom: 15%; right: 10%;"></div>
+            <div class="ambient-blob ambient-blob-3" style="top: 60%; right: 30%;"></div>
+
+            <div class="card glass">
                 <div class="card__body">
-                    <h2>Test Results</h2>
+                    <h2 class="gradient-text">Test Results</h2>
                     <div id="score-summary" class="score-summary">
                         <!-- Score will be inserted here -->
                     </div>

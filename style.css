@@ -1413,6 +1413,8 @@ select.form-control {
 .section {
   margin: var(--space-32) 0;
   animation: slideInUp var(--duration-slow) var(--ease-standard);
+  position: relative;
+  overflow: visible;
 }
 
 .section.hidden {
@@ -3074,14 +3076,16 @@ select.form-control {
 }
 
 .test-card {
-  background-color: var(--color-surface);
-  border: 1.5px solid var(--color-card-border);
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1.5px solid rgba(255, 255, 255, 0.8);
   border-radius: var(--radius-lg);
   padding: var(--space-20);
   transition: transform var(--duration-normal) var(--ease-spring),
               box-shadow var(--duration-normal) var(--ease-smooth),
               border-color var(--duration-normal) var(--ease-standard);
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 4px 16px rgba(216, 90, 58, 0.08);
   animation: slideInUp var(--duration-slow) var(--ease-standard);
   animation-fill-mode: both;
   will-change: transform;
@@ -3089,9 +3093,9 @@ select.form-control {
 }
 
 .test-card:hover {
-  box-shadow: var(--shadow-xl);
+  box-shadow: 0 12px 32px rgba(216, 90, 58, 0.15);
   transform: translateY(-6px) scale(1.02);
-  border-color: rgba(var(--color-teal-500-rgb), 0.5);
+  border-color: rgba(255, 146, 112, 0.5);
 }
 
 .test-card:active {
@@ -6324,17 +6328,20 @@ select.form-control {
 }
 
 .note-card {
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
   border-radius: var(--radius-lg);
   padding: var(--space-20);
   transition: all var(--duration-normal);
   cursor: pointer;
+  box-shadow: 0 4px 16px rgba(216, 90, 58, 0.06);
 }
 
 .note-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(216, 90, 58, 0.12);
 }
 
 .note-card-header {
@@ -6590,16 +6597,19 @@ select.form-control {
 }
 
 .deck-card {
-    background: var(--color-bg-secondary);
-    border: 1px solid var(--color-border);
-    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: var(--radius-lg);
     padding: var(--space-16);
     transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 16px rgba(216, 90, 58, 0.06);
 }
 
 .deck-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(216, 90, 58, 0.12);
 }
 
 .deck-card-header {
@@ -6831,17 +6841,19 @@ select.form-control {
     justify-content: center;
     align-items: center;
     padding: var(--space-24);
-    background: var(--color-bg-secondary);
-    border: 2px solid var(--color-border);
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 2px solid rgba(255, 255, 255, 0.9);
     border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 30px rgba(216, 90, 58, 0.1);
 }
 
 .flashcard-back {
     transform: rotateY(180deg);
-    background: var(--color-primary);
+    background: linear-gradient(135deg, #ff9270 0%, #d85a3a 100%);
     color: white;
-    border-color: var(--color-primary);
+    border-color: #ff9270;
 }
 
 .flashcard-label {
@@ -7352,16 +7364,19 @@ select.form-control {
 }
 
 .habit-card {
-    background: var(--color-bg-secondary);
-    border: 1px solid var(--color-border);
-    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: var(--radius-lg);
     padding: var(--space-16);
     transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 16px rgba(216, 90, 58, 0.06);
 }
 
 .habit-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(216, 90, 58, 0.12);
 }
 
 .habit-card-header {
