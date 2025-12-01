@@ -25,6 +25,52 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Autumn Immersive Effects -->
+    <div class="paper-texture" aria-hidden="true"></div>
+    <div class="falling-leaves" aria-hidden="true">
+        <!-- Maple Leaf SVGs -->
+        <div class="leaf">
+            <svg viewBox="0 0 24 24" fill="#d85a3a">
+                <path d="M12 2L9 9H2l5.5 4L5 22l7-5 7 5-2.5-9 5.5-4h-7L12 2z" opacity="0.7"/>
+            </svg>
+        </div>
+        <div class="leaf">
+            <svg viewBox="0 0 24 24" fill="#ff7d52">
+                <path d="M12 2L9 9H2l5.5 4L5 22l7-5 7 5-2.5-9 5.5-4h-7L12 2z" opacity="0.6"/>
+            </svg>
+        </div>
+        <div class="leaf">
+            <svg viewBox="0 0 24 24" fill="#ff9270">
+                <path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66.95-2.3c.48.17.98.3 1.34.3C19 20 22 3 22 3c-1 2-8 2.25-13 3.25S2 11.5 2 13.5s1.75 3.75 1.75 3.75C7 8 17 8 17 8z" opacity="0.65"/>
+            </svg>
+        </div>
+        <div class="leaf">
+            <svg viewBox="0 0 24 24" fill="#CC5D34">
+                <path d="M12 2L9 9H2l5.5 4L5 22l7-5 7 5-2.5-9 5.5-4h-7L12 2z" opacity="0.5"/>
+            </svg>
+        </div>
+        <div class="leaf">
+            <svg viewBox="0 0 24 24" fill="#ffd4c4">
+                <path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66.95-2.3c.48.17.98.3 1.34.3C19 20 22 3 22 3c-1 2-8 2.25-13 3.25S2 11.5 2 13.5s1.75 3.75 1.75 3.75C7 8 17 8 17 8z" opacity="0.55"/>
+            </svg>
+        </div>
+        <div class="leaf">
+            <svg viewBox="0 0 24 24" fill="#d85a3a">
+                <path d="M12 2L9 9H2l5.5 4L5 22l7-5 7 5-2.5-9 5.5-4h-7L12 2z" opacity="0.6"/>
+            </svg>
+        </div>
+        <div class="leaf">
+            <svg viewBox="0 0 24 24" fill="#ff7d52">
+                <path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66.95-2.3c.48.17.98.3 1.34.3C19 20 22 3 22 3c-1 2-8 2.25-13 3.25S2 11.5 2 13.5s1.75 3.75 1.75 3.75C7 8 17 8 17 8z" opacity="0.5"/>
+            </svg>
+        </div>
+        <div class="leaf">
+            <svg viewBox="0 0 24 24" fill="#ff9270">
+                <path d="M12 2L9 9H2l5.5 4L5 22l7-5 7 5-2.5-9 5.5-4h-7L12 2z" opacity="0.55"/>
+            </svg>
+        </div>
+    </div>
+
     <!-- Theme Toggle Button -->
     <button id="theme-toggle" class="theme-toggle-btn" aria-label="Open theme menu">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -146,14 +192,14 @@
                     </svg>
                 </div>
 
-                <div class="landing-hero">
-                    <h1 class="landing-title gradient-text">Welcome to Your Study Space</h1>
-                    <p class="landing-subtitle">A gentle place to practice, learn, and grow</p>
+                <div class="landing-hero fireplace-glow">
+                    <h1 class="landing-title gradient-text">Welcome to Your Cozy Study Nook</h1>
+                    <p class="landing-subtitle">Settle in with a warm drink and let the learning begin 🍂</p>
                 </div>
 
                 <div class="landing-features">
                     <!-- Practice Feature Card -->
-                    <div class="feature-card glass hover-lift">
+                    <div class="feature-card glass hover-lift cozy-glow">
                         <div class="feature-icon icon-gradient">
                             <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <!-- Stacked Books Icon -->
@@ -187,7 +233,7 @@
                     </div>
 
                     <!-- Library Feature Card -->
-                    <div class="feature-card glass hover-lift">
+                    <div class="feature-card glass hover-lift cozy-glow">
                         <div class="feature-icon icon-gradient">
                             <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <!-- Clipboard with Checklist -->
@@ -220,7 +266,7 @@
                     </div>
 
                     <!-- Timer Feature Card -->
-                    <div class="feature-card glass hover-lift">
+                    <div class="feature-card glass hover-lift cozy-glow">
                         <div class="feature-icon icon-gradient">
                             <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <!-- Coffee Cup with Steam -->
@@ -731,14 +777,38 @@ Example format:
                             </div>
 
                             <div id="builder-question-list" class="builder-question-list">
-                                <div class="empty-state">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 48px; height: 48px; color: var(--color-text-secondary); margin-bottom: var(--space-12);">
-                                        <circle cx="12" cy="12" r="10"></circle>
-                                        <line x1="12" y1="8" x2="12" y2="12"></line>
-                                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                                    </svg>
-                                    <p>No questions yet</p>
-                                    <p style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">Click "Add Question" to start building your test</p>
+                                <div class="empty-state cozy-empty">
+                                    <div class="empty-state-illustration float-gentle">
+                                        <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <!-- Cozy Notebook with Hot Cocoa -->
+                                            <rect x="15" y="20" width="35" height="45" rx="3" fill="url(#notebook-gradient)" stroke="#d85a3a" stroke-width="1.5"/>
+                                            <line x1="20" y1="30" x2="45" y2="30" stroke="#ff9270" stroke-width="1" opacity="0.6"/>
+                                            <line x1="20" y1="38" x2="42" y2="38" stroke="#ff9270" stroke-width="1" opacity="0.6"/>
+                                            <line x1="20" y1="46" x2="40" y2="46" stroke="#ff9270" stroke-width="1" opacity="0.6"/>
+                                            <!-- Hot Cocoa Mug -->
+                                            <ellipse cx="58" cy="52" rx="12" ry="4" fill="#8B4513"/>
+                                            <path d="M46 52V40C46 37 50 35 58 35C66 35 70 37 70 40V52" fill="url(#mug-gradient)" stroke="#d85a3a" stroke-width="1.5"/>
+                                            <path d="M70 42H74C76 42 77 44 77 46C77 48 76 50 74 50H70" stroke="#d85a3a" stroke-width="1.5" fill="none"/>
+                                            <!-- Steam -->
+                                            <path d="M52 30C52 30 54 27 56 27" stroke="#ff9270" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+                                            <path d="M58 28C58 28 60 24 62 24" stroke="#ff7d52" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+                                            <path d="M64 30C64 30 66 27 68 27" stroke="#d85a3a" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+                                            <!-- Falling leaf -->
+                                            <path d="M10 15C12 12 16 12 18 15C16 18 12 18 10 15Z" fill="#d85a3a" opacity="0.6"/>
+                                            <defs>
+                                                <linearGradient id="notebook-gradient" x1="15" y1="20" x2="50" y2="65" gradientUnits="userSpaceOnUse">
+                                                    <stop offset="0%" stop-color="#fde4d8"/>
+                                                    <stop offset="100%" stop-color="#ffd4c4"/>
+                                                </linearGradient>
+                                                <linearGradient id="mug-gradient" x1="58" y1="35" x2="58" y2="52" gradientUnits="userSpaceOnUse">
+                                                    <stop offset="0%" stop-color="#6B3E26"/>
+                                                    <stop offset="100%" stop-color="#8B4513"/>
+                                                </linearGradient>
+                                            </defs>
+                                        </svg>
+                                    </div>
+                                    <h3>No questions yet</h3>
+                                    <p>Grab a warm drink and start building your test 🍂</p>
                                 </div>
                             </div>
 
@@ -757,15 +827,41 @@ Example format:
                 <div class="test-builder-editor">
                     <div class="card glass">
                         <div class="card__body">
-                            <div id="builder-editor-empty" class="empty-state">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 64px; height: 64px; color: var(--color-text-secondary); margin-bottom: var(--space-16);">
-                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                                </svg>
-                                <h3 style="margin-bottom: var(--space-8);">Ready to Build</h3>
-                                <p style="color: var(--color-text-secondary); max-width: 400px; text-align: center;">
-                                    Add a question to get started, or import an existing test to edit
-                                </p>
+                            <div id="builder-editor-empty" class="empty-state cozy-empty">
+                                <div class="empty-state-illustration float-gentle">
+                                    <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <!-- Cozy Quill & Parchment -->
+                                        <rect x="10" y="25" width="40" height="45" rx="2" fill="url(#parchment-grad)" stroke="#d85a3a" stroke-width="1.5"/>
+                                        <rect x="14" y="25" width="2" height="45" fill="#c9a080"/>
+                                        <!-- Lines on parchment -->
+                                        <line x1="20" y1="35" x2="45" y2="35" stroke="#d85a3a" stroke-width="1" opacity="0.3"/>
+                                        <line x1="20" y1="43" x2="42" y2="43" stroke="#d85a3a" stroke-width="1" opacity="0.3"/>
+                                        <line x1="20" y1="51" x2="38" y2="51" stroke="#d85a3a" stroke-width="1" opacity="0.3"/>
+                                        <!-- Quill Pen -->
+                                        <path d="M55 15C55 15 70 30 62 55L58 52C58 52 62 35 55 15Z" fill="url(#feather-grad)"/>
+                                        <path d="M62 55L58 52L56 70L62 55Z" fill="#8B4513"/>
+                                        <path d="M56 70L55 75L58 72L56 70Z" fill="#d85a3a"/>
+                                        <!-- Ink drops -->
+                                        <circle cx="65" cy="65" r="3" fill="#d85a3a" opacity="0.4"/>
+                                        <circle cx="70" cy="60" r="2" fill="#d85a3a" opacity="0.3"/>
+                                        <!-- Autumn leaves decoration -->
+                                        <path d="M5 20C7 17 11 17 13 20C11 23 7 23 5 20Z" fill="#ff7d52" opacity="0.5"/>
+                                        <path d="M72 72C74 69 78 69 80 72C78 75 74 75 72 72Z" fill="#d85a3a" opacity="0.4"/>
+                                        <defs>
+                                            <linearGradient id="parchment-grad" x1="10" y1="25" x2="50" y2="70" gradientUnits="userSpaceOnUse">
+                                                <stop offset="0%" stop-color="#f5e6d3"/>
+                                                <stop offset="100%" stop-color="#e8d4be"/>
+                                            </linearGradient>
+                                            <linearGradient id="feather-grad" x1="55" y1="15" x2="62" y2="55" gradientUnits="userSpaceOnUse">
+                                                <stop offset="0%" stop-color="#ff9270"/>
+                                                <stop offset="50%" stop-color="#d85a3a"/>
+                                                <stop offset="100%" stop-color="#8B4513"/>
+                                            </linearGradient>
+                                        </defs>
+                                    </svg>
+                                </div>
+                                <h3>Ready to Build</h3>
+                                <p>Your blank parchment awaits! Add a question to begin crafting your test.</p>
                             </div>
 
                             <div id="builder-editor-form" class="hidden">
@@ -1232,16 +1328,45 @@ Example format:
             </div>
 
             <!-- Empty State -->
-            <div id="notes-empty-state" class="empty-state hidden">
-                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                    <polyline points="14 2 14 8 20 8"></polyline>
-                    <line x1="16" y1="13" x2="8" y2="13"></line>
-                    <line x1="16" y1="17" x2="8" y2="17"></line>
-                    <polyline points="10 9 9 9 8 9"></polyline>
-                </svg>
+            <div id="notes-empty-state" class="empty-state cozy-empty hidden">
+                <div class="empty-state-illustration float-gentle">
+                    <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Stack of Cozy Journals -->
+                        <rect x="18" y="50" width="44" height="10" rx="2" fill="url(#journal1-grad)" stroke="#8B4513" stroke-width="1"/>
+                        <rect x="15" y="38" width="48" height="10" rx="2" fill="url(#journal2-grad)" stroke="#d85a3a" stroke-width="1"/>
+                        <rect x="12" y="26" width="52" height="10" rx="2" fill="url(#journal3-grad)" stroke="#cc5d34" stroke-width="1"/>
+                        <!-- Top journal with ribbon bookmark -->
+                        <rect x="9" y="14" width="56" height="10" rx="2" fill="url(#journal4-grad)" stroke="#d85a3a" stroke-width="1.5"/>
+                        <rect x="52" y="12" width="4" height="14" rx="1" fill="#d85a3a"/>
+                        <!-- Autumn leaves scattered -->
+                        <path d="M5 45C7 42 11 42 13 45C11 48 7 48 5 45Z" fill="#ff7d52" opacity="0.6"/>
+                        <path d="M68 30C70 27 74 27 76 30C74 33 70 33 68 30Z" fill="#d85a3a" opacity="0.5"/>
+                        <path d="M70 55C72 52 76 52 78 55C76 58 72 58 70 55Z" fill="#ff9270" opacity="0.4"/>
+                        <!-- Pen resting on books -->
+                        <line x1="58" y1="8" x2="72" y2="22" stroke="#8B4513" stroke-width="2" stroke-linecap="round"/>
+                        <circle cx="72" cy="22" r="2" fill="#d85a3a"/>
+                        <defs>
+                            <linearGradient id="journal1-grad" x1="18" y1="50" x2="62" y2="60" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#a0522d"/>
+                                <stop offset="100%" stop-color="#8B4513"/>
+                            </linearGradient>
+                            <linearGradient id="journal2-grad" x1="15" y1="38" x2="63" y2="48" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#fde4d8"/>
+                                <stop offset="100%" stop-color="#ffd4c4"/>
+                            </linearGradient>
+                            <linearGradient id="journal3-grad" x1="12" y1="26" x2="64" y2="36" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#ff9270"/>
+                                <stop offset="100%" stop-color="#ff7d52"/>
+                            </linearGradient>
+                            <linearGradient id="journal4-grad" x1="9" y1="14" x2="65" y2="24" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#d85a3a"/>
+                                <stop offset="100%" stop-color="#cc5d34"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
                 <h3>No Notes Yet</h3>
-                <p>Create your first note to get started!</p>
+                <p>Your journal awaits your thoughts 🍂</p>
                 <button class="btn btn--primary" onclick="document.getElementById('create-note-btn').click()">Create Note</button>
             </div>
         </div>
@@ -1434,9 +1559,40 @@ Example format:
                     <!-- Deck cards will be inserted here -->
                 </div>
 
-                <div id="decks-empty-state" class="empty-state hidden">
-                    <p>No flashcard decks yet.</p>
-                    <p>Create your first deck to start studying with spaced repetition!</p>
+                <div id="decks-empty-state" class="empty-state cozy-empty hidden">
+                    <div class="empty-state-illustration float-gentle">
+                        <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Stack of Flashcards -->
+                            <rect x="15" y="42" width="50" height="32" rx="3" fill="url(#card1-grad)" stroke="#8B4513" stroke-width="1" transform="rotate(-3 40 58)"/>
+                            <rect x="12" y="35" width="50" height="32" rx="3" fill="url(#card2-grad)" stroke="#cc5d34" stroke-width="1" transform="rotate(2 37 51)"/>
+                            <rect x="10" y="28" width="50" height="32" rx="3" fill="url(#card3-grad)" stroke="#d85a3a" stroke-width="1.5"/>
+                            <!-- Question mark on top card -->
+                            <text x="35" y="50" font-size="20" fill="#d85a3a" font-family="Georgia, serif" font-weight="bold">?</text>
+                            <!-- Sparkles/stars -->
+                            <circle cx="65" cy="20" r="3" fill="#ff9270" opacity="0.7"/>
+                            <circle cx="70" cy="35" r="2" fill="#ff7d52" opacity="0.6"/>
+                            <circle cx="8" cy="45" r="2" fill="#d85a3a" opacity="0.5"/>
+                            <!-- Autumn leaf -->
+                            <path d="M68 60C70 57 74 57 76 60C74 63 70 63 68 60Z" fill="#d85a3a" opacity="0.5"/>
+                            <path d="M5 25C7 22 11 22 13 25C11 28 7 28 5 25Z" fill="#ff7d52" opacity="0.6"/>
+                            <defs>
+                                <linearGradient id="card1-grad" x1="15" y1="42" x2="65" y2="74" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stop-color="#e8d4be"/>
+                                    <stop offset="100%" stop-color="#d4c4b0"/>
+                                </linearGradient>
+                                <linearGradient id="card2-grad" x1="12" y1="35" x2="62" y2="67" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stop-color="#fde4d8"/>
+                                    <stop offset="100%" stop-color="#ffd4c4"/>
+                                </linearGradient>
+                                <linearGradient id="card3-grad" x1="10" y1="28" x2="60" y2="60" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stop-color="#fff8f5"/>
+                                    <stop offset="100%" stop-color="#fde4d8"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                    <h3>No Flashcard Decks Yet</h3>
+                    <p>Create your first deck and let the learning begin!</p>
                 </div>
             </div>
 
@@ -1602,9 +1758,49 @@ Example format:
                 <!-- Habit cards will be inserted here -->
             </div>
 
-            <div id="habits-empty-state" class="empty-state hidden">
-                <p>No habits tracked yet.</p>
-                <p>Create your first habit to start building streaks!</p>
+            <div id="habits-empty-state" class="empty-state cozy-empty hidden">
+                <div class="empty-state-illustration float-gentle">
+                    <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Cozy Calendar -->
+                        <rect x="12" y="18" width="56" height="50" rx="4" fill="url(#calendar-bg-grad)" stroke="#d85a3a" stroke-width="1.5"/>
+                        <rect x="12" y="18" width="56" height="14" rx="4" fill="url(#calendar-header-grad)"/>
+                        <!-- Calendar binding rings -->
+                        <circle cx="24" cy="18" r="3" fill="#8B4513"/>
+                        <circle cx="40" cy="18" r="3" fill="#8B4513"/>
+                        <circle cx="56" cy="18" r="3" fill="#8B4513"/>
+                        <!-- Calendar days with checkmarks -->
+                        <rect x="18" y="38" width="10" height="10" rx="2" fill="#ffd4c4" stroke="#ff9270" stroke-width="0.5"/>
+                        <path d="M20 43L22 45L26 41" stroke="#d85a3a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <rect x="32" y="38" width="10" height="10" rx="2" fill="#ffd4c4" stroke="#ff9270" stroke-width="0.5"/>
+                        <path d="M34 43L36 45L40 41" stroke="#d85a3a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <rect x="46" y="38" width="10" height="10" rx="2" fill="#ffd4c4" stroke="#ff9270" stroke-width="0.5"/>
+                        <path d="M48 43L50 45L54 41" stroke="#d85a3a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <!-- Empty day (waiting to be checked) -->
+                        <rect x="18" y="52" width="10" height="10" rx="2" fill="#fff8f5" stroke="#ff9270" stroke-width="0.5" stroke-dasharray="2 2"/>
+                        <!-- Fire/streak flame -->
+                        <path d="M60 52C60 52 65 48 65 55C65 60 60 65 60 65C60 65 55 60 55 55C55 48 60 52 60 52Z" fill="url(#flame-grad)"/>
+                        <!-- Autumn leaves -->
+                        <path d="M5 35C7 32 11 32 13 35C11 38 7 38 5 35Z" fill="#ff7d52" opacity="0.6"/>
+                        <path d="M70 20C72 17 76 17 78 20C76 23 72 23 70 20Z" fill="#d85a3a" opacity="0.5"/>
+                        <defs>
+                            <linearGradient id="calendar-bg-grad" x1="12" y1="18" x2="68" y2="68" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#fff8f5"/>
+                                <stop offset="100%" stop-color="#fde4d8"/>
+                            </linearGradient>
+                            <linearGradient id="calendar-header-grad" x1="12" y1="18" x2="68" y2="32" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#d85a3a"/>
+                                <stop offset="100%" stop-color="#cc5d34"/>
+                            </linearGradient>
+                            <linearGradient id="flame-grad" x1="60" y1="48" x2="60" y2="65" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#ff9270"/>
+                                <stop offset="50%" stop-color="#ff7d52"/>
+                                <stop offset="100%" stop-color="#d85a3a"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <h3>No Habits Tracked Yet</h3>
+                <p>Start building your cozy routine, one day at a time 🔥</p>
             </div>
         </div>
 
