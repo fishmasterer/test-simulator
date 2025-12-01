@@ -4530,9 +4530,68 @@ class TestSimulator {
 // Global reference for inline event handlers
 let testSimulator;
 
+// Splash Screen Handler
+function initSplashScreen() {
+    const splashScreen = document.getElementById('splash-screen');
+    const enterBtn = document.getElementById('splash-enter-btn');
+
+    if (!splashScreen) return;
+
+    // Check if user has seen splash before (skip if returning user)
+    const hasSeenSplash = sessionStorage.getItem('hasSeenSplash');
+    if (hasSeenSplash === 'true') {
+        splashScreen.classList.add('hidden');
+        return;
+    }
+
+    // Dismiss splash screen function
+    function dismissSplash() {
+        splashScreen.classList.add('fade-out');
+        sessionStorage.setItem('hasSeenSplash', 'true');
+
+        // Remove from DOM after animation
+        setTimeout(() => {
+            splashScreen.classList.add('hidden');
+        }, 800);
+
+        console.log('🍂 Welcome to Study Nook!');
+    }
+
+    // Enter button click
+    if (enterBtn) {
+        enterBtn.addEventListener('click', dismissSplash);
+    }
+
+    // Click anywhere to dismiss (after initial load)
+    setTimeout(() => {
+        splashScreen.addEventListener('click', (e) => {
+            // Don't dismiss if clicking the button (handled separately)
+            if (e.target !== enterBtn && !enterBtn.contains(e.target)) {
+                dismissSplash();
+            }
+        });
+    }, 1500);
+
+    // Press Enter or Space to dismiss
+    document.addEventListener('keydown', function splashKeyHandler(e) {
+        if ((e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') && !splashScreen.classList.contains('hidden')) {
+            e.preventDefault();
+            dismissSplash();
+            document.removeEventListener('keydown', splashKeyHandler);
+        }
+    });
+
+    // Auto-dismiss after 8 seconds (optional - gives users time to enjoy animation)
+    // Uncomment the following if you want auto-dismiss:
+    // setTimeout(dismissSplash, 8000);
+}
+
 // Initialize the test simulator when the page loads
 document.addEventListener('DOMContentLoaded', () => {
     try {
+        // Initialize splash screen first
+        initSplashScreen();
+
         testSimulator = new TestSimulator();
         console.log('Test Simulator initialized successfully');
 
