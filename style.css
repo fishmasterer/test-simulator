@@ -532,6 +532,58 @@
   }
 }
 
+/* Mobile adjustments for ambient blobs */
+@media (max-width: 768px) {
+  .ambient-blob-1 {
+    width: 180px;
+    height: 180px;
+  }
+  .ambient-blob-2 {
+    width: 220px;
+    height: 220px;
+  }
+  .ambient-blob-3 {
+    width: 150px;
+    height: 150px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ambient-blob {
+    filter: blur(40px);
+    opacity: 0.6;
+  }
+  .ambient-blob-1 {
+    width: 120px;
+    height: 120px;
+  }
+  .ambient-blob-2 {
+    width: 150px;
+    height: 150px;
+  }
+  .ambient-blob-3 {
+    width: 100px;
+    height: 100px;
+  }
+}
+
+/* Backdrop-filter fallback for older browsers */
+@supports not (backdrop-filter: blur(12px)) {
+  .glass {
+    background: rgba(255, 255, 255, 0.92);
+  }
+  .glass-strong {
+    background: rgba(255, 255, 255, 0.95);
+  }
+  .glass-subtle {
+    background: rgba(255, 255, 255, 0.88);
+  }
+  [data-theme="claude-dark"] .glass,
+  [data-color-scheme="dark"] .glass {
+    background: rgba(41, 37, 33, 0.95);
+  }
+}
+
 /* Gradient Buttons */
 .btn-gradient {
   background: linear-gradient(135deg, #d85a3a 0%, #ff7d52 100%);
@@ -729,6 +781,8 @@ body {
   /* Optimize touch performance */
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+  /* Prevent horizontal scrolling from ambient blobs */
+  overflow-x: hidden;
 }
 
 *,
@@ -3101,6 +3155,20 @@ select.form-control {
 .test-card:active {
   transform: translateY(-2px) scale(0.99);
   transition: transform var(--duration-instant) var(--ease-standard);
+}
+
+/* Dark mode for test-card */
+[data-theme="claude-dark"] .test-card,
+[data-color-scheme="dark"] .test-card {
+  background: rgba(41, 37, 33, 0.7);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="claude-dark"] .test-card:hover,
+[data-color-scheme="dark"] .test-card:hover {
+  box-shadow: 0 12px 32px rgba(255, 125, 82, 0.15);
+  border-color: rgba(255, 146, 112, 0.3);
 }
 
 /* Staggered animation for cards */
@@ -6344,6 +6412,19 @@ select.form-control {
   box-shadow: 0 12px 32px rgba(216, 90, 58, 0.12);
 }
 
+/* Dark mode for note-card */
+[data-theme="claude-dark"] .note-card,
+[data-color-scheme="dark"] .note-card {
+  background: rgba(41, 37, 33, 0.7);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="claude-dark"] .note-card:hover,
+[data-color-scheme="dark"] .note-card:hover {
+  box-shadow: 0 12px 32px rgba(255, 125, 82, 0.12);
+}
+
 .note-card-header {
   display: flex;
   justify-content: space-between;
@@ -6612,6 +6693,19 @@ select.form-control {
     box-shadow: 0 12px 32px rgba(216, 90, 58, 0.12);
 }
 
+/* Dark mode for deck-card */
+[data-theme="claude-dark"] .deck-card,
+[data-color-scheme="dark"] .deck-card {
+    background: rgba(41, 37, 33, 0.7);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="claude-dark"] .deck-card:hover,
+[data-color-scheme="dark"] .deck-card:hover {
+    box-shadow: 0 12px 32px rgba(255, 125, 82, 0.12);
+}
+
 .deck-card-header {
     display: flex;
     justify-content: space-between;
@@ -6854,6 +6948,14 @@ select.form-control {
     background: linear-gradient(135deg, #ff9270 0%, #d85a3a 100%);
     color: white;
     border-color: #ff9270;
+}
+
+/* Dark mode for flashcard */
+[data-theme="claude-dark"] .flashcard-front,
+[data-color-scheme="dark"] .flashcard-front {
+    background: rgba(41, 37, 33, 0.85);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
 .flashcard-label {
@@ -7377,6 +7479,19 @@ select.form-control {
 .habit-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 12px 32px rgba(216, 90, 58, 0.12);
+}
+
+/* Dark mode for habit-card */
+[data-theme="claude-dark"] .habit-card,
+[data-color-scheme="dark"] .habit-card {
+    background: rgba(41, 37, 33, 0.7);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="claude-dark"] .habit-card:hover,
+[data-color-scheme="dark"] .habit-card:hover {
+    box-shadow: 0 12px 32px rgba(255, 125, 82, 0.12);
 }
 
 .habit-card-header {
