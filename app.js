@@ -382,11 +382,12 @@ class TestSimulator {
      */
     initializeTheme() {
         const savedTheme = localStorage.getItem(this.themeKey);
-        if (savedTheme) {
+        if (savedTheme && (savedTheme === 'claude-light' || savedTheme === 'claude-dark')) {
             this.setTheme(savedTheme, false);
         } else {
+            // Default to Claude themes based on system preference
             const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            const theme = prefersDark ? 'dark' : 'light';
+            const theme = prefersDark ? 'claude-dark' : 'claude-light';
             this.setTheme(theme, false);
         }
     }
@@ -402,18 +403,20 @@ class TestSimulator {
 
     /**
      * Set the application theme
-     * @param {string} theme - Theme name ('light', 'dark', 'claude-light', 'claude-dark')
+     * @param {string} theme - Theme name ('claude-light', 'claude-dark')
      * @param {boolean} saveToStorage - Whether to save to localStorage (default: true)
      */
     setTheme(theme, saveToStorage = true) {
+        // Normalize old theme names to Claude themes
+        if (theme === 'light') theme = 'claude-light';
+        if (theme === 'dark') theme = 'claude-dark';
+
         // Update data-theme attribute
-        if (theme.startsWith('claude')) {
-            document.documentElement.setAttribute('data-theme', theme);
-            document.documentElement.removeAttribute('data-color-scheme');
-        } else {
-            document.documentElement.setAttribute('data-color-scheme', theme);
-            document.documentElement.removeAttribute('data-theme');
-        }
+        document.documentElement.setAttribute('data-theme', theme);
+
+        // Set color-scheme for system UI elements
+        const colorScheme = theme === 'claude-dark' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-color-scheme', colorScheme);
 
         // Save to localStorage
         if (saveToStorage) {
@@ -447,12 +450,10 @@ class TestSimulator {
         const metaThemeColor = document.querySelector('meta[name="theme-color"]');
         if (metaThemeColor) {
             const colors = {
-                'light': '#21808D',
-                'dark': '#1F2121',
                 'claude-light': '#CC5D34',
                 'claude-dark': '#1C1917'
             };
-            metaThemeColor.setAttribute('content', colors[theme] || '#21808D');
+            metaThemeColor.setAttribute('content', colors[theme] || '#CC5D34');
         }
     }
 
@@ -4529,9 +4530,68 @@ class TestSimulator {
 // Global reference for inline event handlers
 let testSimulator;
 
+// Splash Screen Handler
+function initSplashScreen() {
+    const splashScreen = document.getElementById('splash-screen');
+    const enterBtn = document.getElementById('splash-enter-btn');
+
+    if (!splashScreen) return;
+
+    // Check if user has seen splash before (skip if returning user)
+    const hasSeenSplash = sessionStorage.getItem('hasSeenSplash');
+    if (hasSeenSplash === 'true') {
+        splashScreen.classList.add('hidden');
+        return;
+    }
+
+    // Dismiss splash screen function
+    function dismissSplash() {
+        splashScreen.classList.add('fade-out');
+        sessionStorage.setItem('hasSeenSplash', 'true');
+
+        // Remove from DOM after animation
+        setTimeout(() => {
+            splashScreen.classList.add('hidden');
+        }, 800);
+
+        console.log('🍂 Welcome to Study Nook!');
+    }
+
+    // Enter button click
+    if (enterBtn) {
+        enterBtn.addEventListener('click', dismissSplash);
+    }
+
+    // Click anywhere to dismiss (after initial load)
+    setTimeout(() => {
+        splashScreen.addEventListener('click', (e) => {
+            // Don't dismiss if clicking the button (handled separately)
+            if (e.target !== enterBtn && !enterBtn.contains(e.target)) {
+                dismissSplash();
+            }
+        });
+    }, 1500);
+
+    // Press Enter or Space to dismiss
+    document.addEventListener('keydown', function splashKeyHandler(e) {
+        if ((e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') && !splashScreen.classList.contains('hidden')) {
+            e.preventDefault();
+            dismissSplash();
+            document.removeEventListener('keydown', splashKeyHandler);
+        }
+    });
+
+    // Auto-dismiss after 8 seconds (optional - gives users time to enjoy animation)
+    // Uncomment the following if you want auto-dismiss:
+    // setTimeout(dismissSplash, 8000);
+}
+
 // Initialize the test simulator when the page loads
 document.addEventListener('DOMContentLoaded', () => {
     try {
+        // Initialize splash screen first
+        initSplashScreen();
+
         testSimulator = new TestSimulator();
         console.log('Test Simulator initialized successfully');
 
