@@ -150,6 +150,11 @@
     <div class="container">
         <!-- Landing Section -->
         <div id="landing-section" class="section landing-section">
+            <!-- Ambient Background Blobs -->
+            <div class="ambient-blob ambient-blob-1" style="top: 10%; left: 5%;"></div>
+            <div class="ambient-blob ambient-blob-2" style="bottom: 15%; right: 10%;"></div>
+            <div class="ambient-blob ambient-blob-3" style="top: 50%; left: 40%;"></div>
+
             <div class="landing-content">
                 <div class="landing-decorative-top">
                     <svg class="decorative-branch" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
@@ -161,39 +166,104 @@
                 </div>
 
                 <div class="landing-hero">
-                    <h1 class="landing-title">Welcome to Your Study Space</h1>
+                    <h1 class="landing-title gradient-text">Welcome to Your Study Space</h1>
                     <p class="landing-subtitle">A gentle place to practice, learn, and grow</p>
                 </div>
 
                 <div class="landing-features">
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                                <path d="M2 17l10 5 10-5"/>
-                                <path d="M2 12l10 5 10-5"/>
+                    <!-- Practice Feature Card -->
+                    <div class="feature-card glass hover-lift">
+                        <div class="feature-icon icon-gradient">
+                            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Stacked Books Icon -->
+                                <rect x="8" y="12" width="28" height="30" rx="2" fill="url(#book-gradient-1)" stroke="#d85a3a" stroke-width="1.5"/>
+                                <rect x="11" y="9" width="28" height="30" rx="2" fill="url(#book-gradient-2)" stroke="#d85a3a" stroke-width="1.5"/>
+                                <rect x="14" y="6" width="28" height="30" rx="2" fill="url(#book-gradient-3)" stroke="#d85a3a" stroke-width="1.5"/>
+                                <line x1="28" y1="6" x2="28" y2="36" stroke="#d85a3a" stroke-width="1"/>
+                                <line x1="20" y1="14" x2="26" y2="14" stroke="#d85a3a" stroke-width="1.5" stroke-linecap="round"/>
+                                <line x1="20" y1="20" x2="26" y2="20" stroke="#d85a3a" stroke-width="1.5" stroke-linecap="round"/>
+                                <!-- Sparkles -->
+                                <circle cx="6" cy="18" r="2" fill="#ff9270" opacity="0.6"/>
+                                <circle cx="44" cy="24" r="1.5" fill="#ff7d52" opacity="0.6"/>
+                                <defs>
+                                    <linearGradient id="book-gradient-1" x1="8" y1="12" x2="36" y2="42" gradientUnits="userSpaceOnUse">
+                                        <stop offset="0%" stop-color="#ffd4c4"/>
+                                        <stop offset="100%" stop-color="#ffc4b4"/>
+                                    </linearGradient>
+                                    <linearGradient id="book-gradient-2" x1="11" y1="9" x2="39" y2="39" gradientUnits="userSpaceOnUse">
+                                        <stop offset="0%" stop-color="#ff9270"/>
+                                        <stop offset="100%" stop-color="#ff7d52"/>
+                                    </linearGradient>
+                                    <linearGradient id="book-gradient-3" x1="14" y1="6" x2="42" y2="36" gradientUnits="userSpaceOnUse">
+                                        <stop offset="0%" stop-color="#ff9270"/>
+                                        <stop offset="100%" stop-color="#d85a3a"/>
+                                    </linearGradient>
+                                </defs>
                             </svg>
                         </div>
                         <h3>Practice at Your Pace</h3>
                         <p>Take your time with custom tests designed to support your learning journey</p>
                     </div>
 
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                                <circle cx="12" cy="7" r="4"/>
+                    <!-- Library Feature Card -->
+                    <div class="feature-card glass hover-lift">
+                        <div class="feature-icon icon-gradient">
+                            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Clipboard with Checklist -->
+                                <rect x="10" y="6" width="28" height="36" rx="3" fill="url(#clipboard-gradient)" stroke="#d85a3a" stroke-width="1.5"/>
+                                <rect x="17" y="2" width="14" height="8" rx="2" fill="#ff9270" stroke="#d85a3a" stroke-width="1.5"/>
+                                <circle cx="24" cy="6" r="2" fill="white"/>
+                                <!-- Checkboxes -->
+                                <rect x="15" y="16" width="6" height="6" rx="1.5" stroke="#ff7d52" stroke-width="1.5" fill="none"/>
+                                <path d="M16 19L18 21L21 17" stroke="#d85a3a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <rect x="15" y="26" width="6" height="6" rx="1.5" stroke="#ff7d52" stroke-width="1.5" fill="none"/>
+                                <rect x="15" y="36" width="6" height="6" rx="1.5" stroke="#ff7d52" stroke-width="1.5" fill="none"/>
+                                <!-- Lines -->
+                                <line x1="25" y1="19" x2="33" y2="19" stroke="#d85a3a" stroke-width="2" stroke-linecap="round"/>
+                                <line x1="25" y1="29" x2="33" y2="29" stroke="#d85a3a" stroke-width="2" stroke-linecap="round"/>
+                                <line x1="25" y1="39" x2="31" y2="39" stroke="#d85a3a" stroke-width="2" stroke-linecap="round"/>
+                                <!-- Sparkles -->
+                                <circle cx="6" cy="14" r="2" fill="#ff9270" opacity="0.6"/>
+                                <circle cx="42" cy="20" r="1.5" fill="#ff7d52" opacity="0.6"/>
+                                <circle cx="5" cy="36" r="1.5" fill="#d85a3a" opacity="0.6"/>
+                                <defs>
+                                    <linearGradient id="clipboard-gradient" x1="10" y1="6" x2="38" y2="42" gradientUnits="userSpaceOnUse">
+                                        <stop offset="0%" stop-color="#fde4d8"/>
+                                        <stop offset="100%" stop-color="#ffd4c4"/>
+                                    </linearGradient>
+                                </defs>
                             </svg>
                         </div>
                         <h3>Your Personal Library</h3>
                         <p>Save and organize your tests in one cozy place, accessible anytime</p>
                     </div>
 
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="10"/>
-                                <polyline points="12 6 12 12 16 14"/>
+                    <!-- Timer Feature Card -->
+                    <div class="feature-card glass hover-lift">
+                        <div class="feature-icon icon-gradient">
+                            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Coffee Cup with Steam -->
+                                <ellipse cx="24" cy="38" rx="12" ry="4" fill="url(#saucer-gradient)" stroke="#d85a3a" stroke-width="1.5"/>
+                                <path d="M14 38V34C14 28 18 22 24 22C30 22 34 28 34 34V38" fill="url(#cup-gradient)" stroke="#d85a3a" stroke-width="1.5"/>
+                                <rect x="20" y="18" width="8" height="4" rx="1" fill="#d85a3a"/>
+                                <path d="M34 28H37C39 28 40 29.5 40 31C40 32.5 39 34 37 34H34" stroke="#d85a3a" stroke-width="1.5" stroke-linecap="round"/>
+                                <!-- Steam -->
+                                <path d="M18 12C18 12 19.5 9 22 9" stroke="#ff9270" stroke-width="1.5" stroke-linecap="round"/>
+                                <path d="M24 10C24 10 25.5 7 28 7" stroke="#ff7d52" stroke-width="1.5" stroke-linecap="round"/>
+                                <path d="M30 12C30 12 31.5 9 34 9" stroke="#d85a3a" stroke-width="1.5" stroke-linecap="round"/>
+                                <!-- Sparkles -->
+                                <circle cx="10" cy="20" r="2" fill="#ff9270" opacity="0.6"/>
+                                <circle cx="40" cy="16" r="1.5" fill="#ff7d52" opacity="0.6"/>
+                                <defs>
+                                    <linearGradient id="saucer-gradient" x1="12" y1="38" x2="36" y2="38" gradientUnits="userSpaceOnUse">
+                                        <stop offset="0%" stop-color="#ffd4c4"/>
+                                        <stop offset="100%" stop-color="#ff9270"/>
+                                    </linearGradient>
+                                    <linearGradient id="cup-gradient" x1="24" y1="22" x2="24" y2="38" gradientUnits="userSpaceOnUse">
+                                        <stop offset="0%" stop-color="#ff9270"/>
+                                        <stop offset="100%" stop-color="#d85a3a"/>
+                                    </linearGradient>
+                                </defs>
                             </svg>
                         </div>
                         <h3>Mindful Focus Timer</h3>
@@ -202,17 +272,17 @@
                 </div>
 
                 <div class="landing-cta">
-                    <button id="get-started-btn" class="btn btn--primary btn--large landing-btn">Start Learning</button>
+                    <button id="get-started-btn" class="btn btn-gradient btn--large landing-btn shadow-orange-glow">Start Learning</button>
                     <p class="landing-hint">No account needed to start. Sign in anytime to save your progress.</p>
                 </div>
 
                 <div class="landing-decorative-bottom">
                     <svg class="decorative-dots" viewBox="0 0 100 20" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="10" cy="10" r="2" fill="currentColor" opacity="0.3"/>
-                        <circle cx="30" cy="10" r="2" fill="currentColor" opacity="0.4"/>
-                        <circle cx="50" cy="10" r="2" fill="currentColor" opacity="0.5"/>
-                        <circle cx="70" cy="10" r="2" fill="currentColor" opacity="0.4"/>
-                        <circle cx="90" cy="10" r="2" fill="currentColor" opacity="0.3"/>
+                        <circle cx="10" cy="10" r="2" fill="#ff9270" opacity="0.3"/>
+                        <circle cx="30" cy="10" r="2" fill="#ff7d52" opacity="0.4"/>
+                        <circle cx="50" cy="10" r="2" fill="#d85a3a" opacity="0.5"/>
+                        <circle cx="70" cy="10" r="2" fill="#ff7d52" opacity="0.4"/>
+                        <circle cx="90" cy="10" r="2" fill="#ff9270" opacity="0.3"/>
                     </svg>
                 </div>
             </div>

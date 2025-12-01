@@ -519,6 +519,144 @@ input:focus, textarea:focus, select:focus {
 
 ---
 
+## Modern UI Effects
+
+### Glassmorphism
+
+Frosted glass effect for cards and containers.
+
+```css
+/* Light glassmorphism */
+.glass {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+/* Stronger blur for prominent elements */
+.glass-strong {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+}
+
+/* Subtle for backgrounds */
+.glass-subtle {
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(8px);
+}
+```
+
+### Gradient Text
+
+Eye-catching gradient text for numbers and headings.
+
+```css
+.gradient-text {
+  background: linear-gradient(135deg, #d85a3a 0%, #ff7d52 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+```
+
+Use for: Timer displays, score numbers, stat values, hero headings.
+
+### Ambient Background Blobs
+
+Soft, pulsing gradient circles that add warmth and depth.
+
+```html
+<!-- Add inside a container with position: relative -->
+<div class="ambient-blob ambient-blob-1" style="top: 10%; left: 5%;"></div>
+<div class="ambient-blob ambient-blob-2" style="bottom: 15%; right: 10%;"></div>
+<div class="ambient-blob ambient-blob-3" style="top: 50%; left: 40%;"></div>
+```
+
+The blobs use a slow pulse animation for a cozy, living feel.
+
+### Warm Shadows
+
+Orange-tinted shadows instead of black for warmth.
+
+```css
+.shadow-warm-sm { box-shadow: 0 1px 3px rgba(168, 75, 47, 0.08); }
+.shadow-warm-md { box-shadow: 0 4px 6px rgba(168, 75, 47, 0.1); }
+.shadow-warm-lg { box-shadow: 0 10px 15px rgba(168, 75, 47, 0.12); }
+.shadow-orange-glow { box-shadow: 0 8px 30px rgba(204, 93, 52, 0.3); }
+```
+
+### Gradient Buttons
+
+Primary action buttons with gradient fill.
+
+```css
+.btn-gradient {
+  background: linear-gradient(135deg, #d85a3a 0%, #ff7d52 100%);
+  color: white;
+}
+
+.btn-gradient:hover {
+  background: linear-gradient(135deg, #c54d2f 0%, #e66b46 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(216, 90, 58, 0.4);
+}
+```
+
+### Section Headers with Dividers
+
+Headers with gradient line dividers.
+
+```css
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+}
+
+.section-divider {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, rgba(204, 93, 52, 0.3), transparent);
+}
+```
+
+### Hover Lift Effect
+
+Subtle lift on hover for interactive elements.
+
+```css
+.hover-lift {
+  transition: transform var(--duration-fast) var(--ease-spring);
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px) scale(1.02);
+}
+```
+
+### Custom SVG Illustrations
+
+Use warm-colored SVG illustrations with gradient fills:
+
+```svg
+<defs>
+  <linearGradient id="warm-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+    <stop offset="0%" stop-color="#ff9270"/>
+    <stop offset="100%" stop-color="#d85a3a"/>
+  </linearGradient>
+</defs>
+<rect fill="url(#warm-gradient)" ... />
+```
+
+Key colors for illustrations:
+- `#ffd4c4` - Light peach (backgrounds)
+- `#ff9270` - Soft coral (midtones)
+- `#ff7d52` - Bright orange (accents)
+- `#d85a3a` - Deep orange (strokes, emphasis)
+
+---
+
 ## Themes
 
 ### Available Themes
@@ -754,6 +892,7 @@ All interactive elements must have visible focus indicators.
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 2.0 | Dec 2025 | Added Modern UI Effects: glassmorphism, gradient text, ambient blobs, warm shadows, custom SVG illustrations |
 | 1.1 | Dec 2025 | Simplified to Claude Light/Dark themes only |
 | 1.0 | Dec 2025 | Initial style guide |
 
